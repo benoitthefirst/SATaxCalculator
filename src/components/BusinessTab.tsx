@@ -27,8 +27,15 @@ export const BusinessTab: React.FC<BusinessTabProps> = ({
             <input
               type="number"
               value={businessRevenue}
-              onChange={(e) => setBusinessRevenue(Math.max(0, Number(e.target.value)))}
-              className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === '' || value === '-') {
+                  setBusinessRevenue(0);
+                } else {
+                  setBusinessRevenue(Math.max(0, Number(value)));
+                }
+              }}
+              className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 font-medium"
             />
           </div>
           <p className="text-xs text-gray-500 mt-1">Total income before expenses</p>
@@ -44,8 +51,15 @@ export const BusinessTab: React.FC<BusinessTabProps> = ({
               <input
                 type="number"
                 value={businessExpenses}
-                onChange={(e) => setBusinessExpenses(Math.max(0, Number(e.target.value)))}
-                className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === '' || value === '-') {
+                    setBusinessExpenses(0);
+                  } else {
+                    setBusinessExpenses(Math.max(0, Number(value)));
+                  }
+                }}
+                className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 font-medium"
               />
             </div>
             <p className="text-xs text-gray-500 mt-1">Salaries, rent, utilities, etc.</p>
@@ -60,8 +74,15 @@ export const BusinessTab: React.FC<BusinessTabProps> = ({
               <input
                 type="number"
                 value={deductions}
-                onChange={(e) => setDeductions(Math.max(0, Number(e.target.value)))}
-                className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === '' || value === '-') {
+                    setDeductions(0);
+                  } else {
+                    setDeductions(Math.max(0, Number(value)));
+                  }
+                }}
+                className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 font-medium"
               />
             </div>
             <p className="text-xs text-gray-500 mt-1">Travel, equipment, training, etc.</p>
