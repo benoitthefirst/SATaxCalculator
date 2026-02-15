@@ -50,7 +50,7 @@ export const SalariedTab: React.FC<SalariedTabProps> = ({
             <select
               value={age}
               onChange={(e) => setAge(Number(e.target.value))}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              className="w-full px-4 py-2 border text-black border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
             >
               <option value={35}>Under 65</option>
               <option value={70}>65 - 74</option>
