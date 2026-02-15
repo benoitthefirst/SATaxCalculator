@@ -26,7 +26,7 @@ export const SalariedTab: React.FC<SalariedTabProps> = ({
             <span className="absolute left-3 top-3 text-gray-500">R</span>
             <input
               type="number"
-              value={grossIncome}
+              value={grossIncome || ''}
               onChange={(e) => {
                 const value = e.target.value;
                 if (value === '' || value === '-') {
@@ -35,7 +35,8 @@ export const SalariedTab: React.FC<SalariedTabProps> = ({
                   setGrossIncome(Math.max(0, Number(value)));
                 }
               }}
-              className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 font-medium"
+              placeholder="0"
+              className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 font-medium placeholder:text-gray-400"
             />
           </div>
           <p className="text-xs text-gray-500 mt-1">Your total salary before tax and deductions</p>

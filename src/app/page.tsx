@@ -12,12 +12,12 @@ import type {
 
 const SATaxCalculator: React.FC = () => {
   const [calculatorType, setCalculatorType] = useState<'salaried' | 'business'>('salaried');
-  const [grossIncome, setGrossIncome] = useState<number>(850000);
+  const [grossIncome, setGrossIncome] = useState<number>(0);
   const [age, setAge] = useState<number>(35);
   const [medicalScheme, setMedicalScheme] = useState<boolean>(false);
-  const [businessRevenue, setBusinessRevenue] = useState<number>(2000000);
-  const [businessExpenses, setBusinessExpenses] = useState<number>(600000);
-  const [deductions, setDeductions] = useState<number>(150000);
+  const [businessRevenue, setBusinessRevenue] = useState<number>(0);
+  const [businessExpenses, setBusinessExpenses] = useState<number>(0);
+  const [deductions, setDeductions] = useState<number>(0);
   const [expanded, setExpanded] = useState<ExpandedState>({
     tips: false,
     deductions: false,

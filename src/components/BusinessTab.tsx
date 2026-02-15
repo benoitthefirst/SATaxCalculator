@@ -26,7 +26,7 @@ export const BusinessTab: React.FC<BusinessTabProps> = ({
             <span className="absolute left-3 top-3 text-gray-500">R</span>
             <input
               type="number"
-              value={businessRevenue}
+              value={businessRevenue || ''}
               onChange={(e) => {
                 const value = e.target.value;
                 if (value === '' || value === '-') {
@@ -35,7 +35,8 @@ export const BusinessTab: React.FC<BusinessTabProps> = ({
                   setBusinessRevenue(Math.max(0, Number(value)));
                 }
               }}
-              className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 font-medium"
+              placeholder="0"
+              className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 font-medium placeholder:text-gray-400"
             />
           </div>
           <p className="text-xs text-gray-500 mt-1">Total income before expenses</p>
@@ -50,7 +51,7 @@ export const BusinessTab: React.FC<BusinessTabProps> = ({
               <span className="absolute left-3 top-3 text-gray-500">R</span>
               <input
                 type="number"
-                value={businessExpenses}
+                value={businessExpenses || ''}
                 onChange={(e) => {
                   const value = e.target.value;
                   if (value === '' || value === '-') {
@@ -59,7 +60,8 @@ export const BusinessTab: React.FC<BusinessTabProps> = ({
                     setBusinessExpenses(Math.max(0, Number(value)));
                   }
                 }}
-                className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 font-medium"
+                placeholder="0"
+                className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 font-medium placeholder:text-gray-400"
               />
             </div>
             <p className="text-xs text-gray-500 mt-1">Salaries, rent, utilities, etc.</p>
@@ -73,7 +75,7 @@ export const BusinessTab: React.FC<BusinessTabProps> = ({
               <span className="absolute left-3 top-3 text-gray-500">R</span>
               <input
                 type="number"
-                value={deductions}
+                value={deductions || ''}
                 onChange={(e) => {
                   const value = e.target.value;
                   if (value === '' || value === '-') {
@@ -82,7 +84,8 @@ export const BusinessTab: React.FC<BusinessTabProps> = ({
                     setDeductions(Math.max(0, Number(value)));
                   }
                 }}
-                className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 font-medium"
+                placeholder="0"
+                className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 font-medium placeholder:text-gray-400"
               />
             </div>
             <p className="text-xs text-gray-500 mt-1">Travel, equipment, training, etc.</p>
