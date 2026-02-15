@@ -155,7 +155,7 @@ const SATaxCalculator: React.FC = () => {
       "priceCurrency": "ZAR"
     },
     "description": "Free South African tax calculator for the 2025/26 tax year. Calculate SARS income tax for salaried employees and business owners with tax brackets, deductions, and rebates.",
-    "url": "https://taxcalculator.theprocessenterprise.com",
+    "url": "https://taxcalculator.theprocesse.com",
     "author": {
       "@type": "Organization",
       "name": "The Process Enterprise"
@@ -163,7 +163,7 @@ const SATaxCalculator: React.FC = () => {
     "provider": {
       "@type": "Organization",
       "name": "The Process Enterprise",
-      "url": "https://theprocessenterprise.com"
+      "url": "https://theprocesse.com"
     },
     "featureList": [
       "Calculate income tax for salaried employees",

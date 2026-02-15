@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://taxcalculator.theprocessenterprise.com'),
+  metadataBase: new URL('https://taxcalculator.theprocesse.com'),
   title: {
     default: "South African Tax Calculator 2025/26 | Free SARS Tax Calculator",
     template: "%s | The Process Enterprise"
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_ZA',
-    url: 'https://taxcalculator.theprocessenterprise.com',
+    url: 'https://taxcalculator.theprocesse.com',
     title: 'South African Tax Calculator 2025/26 | Free SARS Tax Calculator',
     description: 'Calculate your South African income tax instantly. Free tool for salaried employees & business owners. Get accurate SARS tax calculations with deductions & tax-saving tips.',
     siteName: 'SA Tax Calculator',
@@ -75,7 +75,7 @@ export const metadata: Metadata = {
     creator: '@TheProcessEnt',
   },
   alternates: {
-    canonical: 'https://taxcalculator.theprocessenterprise.com',
+    canonical: 'https://taxcalculator.theprocesse.com',
   },
   category: 'finance',
 };
