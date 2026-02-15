@@ -18,6 +18,7 @@ const SATaxCalculator: React.FC = () => {
   const [businessRevenue, setBusinessRevenue] = useState<number>(0);
   const [businessExpenses, setBusinessExpenses] = useState<number>(0);
   const [deductions, setDeductions] = useState<number>(0);
+  const [businessType, setBusinessType] = useState<'sbc' | 'company'>('sbc');
   const [expanded, setExpanded] = useState<ExpandedState>({
     tips: false,
     deductions: false,
@@ -99,17 +100,21 @@ const SATaxCalculator: React.FC = () => {
     const taxableIncome = Math.max(0, businessProfit);
 
     let tax = 0;
-    let previousThreshold = 0;
 
-    for (const bracket of TAX_BRACKETS) {
-      if (taxableIncome <= previousThreshold) break;
-      
-      const taxableInThisBracket = Math.min(
-        taxableIncome - previousThreshold,
-        bracket.threshold - previousThreshold
-      );
-      tax += taxableInThisBracket * bracket.rate;
-      previousThreshold = bracket.threshold;
+    if (businessType === 'sbc') {
+      // Small Business Corporation tax brackets 2025/26
+      if (taxableIncome <= 95750) {
+        tax = 0;
+      } else if (taxableIncome <= 365000) {
+        tax = (taxableIncome - 95750) * 0.07;
+      } else if (taxableIncome <= 550000) {
+        tax = 18848 + (taxableIncome - 365000) * 0.21;
+      } else {
+        tax = 57698 + (taxableIncome - 550000) * 0.27;
+      }
+    } else {
+      // Standard company - flat 27% rate
+      tax = taxableIncome * 0.27;
     }
 
     const netProfit = businessProfit - tax;
@@ -247,6 +252,8 @@ const SATaxCalculator: React.FC = () => {
               setBusinessExpenses={setBusinessExpenses}
               deductions={deductions}
               setDeductions={setDeductions}
+              businessType={businessType}
+              setBusinessType={setBusinessType}
               expanded={expanded}
               setExpanded={setExpanded}
               businessCalc={businessCalc}

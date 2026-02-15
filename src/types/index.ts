@@ -53,6 +53,8 @@ export interface BusinessTabProps {
   setBusinessExpenses: (value: number) => void;
   deductions: number;
   setDeductions: (value: number) => void;
+  businessType: 'sbc' | 'company';
+  setBusinessType: (value: 'sbc' | 'company') => void;
   expanded: ExpandedState;
   setExpanded: (value: ExpandedState) => void;
   businessCalc: BusinessCalculationResult;

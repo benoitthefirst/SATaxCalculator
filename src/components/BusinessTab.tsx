@@ -9,6 +9,8 @@ export const BusinessTab: React.FC<BusinessTabProps> = ({
   setBusinessExpenses,
   deductions,
   setDeductions,
+  businessType,
+  setBusinessType,
   expanded,
   setExpanded,
   businessCalc,
@@ -18,6 +20,40 @@ export const BusinessTab: React.FC<BusinessTabProps> = ({
     {/* Input Section */}
     <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-lg border border-gray-200">
       <div className="space-y-4">
+        {/* Business Type Selector */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Business Type
+          </label>
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => setBusinessType('sbc')}
+              className={`flex-1 px-4 py-2 rounded-lg transition font-medium ${
+                businessType === 'sbc'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              Small Business (SBC)
+            </button>
+            <button
+              onClick={() => setBusinessType('company')}
+              className={`flex-1 px-4 py-2 rounded-lg transition font-medium ${
+                businessType === 'company'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              Standard Company
+            </button>
+          </div>
+          <p className="text-xs text-gray-500 mt-1">
+            {businessType === 'sbc'
+              ? 'Progressive rates: 0%-27% (max revenue R20M)'
+              : 'Flat 27% corporate tax rate'}
+          </p>
+        </div>
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Annual Revenue (Turnover)
