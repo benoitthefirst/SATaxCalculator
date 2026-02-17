@@ -74,32 +74,38 @@ export default function CompanyOnboardingForm({ userId }: CompanyOnboardingFormP
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
+        <div className="bg-red-50 border border-red-100 text-red-700 px-4 py-3 rounded-xl text-sm flex items-start gap-2">
+          <svg className="w-5 h-5 mt-0.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+          </svg>
+          <span>{error}</span>
         </div>
       )}
 
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900">Basic Information</h3>
+      <div className="space-y-5">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-1">Basic Information</h3>
+          <p className="text-sm text-gray-500">Start with the essentials about your company</p>
+        </div>
 
         <Input
           {...register('name')}
           type="text"
-          label="Company Name *"
+          label="Company Name"
           placeholder="Acme Corporation (Pty) Ltd"
           error={errors.name?.message}
           disabled={isLoading}
         />
 
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
-            Business Type *
+          <label className="block text-sm font-medium text-gray-900">
+            Business Type
           </label>
           <select
             {...register('businessType')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
+            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#007AFF]/20 focus:border-[#007AFF] hover:border-gray-300 transition-colors disabled:bg-gray-50 disabled:text-gray-500"
             disabled={isLoading}
           >
             <option value="small_business_corporation">Small Business Corporation (SBC)</option>
@@ -107,7 +113,12 @@ export default function CompanyOnboardingForm({ userId }: CompanyOnboardingFormP
             <option value="sole_proprietor">Sole Proprietor</option>
           </select>
           {errors.businessType && (
-            <p className="text-sm text-red-600">{errors.businessType.message}</p>
+            <p className="text-sm text-red-600 flex items-center gap-1">
+              <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              {errors.businessType.message}
+            </p>
           )}
         </div>
 
@@ -134,15 +145,19 @@ export default function CompanyOnboardingForm({ userId }: CompanyOnboardingFormP
         <Input
           {...register('vatNumber')}
           type="text"
-          label="VAT Number (if registered)"
-          placeholder="4123456789"
+          label="VAT Number"
+          placeholder="4123456789 (optional)"
+          helperText="Only if VAT registered"
           error={errors.vatNumber?.message}
           disabled={isLoading}
         />
       </div>
 
-      <div className="space-y-4 pt-4 border-t">
-        <h3 className="text-lg font-semibold text-gray-900">Contact Details</h3>
+      <div className="space-y-5 pt-6 border-t border-gray-100">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-1">Contact Details</h3>
+          <p className="text-sm text-gray-500">How can clients and partners reach you?</p>
+        </div>
 
         <div className="grid grid-cols-2 gap-4">
           <Input
@@ -203,7 +218,7 @@ export default function CompanyOnboardingForm({ userId }: CompanyOnboardingFormP
         </div>
       </div>
 
-      <div className="flex justify-end pt-4">
+      <div className="flex justify-end pt-6">
         <Button
           type="submit"
           isLoading={isLoading}
