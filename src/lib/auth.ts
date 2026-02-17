@@ -5,7 +5,7 @@ import { compare } from "bcryptjs"
 import { prisma } from "@/lib/db"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: PrismaAdapter(prisma),
+  adapter: PrismaAdapter(prisma) as any,
   session: {
     strategy: "jwt",
   },
@@ -28,7 +28,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         const user = await prisma.user.findUnique({
           where: {
-            email: credentials.email,
+            email: credentials.email as string,
           },
         })
 
@@ -37,7 +37,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
 
         const isCorrectPassword = await compare(
-          credentials.password,
+          credentials.password as string,
           user.password_hash
         )
 

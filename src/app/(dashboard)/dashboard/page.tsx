@@ -1,7 +1,7 @@
 import { auth } from '@/lib/auth'
-
 import { prisma } from '@/lib/db'
 import Link from 'next/link'
+import { Prisma } from '@prisma/client'
 
 export const metadata = {
   title: 'Dashboard - ProcessX',
@@ -61,7 +61,7 @@ export default async function DashboardPage() {
       category: true,
       user: true,
     },
-  })
+  }) as Array<Prisma.ExpenseGetPayload<{ include: { category: true; user: true } }>>
 
   const stats = [
     {
