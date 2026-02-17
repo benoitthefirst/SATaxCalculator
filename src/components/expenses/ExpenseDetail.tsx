@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import ExpenseForm from '@/components/forms/ExpenseForm'
+import ExpenseAttachments from '@/components/expenses/ExpenseAttachments'
 import { Button } from '@/components/ui/Button'
 
 interface ExpenseDetailProps {
@@ -207,6 +208,11 @@ export default function ExpenseDetail({
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Attachments Section */}
+      <div className="bg-white rounded-2xl border border-gray-100 p-8">
+        <ExpenseAttachments expenseId={expense.id} />
       </div>
     </div>
   )

@@ -29,6 +29,7 @@ model User {
   // Relations
   company_members CompanyMember[]
   expenses        Expense[]
+  expense_attachments ExpenseAttachment[]
   created_companies Company[] @relation("CreatedBy")
   accounts        Account[]
   sessions        Session[]
@@ -148,6 +149,7 @@ model Expense {
   company  Company         @relation(fields: [company_id], references: [id], onDelete: Cascade)
   category ExpenseCategory @relation(fields: [category_id], references: [id])
   user     User            @relation(fields: [user_id], references: [id])
+  attachments ExpenseAttachment[]
 
   @@index([company_id])
   @@index([category_id])
@@ -155,6 +157,24 @@ model Expense {
   @@index([expense_date])
   @@index([is_deleted])
   @@map("expenses")
+}
+
+model ExpenseAttachment {
+  id          String   @id @default(cuid())
+  expense_id  String
+  file_name   String
+  file_type   String   // "image/jpeg", "image/png", "application/pdf"
+  file_size   Int      // in bytes
+  file_url    String   // URL to stored file
+  uploaded_by String
+  created_at  DateTime @default(now())
+
+  // Relations
+  expense Expense @relation(fields: [expense_id], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [uploaded_by], references: [id])
+
+  @@index([expense_id])
+  @@map("expense_attachments")
 }
 
 // ============================================
