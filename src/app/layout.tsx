@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from '@vercel/analytics/next';
 import "./globals.css";
+import SessionProvider from "@/components/layout/SessionProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,12 +15,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://taxcalculator.theprocesse.com'),
+  metadataBase: new URL('https://processx.theprocesse.com'),
   title: {
-    default: "South African Tax Calculator 2025/26 | Free SARS Tax Calculator",
-    template: "%s | The Process Enterprise"
+    default: "ProcessX - Bookkeeping & CRM for South African Businesses",
+    template: "%s | ProcessX"
   },
-  description: "Free South African tax calculator for 2025/26 tax year. Calculate SARS income tax for salaried employees & business owners. Includes tax brackets, deductions, rebates & tax-saving strategies.",
+  description: "Simple bookkeeping and CRM solution for South African businesses. Track expenses, manage income, generate reports, and stay tax compliant.",
   keywords: [
     "South African tax calculator",
     "SARS tax calculator",
@@ -91,7 +92,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <SessionProvider>{children}</SessionProvider>
         <Analytics />
       </body>
     </html>
