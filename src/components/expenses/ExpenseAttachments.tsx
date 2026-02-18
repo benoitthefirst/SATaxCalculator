@@ -214,7 +214,7 @@ export default function ExpenseAttachments({ expenseId }: ExpenseAttachmentsProp
           </svg>
           <p className="mt-2 text-sm text-gray-500">No attachments yet</p>
           <p className="text-xs text-gray-400 mt-1">
-            JPG, PNG, or PDF files (max 5MB)
+            JPG, PNG, or PDF files (max 10MB)
           </p>
         </div>
       ) : (
@@ -282,7 +282,7 @@ export default function ExpenseAttachments({ expenseId }: ExpenseAttachmentsProp
       )}
 
       <p className="text-xs text-gray-400">
-        Accepted formats: JPG, PNG, PDF • Maximum file size: 5MB
+        Accepted formats: JPG, PNG, PDF • Maximum file size: 10MB
       </p>
     </div>
   )

@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { FileService } from '@/lib/fileService'
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf']
+const fileService = new FileService()
 
 export async function POST(
   request: NextRequest,
@@ -67,16 +69,37 @@ export async function POST(
     // Validate file size
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
-        { error: 'File too large. Maximum size is 5MB.' },
+        { error: 'File too large. Maximum size is 10MB.' },
         { status: 400 }
       )
     }
 
-    // Convert file to base64
+    // Convert file to buffer
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
-    const base64 = buffer.toString('base64')
-    const dataUrl = `data:${file.type};base64,${base64}`
+
+    // Generate unique filename
+    const fileName = fileService.generateFileName(file.name, `expense_${expenseId}`)
+
+    // Upload to MinIO
+    const uploadResult = await fileService.uploadFile(
+      buffer,
+      fileName,
+      file.type,
+      {
+        originalName: file.name,
+        expenseId,
+        uploadedBy: session.user.id,
+        uploadedAt: new Date().toISOString(),
+      }
+    )
+
+    if (!uploadResult.isSuccess) {
+      return NextResponse.json(
+        { error: uploadResult.error || 'Upload failed' },
+        { status: 500 }
+      )
+    }
 
     // Create attachment record
     const attachment = await prisma.expenseAttachment.create({
@@ -85,7 +108,7 @@ export async function POST(
         file_name: file.name,
         file_type: file.type,
         file_size: file.size,
-        file_url: dataUrl,
+        file_url: uploadResult.url!,
         uploaded_by: session.user.id,
       },
     })

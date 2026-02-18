@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { FileService } from '@/lib/fileService'
+
+const fileService = new FileService()
 
 export async function GET(
   request: NextRequest,
@@ -109,7 +112,15 @@ export async function DELETE(
       )
     }
 
-    // Delete attachment
+    // Delete file from MinIO
+    const deleteResult = await fileService.deleteFile(attachment.file_url)
+
+    if (!deleteResult.isSuccess) {
+      console.error('Failed to delete file from storage:', deleteResult.error)
+      // Continue with database deletion even if storage deletion fails
+    }
+
+    // Delete attachment record from database
     await prisma.expenseAttachment.delete({
       where: { id: attachmentId },
     })
