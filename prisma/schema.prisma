@@ -27,12 +27,13 @@ model User {
   last_login_at DateTime?
 
   // Relations
-  company_members CompanyMember[]
-  expenses        Expense[]
+  company_members     CompanyMember[]
+  expenses            Expense[]
   expense_attachments ExpenseAttachment[]
-  created_companies Company[] @relation("CreatedBy")
-  accounts        Account[]
-  sessions        Session[]
+  recurring_expenses  RecurringExpense[]
+  created_companies   Company[] @relation("CreatedBy")
+  accounts            Account[]
+  sessions            Session[]
 
   @@index([email])
   @@map("users")
@@ -67,10 +68,11 @@ model Company {
   created_by_id         String
 
   // Relations
-  created_by      User            @relation("CreatedBy", fields: [created_by_id], references: [id])
-  members         CompanyMember[]
-  expenses        Expense[]
-  income          Income[]
+  created_by         User                @relation("CreatedBy", fields: [created_by_id], references: [id])
+  members            CompanyMember[]
+  expenses           Expense[]
+  recurring_expenses RecurringExpense[]
+  income             Income[]
   expense_categories ExpenseCategory[]
   income_categories  IncomeCategory[]
 
@@ -114,49 +116,84 @@ model ExpenseCategory {
   updated_at DateTime @updatedAt
 
   // Relations
-  company  Company?  @relation(fields: [company_id], references: [id], onDelete: Cascade)
-  expenses Expense[]
+  company            Company?           @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  expenses           Expense[]
+  recurring_expenses RecurringExpense[]
 
   @@index([company_id])
   @@map("expense_categories")
 }
 
 model Expense {
-  id              String    @id @default(cuid())
-  company_id      String
-  category_id     String
-  user_id         String    // Who created the expense
-  amount          Decimal   @db.Decimal(12, 2)
-  currency        String    @default("ZAR")
-  expense_date    DateTime
-  vendor_name     String?
-  description     String?
-  payment_method  String?   // "cash" | "bank_transfer" | "credit_card" | "debit_card"
-  receipt_url     String?
-  is_tax_deductible Boolean @default(true)
-  is_recurring    Boolean   @default(false)
-  recurrence_pattern String? // "monthly" | "quarterly" | "annually"
-  status          String    @default("pending") // "pending" | "approved" | "rejected"
-  approved_by_id  String?
-  approved_at     DateTime?
-  notes           String?   @db.Text
-  is_deleted      Boolean   @default(false)
-  deleted_at      DateTime?
-  created_at      DateTime  @default(now())
-  updated_at      DateTime  @updatedAt
+  id                    String    @id @default(cuid())
+  company_id            String
+  category_id           String
+  user_id               String    // Who created the expense
+  amount                Decimal   @db.Decimal(12, 2)
+  currency              String    @default("ZAR")
+  expense_date          DateTime
+  vendor_name           String?
+  description           String?
+  payment_method        String?   // "cash" | "bank_transfer" | "credit_card" | "debit_card"
+  receipt_url           String?
+  is_tax_deductible     Boolean   @default(true)
+  recurring_expense_id  String?   // Link to recurring expense template if created from one
+  status                String    @default("pending") // "pending" | "approved" | "rejected"
+  approved_by_id        String?
+  approved_at           DateTime?
+  notes                 String?   @db.Text
+  is_deleted            Boolean   @default(false)
+  deleted_at            DateTime?
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
 
   // Relations
-  company  Company         @relation(fields: [company_id], references: [id], onDelete: Cascade)
-  category ExpenseCategory @relation(fields: [category_id], references: [id])
-  user     User            @relation(fields: [user_id], references: [id])
-  attachments ExpenseAttachment[]
+  company           Company            @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  category          ExpenseCategory    @relation(fields: [category_id], references: [id])
+  user              User               @relation(fields: [user_id], references: [id])
+  recurring_expense RecurringExpense?  @relation(fields: [recurring_expense_id], references: [id])
+  attachments       ExpenseAttachment[]
 
   @@index([company_id])
   @@index([category_id])
   @@index([user_id])
   @@index([expense_date])
   @@index([is_deleted])
+  @@index([recurring_expense_id])
   @@map("expenses")
+}
+
+model RecurringExpense {
+  id                String    @id @default(cuid())
+  company_id        String
+  category_id       String
+  created_by_id     String
+  amount            Decimal   @db.Decimal(12, 2)
+  currency          String    @default("ZAR")
+  vendor_name       String?
+  description       String
+  payment_method    String?
+  is_tax_deductible Boolean   @default(true)
+  frequency         String    // "monthly" | "quarterly" | "annually"
+  start_date        DateTime
+  end_date          DateTime? // NULL for indefinite
+  next_occurrence   DateTime  // Next date to generate expense
+  last_generated_at DateTime?
+  is_active         Boolean   @default(true)
+  notes             String?   @db.Text
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+
+  // Relations
+  company  Company         @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  category ExpenseCategory @relation(fields: [category_id], references: [id])
+  created_by User          @relation(fields: [created_by_id], references: [id])
+  generated_expenses Expense[]
+
+  @@index([company_id])
+  @@index([is_active])
+  @@index([next_occurrence])
+  @@map("recurring_expenses")
 }
 
 model ExpenseAttachment {
