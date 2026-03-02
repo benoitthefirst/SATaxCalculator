@@ -35,24 +35,20 @@ export default function LoginForm() {
       setIsLoading(true)
       setError('')
 
-      const result = await signIn('credentials', {
+      // With redirect: true, signIn will automatically redirect on success
+      // If it returns, there was an error
+      await signIn('credentials', {
         email: data.email,
         password: data.password,
-        redirect: false,
+        callbackUrl: '/dashboard',
+        redirect: true,
       })
 
-      if (result?.error) {
-        setError('The email or password you entered is incorrect')
-        return
-      }
-
-      if (result?.ok) {
-        // Use window.location for a hard redirect to ensure session is loaded
-        window.location.href = '/dashboard'
-      }
+      // If we reach here, the redirect didn't happen, so there was an error
+      setError('The email or password you entered is incorrect')
+      setIsLoading(false)
     } catch (err: any) {
       setError('Something went wrong. Please try again.')
-    } finally {
       setIsLoading(false)
     }
   }
