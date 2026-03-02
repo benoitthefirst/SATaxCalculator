@@ -1,5 +1,5 @@
 import { auth } from '@/lib/auth'
-
+import Link from 'next/link'
 import { prisma } from '@/lib/db'
 
 export const metadata = {
@@ -59,10 +59,22 @@ export default async function SettingsPage() {
             </label>
             <p className="text-gray-900">{user?.email}</p>
           </div>
-          <div className="pt-4">
-            <p className="text-sm text-gray-500">
-              Profile editing coming soon
-            </p>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Password
+            </label>
+            <p className="text-gray-900">••••••••</p>
+          </div>
+          <div className="pt-4 border-t border-gray-200">
+            <Link
+              href="/settings/change-password"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-2xl hover:bg-blue-700 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+              </svg>
+              Change Password
+            </Link>
           </div>
         </div>
       </div>
