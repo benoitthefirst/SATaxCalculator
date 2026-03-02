@@ -46,8 +46,10 @@ export default function LoginForm() {
         return
       }
 
-      router.push('/dashboard')
-      router.refresh()
+      if (result?.ok) {
+        // Use window.location for a hard redirect to ensure session is loaded
+        window.location.href = '/dashboard'
+      }
     } catch (err: any) {
       setError('Something went wrong. Please try again.')
     } finally {
