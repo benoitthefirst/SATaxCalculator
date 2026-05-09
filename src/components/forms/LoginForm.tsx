@@ -32,10 +32,10 @@ export default function LoginForm() {
   })
 
   const onSubmit = async (data: LoginFormData) => {
-    try {
-      setIsLoading(true)
-      setError('')
+    setIsLoading(true)
+    setError('')
 
+    try {
       const result = await signIn('credentials', {
         email: data.email,
         password: data.password,
@@ -48,10 +48,18 @@ export default function LoginForm() {
         return
       }
 
-      // Successful login - redirect to dashboard
-      router.push('/dashboard')
-      router.refresh()
+      if (result?.ok) {
+        // Successful login - redirect to dashboard
+        router.push('/dashboard')
+        router.refresh()
+        return
+      }
+
+      // Unexpected result
+      setError('Something went wrong. Please try again.')
+      setIsLoading(false)
     } catch (err: any) {
+      console.error('Login error:', err)
       setError('Something went wrong. Please try again.')
       setIsLoading(false)
     }
