@@ -12,7 +12,7 @@ export const metadata = {
 export default async function IncomePage({
   searchParams,
 }: {
-  searchParams: { page?: string; search?: string; category?: string }
+  searchParams: Promise<{ page?: string; search?: string; category?: string }>
 }) {
   const session = await auth()
 
@@ -34,11 +34,12 @@ export default async function IncomePage({
     redirect('/onboarding/company')
   }
 
-  const page = parseInt(searchParams.page || '1')
+  const { page: pageParam, search: searchParam, category: categoryParam } = await searchParams
+  const page = parseInt(pageParam || '1')
   const limit = 20
   const skip = (page - 1) * limit
-  const search = searchParams.search || ''
-  const categoryFilter = searchParams.category || ''
+  const search = searchParam || ''
+  const categoryFilter = categoryParam || ''
 
   const where: Prisma.IncomeWhereInput = {
     company_id: membership.company.id,

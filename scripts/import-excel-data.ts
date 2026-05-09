@@ -57,7 +57,7 @@ async function main() {
 
   const company = user.company_members[0].company
   console.log(`Importing data for company: ${company.name} (ID: ${company.id})`)
-  console.log(`User: ${user.name} (ID: ${user.id})`)
+  console.log(`User ID: ${user.id}`)
 
   // Load Excel file
   const filePath = path.join(__dirname, '../docs/SARS_Tax_Tracking_2025-2026 (1).xlsx')
