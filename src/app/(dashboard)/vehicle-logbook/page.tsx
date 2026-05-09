@@ -108,15 +108,31 @@ export default async function VehicleLogbookPage({
             Track trips for SARS compliance - Tax Year {year}/{year + 1}
           </p>
         </div>
-        <Link
-          href="/vehicle-logbook/new"
-          className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#FF9500] rounded-xl hover:bg-[#FF6B00] transition-colors"
-        >
-          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Log Trip
-        </Link>
+        <div className="flex gap-3">
+          <Link
+            href={`/api/vehicle-logbook/export?${assetId ? `assetId=${assetId}&` : ''}startDate=${fiscalYearStart.toISOString()}&endDate=${fiscalYearEnd.toISOString()}`}
+            className="inline-flex items-center px-4 py-2 text-sm font-medium bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors"
+          >
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+            Export CSV
+          </Link>
+          <Link
+            href="/vehicle-logbook/new"
+            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#FF9500] rounded-xl hover:bg-[#FF6B00] transition-colors"
+          >
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Log Trip
+          </Link>
+        </div>
       </div>
 
       {/* Filters */}
