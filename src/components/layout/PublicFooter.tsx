@@ -29,8 +29,13 @@ export default function PublicFooter() {
             <h3 className="font-semibold text-gray-900 mb-4">Product</h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/dashboard" className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
-                  Features
+                <Link href="/pricing" className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
+                  Pricing
+                </Link>
+              </li>
+              <li>
+                <Link href="/calculators" className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
+                  Tax Calculator
                 </Link>
               </li>
               <li>
@@ -48,6 +53,11 @@ export default function PublicFooter() {
               <li>
                 <Link href="/about" className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
                   About
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact" className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
+                  Contact
                 </Link>
               </li>
               <li>
