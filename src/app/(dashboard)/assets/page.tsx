@@ -165,33 +165,39 @@ export default async function AssetsPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <tr className="bg-gray-900 text-white">
+                  <th className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">
+                    #
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">
                     Asset
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">
                     Type
                   </th>
-                  <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-right text-xs font-medium uppercase tracking-wider">
                     Cost
                   </th>
-                  <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-right text-xs font-medium uppercase tracking-wider">
                     Book Value
                   </th>
-                  <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-right text-xs font-medium uppercase tracking-wider">
                     Annual Depr.
                   </th>
-                  <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-right text-xs font-medium uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {assetsWithDepreciation.map((asset) => (
+                {assetsWithDepreciation.map((asset, index) => (
                   <tr
                     key={asset.id}
                     className="hover:bg-gray-50 transition-colors"
                   >
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">
+                      {index + 1}
+                    </td>
                     <td className="px-6 py-4">
                       <div>
                         <p className="text-sm font-medium text-gray-900">{asset.name}</p>
@@ -236,6 +242,23 @@ export default async function AssetsPage() {
                   </tr>
                 ))}
               </tbody>
+              <tfoot>
+                <tr className="bg-gray-50 border-t border-gray-200">
+                  <td colSpan={3} className="px-6 py-4 text-sm font-medium text-gray-700">
+                    Total ({assets.length} assets)
+                  </td>
+                  <td className="px-6 py-4 text-right text-sm font-bold text-gray-900">
+                    R {totalCost.toLocaleString('en-ZA', { minimumFractionDigits: 2 })}
+                  </td>
+                  <td className="px-6 py-4 text-right text-sm font-bold text-gray-900">
+                    R {totalBookValue.toLocaleString('en-ZA', { minimumFractionDigits: 2 })}
+                  </td>
+                  <td className="px-6 py-4 text-right text-sm font-bold text-orange-600">
+                    R {totalAnnualDepreciation.toLocaleString('en-ZA', { minimumFractionDigits: 2 })}
+                  </td>
+                  <td></td>
+                </tr>
+              </tfoot>
             </table>
           </div>
         )}
