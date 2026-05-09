@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import Link from 'next/link'
 import { Prisma } from '@prisma/client'
+import TaxYearSelector from '@/components/dashboard/TaxYearSelector'
 
 type IncomeWithCategory = Prisma.IncomeGetPayload<{ include: { category: true } }>
 type ExpenseWithCategory = Prisma.ExpenseGetPayload<{ include: { category: true } }>
@@ -11,7 +12,11 @@ export const metadata = {
   description: 'Your business dashboard',
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ year?: string }>
+}) {
   const session = await auth()
 
   if (!session?.user?.id) {
@@ -33,9 +38,13 @@ export default async function DashboardPage() {
     return null
   }
 
-  // Fiscal year 2025/2026 (March 2025 - Feb 2026)
-  const fiscalYearStart = new Date(2025, 2, 1) // March 1, 2025
-  const fiscalYearEnd = new Date(2026, 1, 28, 23, 59, 59) // Feb 28, 2026
+  // Get year from search params (default to 2025 for fiscal year 2025/2026)
+  const params = await searchParams
+  const selectedYear = params.year ? parseInt(params.year) : 2025
+
+  // Fiscal year starts March 1 of selected year, ends Feb 28/29 of next year
+  const fiscalYearStart = new Date(selectedYear, 2, 1) // March 1
+  const fiscalYearEnd = new Date(selectedYear + 1, 1, 28, 23, 59, 59) // Feb 28
 
   const companyId = membership.company.id
 
@@ -223,17 +232,19 @@ export default async function DashboardPage() {
           <h1 className="text-3xl font-semibold text-gray-900">
             Welcome back, {session.user.name?.split(' ')[0]}
           </h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Tax Year 2025/2026 Overview • {membership.company.name}
+          <div className="mt-1 flex items-center gap-3">
+            <TaxYearSelector currentYear={selectedYear} />
+            <span className="text-sm text-gray-400">•</span>
+            <span className="text-sm text-gray-500">{membership.company.name}</span>
             {isVatRegistered && (
-              <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-blue-100 text-blue-700">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-blue-100 text-blue-700">
                 VAT Registered
               </span>
             )}
-          </p>
+          </div>
         </div>
         <Link
-          href="/reports/tax-computation"
+          href={`/reports/tax-computation?year=${selectedYear}`}
           className="inline-flex items-center px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-xl hover:bg-gray-800 transition-colors"
         >
           View Tax Report →
