@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -21,7 +20,6 @@ export default function LoginForm() {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const router = useRouter()
 
   const {
     register,
@@ -36,11 +34,18 @@ export default function LoginForm() {
     setError('')
 
     try {
-      const result = await signIn('credentials', {
+      // Add timeout to prevent infinite loading
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Request timeout')), 30000)
+      )
+
+      const signInPromise = signIn('credentials', {
         email: data.email,
         password: data.password,
         redirect: false,
       })
+
+      const result = await Promise.race([signInPromise, timeoutPromise])
 
       if (result?.error) {
         setError('The email or password you entered is incorrect')
@@ -49,9 +54,8 @@ export default function LoginForm() {
       }
 
       if (result?.ok) {
-        // Successful login - redirect to dashboard
-        router.push('/dashboard')
-        router.refresh()
+        // Successful login - use hard navigation to ensure session is picked up
+        window.location.href = '/dashboard'
         return
       }
 
@@ -60,7 +64,11 @@ export default function LoginForm() {
       setIsLoading(false)
     } catch (err: any) {
       console.error('Login error:', err)
-      setError('Something went wrong. Please try again.')
+      if (err.message === 'Request timeout') {
+        setError('Login request timed out. Please try again.')
+      } else {
+        setError('Something went wrong. Please try again.')
+      }
       setIsLoading(false)
     }
   }
