@@ -36,11 +36,18 @@ export default function LoginForm() {
     setError('')
 
     try {
-      const result = await signIn('credentials', {
+      // Add timeout to prevent infinite loading
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Request timeout')), 30000)
+      )
+
+      const signInPromise = signIn('credentials', {
         email: data.email,
         password: data.password,
         redirect: false,
       })
+
+      const result = await Promise.race([signInPromise, timeoutPromise])
 
       if (result?.error) {
         setError('The email or password you entered is incorrect')
@@ -60,7 +67,11 @@ export default function LoginForm() {
       setIsLoading(false)
     } catch (err: any) {
       console.error('Login error:', err)
-      setError('Something went wrong. Please try again.')
+      if (err.message === 'Request timeout') {
+        setError('Login request timed out. Please try again.')
+      } else {
+        setError('Something went wrong. Please try again.')
+      }
       setIsLoading(false)
     }
   }
