@@ -45,8 +45,9 @@ export default async function DashboardPage() {
     incomeCount,
     expenseAgg,
     expenseCount,
-    assetAgg,
-    assetCount,
+    deductibleExpenseAgg,
+    deductibleExpenseCount,
+    assets,
     recentIncome,
     recentExpenses,
     expensesByCategory,
@@ -68,7 +69,7 @@ export default async function DashboardPage() {
         income_date: { gte: fiscalYearStart, lte: fiscalYearEnd },
       },
     }),
-    // Expense totals for fiscal year
+    // ALL Expense totals for fiscal year (for display)
     prisma.expense.aggregate({
       where: {
         company_id: companyId,
@@ -84,12 +85,26 @@ export default async function DashboardPage() {
         expense_date: { gte: fiscalYearStart, lte: fiscalYearEnd },
       },
     }),
-    // Asset depreciation
-    prisma.asset.aggregate({
-      where: { company_id: companyId, is_deleted: false },
-      _sum: { purchase_cost: true },
+    // DEDUCTIBLE Expense totals for fiscal year (for tax calculation)
+    prisma.expense.aggregate({
+      where: {
+        company_id: companyId,
+        is_deleted: false,
+        is_tax_deductible: true,
+        expense_date: { gte: fiscalYearStart, lte: fiscalYearEnd },
+      },
+      _sum: { amount: true },
     }),
-    prisma.asset.count({
+    prisma.expense.count({
+      where: {
+        company_id: companyId,
+        is_deleted: false,
+        is_tax_deductible: true,
+        expense_date: { gte: fiscalYearStart, lte: fiscalYearEnd },
+      },
+    }),
+    // Assets for depreciation calculation
+    prisma.asset.findMany({
       where: { company_id: companyId, is_deleted: false },
     }),
     // Recent income
@@ -156,11 +171,28 @@ export default async function DashboardPage() {
 
   const totalIncome = Number(incomeAgg._sum.amount || 0)
   const totalExpenses = Number(expenseAgg._sum.amount || 0)
-  const netProfit = totalIncome - totalExpenses
-  const totalAssets = Number(assetAgg._sum.purchase_cost || 0)
+  const totalDeductibleExpenses = Number(deductibleExpenseAgg._sum.amount || 0)
 
-  // Calculate estimated tax (27% CIT rate)
-  const estimatedTax = netProfit > 0 ? netProfit * 0.27 : 0
+  // Calculate depreciation for all assets
+  const totalDepreciation = assets.reduce((sum, asset) => {
+    const purchaseCost = Number(asset.purchase_cost)
+    const residualValue = Number(asset.residual_value || 0)
+    const usefulLife = asset.useful_life_years
+    const businessUsePercent = asset.business_use_percent || 100
+    const annualDepreciation = ((purchaseCost - residualValue) / usefulLife) * (businessUsePercent / 100)
+    return sum + annualDepreciation
+  }, 0)
+
+  const totalAssets = assets.reduce((sum, asset) => sum + Number(asset.purchase_cost), 0)
+
+  // Calculate taxable income (same as Tax Computation report)
+  const taxableIncome = totalIncome - totalDeductibleExpenses - totalDepreciation
+
+  // Net profit/loss for display (using ALL expenses, not just deductible)
+  const netProfit = totalIncome - totalExpenses
+
+  // Calculate estimated tax (27% CIT rate) based on TAXABLE income
+  const estimatedTax = taxableIncome > 0 ? taxableIncome * 0.27 : 0
 
   const formatCurrency = (amount: number) =>
     `R ${amount.toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
@@ -201,43 +233,43 @@ export default async function DashboardPage() {
           <p className="text-xs text-green-500 mt-1">{incomeCount} transactions</p>
         </div>
 
-        {/* Total Expenses */}
+        {/* Deductible Expenses */}
         <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-2xl border border-red-100 p-6">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-medium text-red-600">Total Expenses</p>
+            <p className="text-sm font-medium text-red-600">Deductible Expenses</p>
             <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center">
               <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
             </div>
           </div>
-          <p className="text-2xl font-bold text-red-700">{formatCurrency(totalExpenses)}</p>
-          <p className="text-xs text-red-500 mt-1">{expenseCount} transactions</p>
+          <p className="text-2xl font-bold text-red-700">{formatCurrency(totalDeductibleExpenses)}</p>
+          <p className="text-xs text-red-500 mt-1">{deductibleExpenseCount} of {expenseCount} tax deductible</p>
         </div>
 
-        {/* Net Profit */}
+        {/* Taxable Income */}
         <div className={`rounded-2xl border p-6 ${
-          netProfit >= 0
+          taxableIncome >= 0
             ? 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-100'
             : 'bg-gradient-to-br from-yellow-50 to-amber-50 border-yellow-100'
         }`}>
           <div className="flex items-center justify-between mb-2">
-            <p className={`text-sm font-medium ${netProfit >= 0 ? 'text-blue-600' : 'text-yellow-600'}`}>
-              Net {netProfit >= 0 ? 'Profit' : 'Loss'}
+            <p className={`text-sm font-medium ${taxableIncome >= 0 ? 'text-blue-600' : 'text-yellow-600'}`}>
+              Taxable Income
             </p>
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-              netProfit >= 0 ? 'bg-blue-100' : 'bg-yellow-100'
+              taxableIncome >= 0 ? 'bg-blue-100' : 'bg-yellow-100'
             }`}>
-              <svg className={`w-5 h-5 ${netProfit >= 0 ? 'text-blue-600' : 'text-yellow-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-5 h-5 ${taxableIncome >= 0 ? 'text-blue-600' : 'text-yellow-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
             </div>
           </div>
-          <p className={`text-2xl font-bold ${netProfit >= 0 ? 'text-blue-700' : 'text-yellow-700'}`}>
-            {formatCurrency(Math.abs(netProfit))}
+          <p className={`text-2xl font-bold ${taxableIncome >= 0 ? 'text-blue-700' : 'text-yellow-700'}`}>
+            {formatCurrency(Math.abs(taxableIncome))}
           </p>
-          <p className={`text-xs mt-1 ${netProfit >= 0 ? 'text-blue-500' : 'text-yellow-500'}`}>
-            Income - Expenses
+          <p className={`text-xs mt-1 ${taxableIncome >= 0 ? 'text-blue-500' : 'text-yellow-500'}`}>
+            After deductions & depreciation
           </p>
         </div>
 
@@ -257,25 +289,28 @@ export default async function DashboardPage() {
       </div>
 
       {/* Secondary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-white rounded-2xl border border-gray-100 p-6">
+          <p className="text-sm font-medium text-gray-500">Total Expenses</p>
+          <p className="text-xl font-semibold text-gray-900 mt-1">{formatCurrency(totalExpenses)}</p>
+          <p className="text-xs text-gray-400 mt-1">Including non-deductible</p>
+        </div>
+        <div className="bg-white rounded-2xl border border-gray-100 p-6">
+          <p className="text-sm font-medium text-gray-500">Depreciation</p>
+          <p className="text-xl font-semibold text-orange-600 mt-1">{formatCurrency(totalDepreciation)}</p>
+          <p className="text-xs text-gray-400 mt-1">{assets.length} assets (wear & tear)</p>
+        </div>
         <div className="bg-white rounded-2xl border border-gray-100 p-6">
           <p className="text-sm font-medium text-gray-500">Total Assets</p>
           <p className="text-xl font-semibold text-gray-900 mt-1">{formatCurrency(totalAssets)}</p>
-          <p className="text-xs text-gray-400 mt-1">{assetCount} capital items</p>
+          <p className="text-xs text-gray-400 mt-1">{assets.length} capital items</p>
         </div>
         <div className="bg-white rounded-2xl border border-gray-100 p-6">
-          <p className="text-sm font-medium text-gray-500">Profit Margin</p>
+          <p className="text-sm font-medium text-gray-500">Effective Tax Rate</p>
           <p className="text-xl font-semibold text-gray-900 mt-1">
-            {totalIncome > 0 ? ((netProfit / totalIncome) * 100).toFixed(1) : '0.0'}%
+            {totalIncome > 0 ? ((estimatedTax / totalIncome) * 100).toFixed(1) : '0.0'}%
           </p>
-          <p className="text-xs text-gray-400 mt-1">Net profit / Income</p>
-        </div>
-        <div className="bg-white rounded-2xl border border-gray-100 p-6">
-          <p className="text-sm font-medium text-gray-500">Expense Ratio</p>
-          <p className="text-xl font-semibold text-gray-900 mt-1">
-            {totalIncome > 0 ? ((totalExpenses / totalIncome) * 100).toFixed(1) : '0.0'}%
-          </p>
-          <p className="text-xs text-gray-400 mt-1">Expenses / Income</p>
+          <p className="text-xs text-gray-400 mt-1">Tax / Income</p>
         </div>
       </div>
 
