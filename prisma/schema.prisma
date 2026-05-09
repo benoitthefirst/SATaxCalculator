@@ -31,6 +31,7 @@ model User {
   expenses            Expense[]
   expense_attachments ExpenseAttachment[]
   recurring_expenses  RecurringExpense[]
+  income              Income[]
   created_companies   Company[] @relation("CreatedBy")
   accounts            Account[]
   sessions            Session[]
@@ -68,13 +69,15 @@ model Company {
   created_by_id         String
 
   // Relations
-  created_by         User                @relation("CreatedBy", fields: [created_by_id], references: [id])
-  members            CompanyMember[]
-  expenses           Expense[]
-  recurring_expenses RecurringExpense[]
-  income             Income[]
-  expense_categories ExpenseCategory[]
-  income_categories  IncomeCategory[]
+  created_by          User                @relation("CreatedBy", fields: [created_by_id], references: [id])
+  members             CompanyMember[]
+  expenses            Expense[]
+  recurring_expenses  RecurringExpense[]
+  income              Income[]
+  expense_categories  ExpenseCategory[]
+  income_categories   IncomeCategory[]
+  assets              Asset[]
+  vehicle_log_entries VehicleLogEntry[]
 
   @@index([created_by_id])
   @@map("companies")
@@ -129,7 +132,10 @@ model Expense {
   company_id            String
   category_id           String
   user_id               String    // Who created the expense
-  amount                Decimal   @db.Decimal(12, 2)
+  amount                Decimal   @db.Decimal(12, 2)  // Total amount including VAT
+  amount_excl_vat       Decimal?  @db.Decimal(12, 2)  // Amount excluding VAT (for VAT-registered businesses)
+  vat_amount            Decimal?  @db.Decimal(12, 2)  // VAT portion (claimable as input VAT)
+  is_vat_inclusive      Boolean   @default(false)     // Whether amount includes VAT
   currency              String    @default("ZAR")
   expense_date          DateTime
   vendor_name           String?
@@ -137,6 +143,9 @@ model Expense {
   payment_method        String?   // "cash" | "bank_transfer" | "credit_card" | "debit_card"
   receipt_url           String?
   is_tax_deductible     Boolean   @default(true)
+  deductible_percentage Int       @default(100)  // 0-100% for partial deductions
+  charges               Decimal   @db.Decimal(12, 2) @default(0)  // Bank charges/fees
+  receipt_status        String?   // "yes" | "no" | "affidavit" | "bank_statement"
   recurring_expense_id  String?   // Link to recurring expense template if created from one
   status                String    @default("pending") // "pending" | "approved" | "rejected"
   approved_by_id        String?
@@ -241,7 +250,11 @@ model Income {
   id              String   @id @default(cuid())
   company_id      String
   category_id     String
-  amount          Decimal  @db.Decimal(12, 2)
+  user_id         String   // Who created the income record
+  amount          Decimal  @db.Decimal(12, 2)  // Total amount including VAT
+  amount_excl_vat Decimal? @db.Decimal(12, 2)  // Amount excluding VAT (for VAT-registered businesses)
+  vat_amount      Decimal? @db.Decimal(12, 2)  // VAT portion (15% in SA)
+  is_vat_inclusive Boolean @default(false)     // Whether amount includes VAT
   currency        String   @default("ZAR")
   income_date     DateTime
   source_name     String?  // Client/customer name
@@ -257,9 +270,11 @@ model Income {
   // Relations
   company  Company        @relation(fields: [company_id], references: [id], onDelete: Cascade)
   category IncomeCategory @relation(fields: [category_id], references: [id])
+  user     User           @relation(fields: [user_id], references: [id])
 
   @@index([company_id])
   @@index([category_id])
+  @@index([user_id])
   @@index([income_date])
   @@index([is_deleted])
   @@map("income")
@@ -306,4 +321,71 @@ model VerificationToken {
 
   @@unique([identifier, token])
   @@map("verification_tokens")
+}
+
+// ============================================
+// ASSET MANAGEMENT & DEPRECIATION
+// ============================================
+
+model Asset {
+  id                    String    @id @default(cuid())
+  company_id            String
+  name                  String
+  description           String?
+  asset_type            String    // "vehicle" | "computer" | "phone" | "camera" | "furniture" | "equipment" | "other"
+  purchase_date         DateTime
+  purchase_cost         Decimal   @db.Decimal(12, 2)
+  useful_life_years     Int
+  depreciation_rate     Decimal   @db.Decimal(5, 2)  // Calculated: 100 / useful_life_years
+  residual_value        Decimal   @db.Decimal(12, 2) @default(0)
+  business_use_percent  Int       @default(100)      // 0-100% for mixed-use assets
+  disposal_date         DateTime?
+  disposal_proceeds     Decimal?  @db.Decimal(12, 2)
+  serial_number         String?
+  notes                 String?   @db.Text
+  is_deleted            Boolean   @default(false)
+  deleted_at            DateTime?
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+
+  // Relations
+  company             Company           @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  vehicle_log_entries VehicleLogEntry[]
+
+  @@index([company_id])
+  @@index([asset_type])
+  @@index([is_deleted])
+  @@map("assets")
+}
+
+// ============================================
+// VEHICLE LOGBOOK (SARS Compliance)
+// ============================================
+
+model VehicleLogEntry {
+  id              String   @id @default(cuid())
+  company_id      String
+  asset_id        String   // Links to Asset (vehicle)
+  trip_date       DateTime
+  start_location  String
+  end_location    String
+  start_odometer  Int
+  end_odometer    Int
+  distance_km     Int      // Calculated: end_odometer - start_odometer
+  purpose         String   // Business purpose of trip
+  client_name     String?  // Client visited (if applicable)
+  is_business     Boolean  @default(true)  // Business vs Personal trip
+  notes           String?
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  // Relations
+  company Company @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  asset   Asset   @relation(fields: [asset_id], references: [id], onDelete: Cascade)
+
+  @@index([company_id])
+  @@index([asset_id])
+  @@index([trip_date])
+  @@index([is_business])
+  @@map("vehicle_log_entries")
 }

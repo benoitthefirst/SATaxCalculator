@@ -11,6 +11,9 @@ const expenseUpdateSchema = z.object({
   vendor_name: z.string().optional(),
   description: z.string().optional(),
   is_tax_deductible: z.boolean().optional(),
+  deductible_percentage: z.number().min(0).max(100).optional(),
+  charges: z.number().min(0).optional(),
+  receipt_status: z.enum(['yes', 'no', 'affidavit', 'bank_statement']).optional(),
   notes: z.string().optional(),
 })
 
@@ -147,6 +150,15 @@ export async function PUT(
         }),
         ...(validatedData.is_tax_deductible !== undefined && {
           is_tax_deductible: validatedData.is_tax_deductible,
+        }),
+        ...(validatedData.deductible_percentage !== undefined && {
+          deductible_percentage: validatedData.deductible_percentage,
+        }),
+        ...(validatedData.charges !== undefined && {
+          charges: validatedData.charges,
+        }),
+        ...(validatedData.receipt_status !== undefined && {
+          receipt_status: validatedData.receipt_status,
         }),
         ...(validatedData.notes !== undefined && {
           notes: validatedData.notes,

@@ -58,7 +58,7 @@ const COLORS = [
 export default function ExpenseAnalyticsPage() {
   const [data, setData] = useState<AnalyticsData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
+  const [selectedYear, setSelectedYear] = useState(2025) // Default to fiscal year with data
 
   useEffect(() => {
     fetchAnalytics()

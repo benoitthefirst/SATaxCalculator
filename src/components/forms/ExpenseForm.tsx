@@ -15,11 +15,15 @@ const expenseSchema = z.object({
     (val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0,
     'Amount must be a positive number'
   ),
+  is_vat_inclusive: z.boolean().optional(),
   category_id: z.string().min(1, 'Category is required'),
   payment_method: z.enum(['cash', 'credit_card', 'debit_card', 'eft', 'other']),
   vendor_name: z.string().optional(),
   description: z.string().optional(),
   is_tax_deductible: z.boolean(),
+  deductible_percentage: z.string().optional(),
+  charges: z.string().optional(),
+  receipt_status: z.enum(['yes', 'no', 'affidavit', 'bank_statement']).optional(),
   notes: z.string().optional(),
 })
 
@@ -29,8 +33,22 @@ interface ExpenseFormProps {
   companyId: string
   userId: string
   categories: Array<{ id: string; name: string }>
-  initialData?: Partial<ExpenseFormData> & { is_tax_deductible?: boolean }
+  initialData?: {
+    expense_date?: string
+    amount?: string
+    is_vat_inclusive?: boolean
+    category_id?: string
+    payment_method?: 'cash' | 'credit_card' | 'debit_card' | 'eft' | 'other'
+    vendor_name?: string
+    description?: string
+    is_tax_deductible?: boolean
+    deductible_percentage?: number | string
+    charges?: number | string
+    receipt_status?: string | null
+    notes?: string
+  }
   expenseId?: string
+  isVatRegistered?: boolean
 }
 
 export default function ExpenseForm({
@@ -39,10 +57,19 @@ export default function ExpenseForm({
   categories,
   initialData,
   expenseId,
+  isVatRegistered = false,
 }: ExpenseFormProps) {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+
+  // Validate receipt_status is a valid enum value
+  const validReceiptStatus = (status: string | null | undefined): 'yes' | 'no' | 'affidavit' | 'bank_statement' | undefined => {
+    if (status === 'yes' || status === 'no' || status === 'affidavit' || status === 'bank_statement') {
+      return status
+    }
+    return 'yes'
+  }
 
   const {
     register,
@@ -52,10 +79,18 @@ export default function ExpenseForm({
   } = useForm<ExpenseFormData>({
     resolver: zodResolver(expenseSchema),
     defaultValues: {
-      ...initialData,
       expense_date: initialData?.expense_date || new Date().toISOString().split('T')[0],
+      amount: initialData?.amount || '',
+      is_vat_inclusive: initialData?.is_vat_inclusive ?? isVatRegistered,
+      category_id: initialData?.category_id || '',
       payment_method: initialData?.payment_method || 'credit_card',
+      vendor_name: initialData?.vendor_name || '',
+      description: initialData?.description || '',
       is_tax_deductible: initialData?.is_tax_deductible ?? true,
+      deductible_percentage: initialData?.deductible_percentage?.toString() || '100',
+      charges: initialData?.charges?.toString() || '',
+      receipt_status: validReceiptStatus(initialData?.receipt_status),
+      notes: initialData?.notes || '',
     },
   })
 
@@ -75,6 +110,9 @@ export default function ExpenseForm({
         body: JSON.stringify({
           ...data,
           amount: parseFloat(data.amount),
+          is_vat_inclusive: data.is_vat_inclusive ?? false,
+          deductible_percentage: data.deductible_percentage ? parseInt(data.deductible_percentage) : 100,
+          charges: data.charges ? parseFloat(data.charges) : 0,
           company_id: companyId,
           user_id: userId,
         }),
@@ -115,15 +153,28 @@ export default function ExpenseForm({
           disabled={isLoading}
         />
 
-        <Input
-          {...register('amount')}
-          type="number"
-          step="0.01"
-          label="Amount (ZAR)"
-          placeholder="0.00"
-          error={errors.amount?.message}
-          disabled={isLoading}
-        />
+        <div className="space-y-2">
+          <Input
+            {...register('amount')}
+            type="number"
+            step="0.01"
+            label="Amount (ZAR)"
+            placeholder="0.00"
+            error={errors.amount?.message}
+            disabled={isLoading}
+          />
+          {isVatRegistered && (
+            <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+              <input
+                type="checkbox"
+                {...register('is_vat_inclusive')}
+                disabled={isLoading}
+                className="w-4 h-4 rounded border-gray-300 text-[#007AFF] focus:ring-[#007AFF]"
+              />
+              Amount includes VAT (15%)
+            </label>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -206,17 +257,76 @@ export default function ExpenseForm({
         />
       </div>
 
-      <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-        <input
-          {...register('is_tax_deductible')}
-          type="checkbox"
-          id="tax_deductible"
-          className="w-5 h-5 text-[#007AFF] border-gray-300 rounded focus:ring-[#007AFF]/20 focus:ring-2"
-          disabled={isLoading}
-        />
-        <label htmlFor="tax_deductible" className="text-sm font-medium text-gray-900 cursor-pointer">
-          This expense is tax deductible
-        </label>
+      {/* Tax Deduction Section */}
+      <div className="p-4 bg-gray-50 rounded-xl space-y-4">
+        <div className="flex items-center gap-3">
+          <input
+            {...register('is_tax_deductible')}
+            type="checkbox"
+            id="tax_deductible"
+            className="w-5 h-5 text-[#007AFF] border-gray-300 rounded focus:ring-[#007AFF]/20 focus:ring-2"
+            disabled={isLoading}
+          />
+          <label htmlFor="tax_deductible" className="text-sm font-medium text-gray-900 cursor-pointer">
+            This expense is tax deductible
+          </label>
+        </div>
+
+        {isTaxDeductible && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-3 border-t border-gray-200">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Deductible %
+              </label>
+              <div className="relative">
+                <input
+                  {...register('deductible_percentage')}
+                  type="number"
+                  min="0"
+                  max="100"
+                  placeholder="100"
+                  className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#007AFF]/20 focus:border-[#007AFF] transition-all pr-8"
+                  disabled={isLoading}
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">%</span>
+              </div>
+              <p className="text-xs text-gray-500">For mixed business/personal use</p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Bank Charges/Fees
+              </label>
+              <input
+                {...register('charges')}
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="0.00"
+                className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#007AFF]/20 focus:border-[#007AFF] transition-all"
+                disabled={isLoading}
+              />
+              <p className="text-xs text-gray-500">Additional fees (if any)</p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Receipt Status
+              </label>
+              <select
+                {...register('receipt_status')}
+                className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#007AFF]/20 focus:border-[#007AFF] transition-all"
+                disabled={isLoading}
+              >
+                <option value="yes">Have Receipt</option>
+                <option value="no">No Receipt</option>
+                <option value="affidavit">Affidavit</option>
+                <option value="bank_statement">Bank Statement Only</option>
+              </select>
+              <p className="text-xs text-gray-500">For SARS compliance</p>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex items-center justify-end gap-4 pt-4 border-t border-gray-100">

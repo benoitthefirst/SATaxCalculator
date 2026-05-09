@@ -13,6 +13,9 @@ const expenseCreateSchema = z.object({
   vendor_name: z.string().optional(),
   description: z.string().optional(),
   is_tax_deductible: z.boolean().default(true),
+  deductible_percentage: z.number().min(0).max(100).default(100),
+  charges: z.number().min(0).default(0),
+  receipt_status: z.enum(['yes', 'no', 'affidavit', 'bank_statement']).optional(),
   notes: z.string().optional(),
 })
 
@@ -55,6 +58,9 @@ export async function POST(request: NextRequest) {
         vendor_name: validatedData.vendor_name,
         description: validatedData.description,
         is_tax_deductible: validatedData.is_tax_deductible,
+        deductible_percentage: validatedData.deductible_percentage,
+        charges: validatedData.charges,
+        receipt_status: validatedData.receipt_status,
         notes: validatedData.notes,
       },
       include: {

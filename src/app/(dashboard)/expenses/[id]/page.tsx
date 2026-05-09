@@ -64,6 +64,7 @@ export default async function ExpenseDetailPage({
         categories={categories}
         companyId={membership.company.id}
         userId={session.user.id}
+        isVatRegistered={Boolean(membership.company.vat_number)}
       />
     </div>
   )
