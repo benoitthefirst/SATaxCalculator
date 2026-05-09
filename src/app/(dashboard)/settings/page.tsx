@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth'
 import Link from 'next/link'
 import { prisma } from '@/lib/db'
+import CompanySettings from '@/components/settings/CompanySettings'
 
 export const metadata = {
   title: 'Settings - ProcessX',
@@ -81,48 +82,10 @@ export default async function SettingsPage() {
 
       {/* Company Settings */}
       {membership && (
-        <div className="bg-white shadow rounded-lg">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">
-              Company Profile
-            </h2>
-          </div>
-          <div className="px-6 py-4 space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Company Name
-              </label>
-              <p className="text-gray-900">{membership.company.name}</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Business Type
-              </label>
-              <p className="text-gray-900 capitalize">
-                {membership.company.business_type?.replace(/_/g, ' ')}
-              </p>
-            </div>
-            {membership.company.tax_number && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tax Number
-                </label>
-                <p className="text-gray-900">{membership.company.tax_number}</p>
-              </div>
-            )}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Your Role
-              </label>
-              <p className="text-gray-900 capitalize">{membership.role}</p>
-            </div>
-            <div className="pt-4">
-              <p className="text-sm text-gray-500">
-                Company settings editing coming soon
-              </p>
-            </div>
-          </div>
-        </div>
+        <CompanySettings
+          company={membership.company}
+          role={membership.role}
+        />
       )}
     </div>
   )
