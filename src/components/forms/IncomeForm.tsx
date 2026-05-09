@@ -15,6 +15,7 @@ const incomeSchema = z.object({
     (val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0,
     'Amount must be a positive number'
   ),
+  is_vat_inclusive: z.boolean().optional(),
   category_id: z.string().min(1, 'Category is required'),
   payment_method: z.enum(['cash', 'credit_card', 'debit_card', 'eft', 'other']).optional(),
   source_name: z.string().optional(),
@@ -31,6 +32,7 @@ interface IncomeFormProps {
   categories: Array<{ id: string; name: string }>
   initialData?: Partial<IncomeFormData>
   incomeId?: string
+  isVatRegistered?: boolean
 }
 
 export default function IncomeForm({
@@ -39,6 +41,7 @@ export default function IncomeForm({
   categories,
   initialData,
   incomeId,
+  isVatRegistered = false,
 }: IncomeFormProps) {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -54,6 +57,7 @@ export default function IncomeForm({
       ...initialData,
       income_date: initialData?.income_date || new Date().toISOString().split('T')[0],
       payment_method: initialData?.payment_method || 'eft',
+      is_vat_inclusive: initialData?.is_vat_inclusive ?? isVatRegistered,
     },
   })
 
@@ -71,6 +75,7 @@ export default function IncomeForm({
         body: JSON.stringify({
           ...data,
           amount: parseFloat(data.amount),
+          is_vat_inclusive: data.is_vat_inclusive ?? false,
           company_id: companyId,
           user_id: userId,
         }),
@@ -111,15 +116,28 @@ export default function IncomeForm({
           disabled={isLoading}
         />
 
-        <Input
-          {...register('amount')}
-          type="number"
-          step="0.01"
-          label="Amount (ZAR)"
-          placeholder="0.00"
-          error={errors.amount?.message}
-          disabled={isLoading}
-        />
+        <div className="space-y-2">
+          <Input
+            {...register('amount')}
+            type="number"
+            step="0.01"
+            label="Amount (ZAR)"
+            placeholder="0.00"
+            error={errors.amount?.message}
+            disabled={isLoading}
+          />
+          {isVatRegistered && (
+            <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+              <input
+                type="checkbox"
+                {...register('is_vat_inclusive')}
+                disabled={isLoading}
+                className="w-4 h-4 rounded border-gray-300 text-[#34C759] focus:ring-[#34C759]"
+              />
+              Amount includes VAT (15%)
+            </label>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

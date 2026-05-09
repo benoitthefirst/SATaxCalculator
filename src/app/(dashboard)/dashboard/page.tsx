@@ -169,9 +169,24 @@ export default async function DashboardPage() {
   })
   const incomeCategoryMap = Object.fromEntries(incomeCategories.map(c => [c.id, c.name]))
 
-  const totalIncome = Number(incomeAgg._sum.amount || 0)
+  const totalIncomeGross = Number(incomeAgg._sum.amount || 0)
   const totalExpenses = Number(expenseAgg._sum.amount || 0)
   const totalDeductibleExpenses = Number(deductibleExpenseAgg._sum.amount || 0)
+
+  // Check if company is VAT registered
+  const isVatRegistered = Boolean(membership.company.vat_number)
+  const vatRate = 0.15 // 15% VAT in South Africa
+
+  // For VAT-registered businesses, income includes VAT collected which is not taxable income
+  // VAT collected = Total Income / 1.15 * 0.15 (extracting VAT from VAT-inclusive amounts)
+  // For simplicity, we assume all income is VAT-inclusive for VAT-registered businesses
+  const vatCollected = isVatRegistered ? totalIncomeGross - (totalIncomeGross / (1 + vatRate)) : 0
+  const totalIncomeExclVat = isVatRegistered ? totalIncomeGross / (1 + vatRate) : totalIncomeGross
+
+  // Similarly, expenses may include VAT that can be claimed back (input VAT)
+  // For tax deductible expenses, the VAT portion can be claimed back, so only excl VAT is deductible
+  const vatOnExpenses = isVatRegistered ? totalDeductibleExpenses - (totalDeductibleExpenses / (1 + vatRate)) : 0
+  const deductibleExpensesExclVat = isVatRegistered ? totalDeductibleExpenses / (1 + vatRate) : totalDeductibleExpenses
 
   // Calculate depreciation for all assets
   const totalDepreciation = assets.reduce((sum, asset) => {
@@ -185,11 +200,14 @@ export default async function DashboardPage() {
 
   const totalAssets = assets.reduce((sum, asset) => sum + Number(asset.purchase_cost), 0)
 
-  // Calculate taxable income (same as Tax Computation report)
-  const taxableIncome = totalIncome - totalDeductibleExpenses - totalDepreciation
+  // Calculate taxable income (using VAT-exclusive amounts for VAT-registered businesses)
+  const taxableIncome = totalIncomeExclVat - deductibleExpensesExclVat - totalDepreciation
+
+  // VAT payable to SARS (Output VAT - Input VAT)
+  const vatPayable = vatCollected - vatOnExpenses
 
   // Net profit/loss for display (using ALL expenses, not just deductible)
-  const netProfit = totalIncome - totalExpenses
+  const netProfit = totalIncomeExclVat - totalExpenses
 
   // Calculate estimated tax (27% CIT rate) based on TAXABLE income
   const estimatedTax = taxableIncome > 0 ? taxableIncome * 0.27 : 0
@@ -207,6 +225,11 @@ export default async function DashboardPage() {
           </h1>
           <p className="mt-1 text-sm text-gray-500">
             Tax Year 2025/2026 Overview • {membership.company.name}
+            {isVatRegistered && (
+              <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-blue-100 text-blue-700">
+                VAT Registered
+              </span>
+            )}
           </p>
         </div>
         <Link
@@ -222,15 +245,20 @@ export default async function DashboardPage() {
         {/* Total Income */}
         <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border border-green-100 p-6">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-medium text-green-600">Total Income</p>
+            <p className="text-sm font-medium text-green-600">
+              {isVatRegistered ? 'Income (excl. VAT)' : 'Total Income'}
+            </p>
             <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
               <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
           </div>
-          <p className="text-2xl font-bold text-green-700">{formatCurrency(totalIncome)}</p>
-          <p className="text-xs text-green-500 mt-1">{incomeCount} transactions</p>
+          <p className="text-2xl font-bold text-green-700">{formatCurrency(totalIncomeExclVat)}</p>
+          <p className="text-xs text-green-500 mt-1">
+            {incomeCount} transactions
+            {isVatRegistered && ` • Gross: ${formatCurrency(totalIncomeGross)}`}
+          </p>
         </div>
 
         {/* Deductible Expenses */}
@@ -289,7 +317,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Secondary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className={`grid grid-cols-1 gap-4 ${isVatRegistered ? 'md:grid-cols-5' : 'md:grid-cols-4'}`}>
         <div className="bg-white rounded-2xl border border-gray-100 p-6">
           <p className="text-sm font-medium text-gray-500">Total Expenses</p>
           <p className="text-xl font-semibold text-gray-900 mt-1">{formatCurrency(totalExpenses)}</p>
@@ -308,10 +336,19 @@ export default async function DashboardPage() {
         <div className="bg-white rounded-2xl border border-gray-100 p-6">
           <p className="text-sm font-medium text-gray-500">Effective Tax Rate</p>
           <p className="text-xl font-semibold text-gray-900 mt-1">
-            {totalIncome > 0 ? ((estimatedTax / totalIncome) * 100).toFixed(1) : '0.0'}%
+            {totalIncomeExclVat > 0 ? ((estimatedTax / totalIncomeExclVat) * 100).toFixed(1) : '0.0'}%
           </p>
           <p className="text-xs text-gray-400 mt-1">Tax / Income</p>
         </div>
+        {isVatRegistered && (
+          <div className="bg-gradient-to-br from-cyan-50 to-sky-50 rounded-2xl border border-cyan-100 p-6">
+            <p className="text-sm font-medium text-cyan-600">VAT Payable</p>
+            <p className="text-xl font-semibold text-cyan-700 mt-1">{formatCurrency(vatPayable)}</p>
+            <p className="text-xs text-cyan-500 mt-1">
+              Output: {formatCurrency(vatCollected)} - Input: {formatCurrency(vatOnExpenses)}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Quick Actions */}

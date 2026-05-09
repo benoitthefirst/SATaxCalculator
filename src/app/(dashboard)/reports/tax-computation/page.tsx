@@ -8,11 +8,14 @@ interface TaxData {
   company: {
     name: string
     taxNumber: string
+    vatNumber: string | null
     businessType: string
     isSBC: boolean
+    isVatRegistered: boolean
   }
   income: {
     gross: number
+    grossWithVat: number
     byCategory: Record<string, number>
     recordCount: number
   }
@@ -31,6 +34,12 @@ interface TaxData {
     }>
     assetCount: number
   }
+  vat: {
+    vatRate: number
+    outputVat: number
+    inputVat: number
+    vatPayable: number
+  } | null
   taxComputation: {
     grossIncome: number
     lessDeductibleExpenses: number
@@ -127,12 +136,19 @@ export default function TaxComputationPage() {
               Tax Number: {data.company.taxNumber || 'Not set'}
             </p>
           </div>
-          <div className={`px-4 py-2 rounded-xl text-sm font-medium ${
-            data.company.isSBC
-              ? 'bg-green-50 text-green-700'
-              : 'bg-blue-50 text-blue-700'
-          }`}>
-            {data.company.isSBC ? 'Small Business Corporation' : 'Standard Company'}
+          <div className="flex items-center gap-2">
+            {data.company.isVatRegistered && (
+              <div className="px-4 py-2 rounded-xl text-sm font-medium bg-cyan-50 text-cyan-700">
+                VAT Registered
+              </div>
+            )}
+            <div className={`px-4 py-2 rounded-xl text-sm font-medium ${
+              data.company.isSBC
+                ? 'bg-green-50 text-green-700'
+                : 'bg-blue-50 text-blue-700'
+            }`}>
+              {data.company.isSBC ? 'Small Business Corporation' : 'Standard Company'}
+            </div>
           </div>
         </div>
       </div>
@@ -147,7 +163,9 @@ export default function TaxComputationPage() {
           <div className="px-6 py-4">
             <div className="flex justify-between items-center">
               <div>
-                <span className="font-medium text-gray-900">INCOME</span>
+                <span className="font-medium text-gray-900">
+                  INCOME {data.company.isVatRegistered && '(excl. VAT)'}
+                </span>
                 <span className="text-sm text-gray-500 ml-2">
                   ({data.income.recordCount} records)
                 </span>
@@ -156,6 +174,11 @@ export default function TaxComputationPage() {
                 {formatCurrency(data.taxComputation.grossIncome)}
               </span>
             </div>
+            {data.company.isVatRegistered && (
+              <div className="mt-2 text-sm text-gray-500">
+                Gross (incl. VAT): {formatCurrency(data.income.grossWithVat)}
+              </div>
+            )}
             {Object.entries(data.income.byCategory).length > 0 && (
               <div className="mt-3 pl-4 space-y-1">
                 {Object.entries(data.income.byCategory).map(([cat, amount]) => (
@@ -278,10 +301,40 @@ export default function TaxComputationPage() {
             </div>
           )}
 
+          {/* VAT Summary - Only for VAT-registered businesses */}
+          {data.vat && (
+            <div className="px-6 py-4 bg-cyan-50">
+              <div className="flex justify-between items-center mb-3">
+                <span className="font-semibold text-cyan-900">VAT SUMMARY</span>
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-cyan-700">Output VAT (collected on income)</span>
+                  <span className="font-medium text-cyan-900">{formatCurrency(data.vat.outputVat)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-cyan-700">Less: Input VAT (on expenses)</span>
+                  <span className="font-medium text-cyan-900">({formatCurrency(data.vat.inputVat)})</span>
+                </div>
+                <div className="flex justify-between text-sm pt-2 border-t border-cyan-200">
+                  <span className="font-semibold text-cyan-900">
+                    VAT {data.vat.vatPayable >= 0 ? 'Payable to SARS' : 'Refundable from SARS'}
+                  </span>
+                  <span className="font-bold text-cyan-700">
+                    {formatCurrency(Math.abs(data.vat.vatPayable))}
+                  </span>
+                </div>
+              </div>
+              <p className="text-xs text-cyan-600 mt-3">
+                VAT201 submission due by the 25th of each month following the VAT period
+              </p>
+            </div>
+          )}
+
           {/* Final Amount */}
           <div className="px-6 py-6 bg-gray-900">
             <div className="flex justify-between items-center">
-              <span className="font-bold text-white text-lg">TAX PAYABLE</span>
+              <span className="font-bold text-white text-lg">INCOME TAX PAYABLE</span>
               <span className="text-2xl font-bold text-white">
                 {formatCurrency(data.taxComputation.applicableTax)}
               </span>

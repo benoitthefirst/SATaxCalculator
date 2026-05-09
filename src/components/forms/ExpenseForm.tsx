@@ -15,6 +15,7 @@ const expenseSchema = z.object({
     (val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0,
     'Amount must be a positive number'
   ),
+  is_vat_inclusive: z.boolean().optional(),
   category_id: z.string().min(1, 'Category is required'),
   payment_method: z.enum(['cash', 'credit_card', 'debit_card', 'eft', 'other']),
   vendor_name: z.string().optional(),
@@ -35,6 +36,7 @@ interface ExpenseFormProps {
   initialData?: {
     expense_date?: string
     amount?: string
+    is_vat_inclusive?: boolean
     category_id?: string
     payment_method?: 'cash' | 'credit_card' | 'debit_card' | 'eft' | 'other'
     vendor_name?: string
@@ -46,6 +48,7 @@ interface ExpenseFormProps {
     notes?: string
   }
   expenseId?: string
+  isVatRegistered?: boolean
 }
 
 export default function ExpenseForm({
@@ -54,6 +57,7 @@ export default function ExpenseForm({
   categories,
   initialData,
   expenseId,
+  isVatRegistered = false,
 }: ExpenseFormProps) {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -77,6 +81,7 @@ export default function ExpenseForm({
     defaultValues: {
       expense_date: initialData?.expense_date || new Date().toISOString().split('T')[0],
       amount: initialData?.amount || '',
+      is_vat_inclusive: initialData?.is_vat_inclusive ?? isVatRegistered,
       category_id: initialData?.category_id || '',
       payment_method: initialData?.payment_method || 'credit_card',
       vendor_name: initialData?.vendor_name || '',
@@ -105,6 +110,7 @@ export default function ExpenseForm({
         body: JSON.stringify({
           ...data,
           amount: parseFloat(data.amount),
+          is_vat_inclusive: data.is_vat_inclusive ?? false,
           deductible_percentage: data.deductible_percentage ? parseInt(data.deductible_percentage) : 100,
           charges: data.charges ? parseFloat(data.charges) : 0,
           company_id: companyId,
@@ -147,15 +153,28 @@ export default function ExpenseForm({
           disabled={isLoading}
         />
 
-        <Input
-          {...register('amount')}
-          type="number"
-          step="0.01"
-          label="Amount (ZAR)"
-          placeholder="0.00"
-          error={errors.amount?.message}
-          disabled={isLoading}
-        />
+        <div className="space-y-2">
+          <Input
+            {...register('amount')}
+            type="number"
+            step="0.01"
+            label="Amount (ZAR)"
+            placeholder="0.00"
+            error={errors.amount?.message}
+            disabled={isLoading}
+          />
+          {isVatRegistered && (
+            <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+              <input
+                type="checkbox"
+                {...register('is_vat_inclusive')}
+                disabled={isLoading}
+                className="w-4 h-4 rounded border-gray-300 text-[#007AFF] focus:ring-[#007AFF]"
+              />
+              Amount includes VAT (15%)
+            </label>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

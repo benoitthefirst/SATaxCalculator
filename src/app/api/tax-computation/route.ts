@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db'
 
 // SARS Tax Rates 2025/2026
 const CIT_RATE = 0.27 // Corporate Income Tax rate
+const VAT_RATE = 0.15 // VAT rate in South Africa (15%)
 
 const SBC_BRACKETS = [
   { min: 0, max: 95750, rate: 0, base: 0 },
@@ -101,38 +102,62 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    // Calculate income
-    const grossIncome = incomeRecords.reduce((sum, inc) => sum + Number(inc.amount), 0)
+    // Check if company is VAT registered
+    const isVatRegistered = Boolean(membership.company.vat_number)
+
+    // Calculate income (for VAT-registered businesses, extract VAT from amounts)
+    // We assume all income amounts include VAT if the company is VAT registered
+    const grossIncomeWithVat = incomeRecords.reduce((sum, inc) => sum + Number(inc.amount), 0)
+
+    // For VAT-registered businesses, income amounts include VAT collected
+    // VAT collected is NOT taxable income - it's held in trust for SARS
+    const vatCollected = isVatRegistered ? grossIncomeWithVat - (grossIncomeWithVat / (1 + VAT_RATE)) : 0
+    const grossIncome = isVatRegistered ? grossIncomeWithVat / (1 + VAT_RATE) : grossIncomeWithVat
 
     // Group income by category
     const incomeByCategory = incomeRecords.reduce((acc, inc) => {
       const catName = inc.category.name
       if (!acc[catName]) acc[catName] = 0
-      acc[catName] += Number(inc.amount)
+      // Store VAT-exclusive amounts for VAT-registered businesses
+      const amount = Number(inc.amount)
+      acc[catName] += isVatRegistered ? amount / (1 + VAT_RATE) : amount
       return acc
     }, {} as Record<string, number>)
 
     // Calculate deductible expenses
+    // For VAT-registered businesses, the VAT on expenses (input VAT) can be claimed back
+    // So only the VAT-exclusive amount is actually deductible for income tax purposes
     let totalDeductible = 0
+    let totalVatOnExpenses = 0
     const expensesByCategory: Record<string, { gross: number; deductible: number; count: number }> = {}
 
     for (const expense of expenses) {
-      const amount = Number(expense.amount)
+      const amountWithVat = Number(expense.amount)
+      // For VAT-registered businesses, extract VAT from expenses
+      const amountExclVat = isVatRegistered ? amountWithVat / (1 + VAT_RATE) : amountWithVat
+      const vatOnExpense = isVatRegistered ? amountWithVat - amountExclVat : 0
+
       const deductiblePercent = expense.deductible_percentage || 100
       const deductibleAmount = expense.is_tax_deductible
-        ? (amount * deductiblePercent / 100)
+        ? (amountExclVat * deductiblePercent / 100)
         : 0
 
       totalDeductible += deductibleAmount
+      if (expense.is_tax_deductible) {
+        totalVatOnExpenses += vatOnExpense * (deductiblePercent / 100)
+      }
 
       const catName = expense.category.name
       if (!expensesByCategory[catName]) {
         expensesByCategory[catName] = { gross: 0, deductible: 0, count: 0 }
       }
-      expensesByCategory[catName].gross += amount
+      expensesByCategory[catName].gross += amountExclVat
       expensesByCategory[catName].deductible += deductibleAmount
       expensesByCategory[catName].count += 1
     }
+
+    // Calculate VAT payable/refundable (Output VAT - Input VAT)
+    const vatPayable = vatCollected - totalVatOnExpenses
 
     // Calculate depreciation
     let totalDepreciation = 0
@@ -182,11 +207,14 @@ export async function GET(request: NextRequest) {
       company: {
         name: membership.company.name,
         taxNumber: membership.company.tax_number,
+        vatNumber: membership.company.vat_number,
         businessType: businessType,
         isSBC,
+        isVatRegistered,
       },
       income: {
         gross: grossIncome,
+        grossWithVat: grossIncomeWithVat,
         byCategory: incomeByCategory,
         recordCount: incomeRecords.length,
       },
@@ -200,6 +228,12 @@ export async function GET(request: NextRequest) {
         schedule: depreciationSchedule,
         assetCount: assets.length,
       },
+      vat: isVatRegistered ? {
+        vatRate: VAT_RATE,
+        outputVat: vatCollected,
+        inputVat: totalVatOnExpenses,
+        vatPayable: vatPayable,
+      } : null,
       taxComputation: {
         grossIncome,
         lessDeductibleExpenses: totalDeductible,

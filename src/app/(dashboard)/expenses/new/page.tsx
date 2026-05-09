@@ -47,6 +47,7 @@ export default async function NewExpensePage() {
           companyId={membership.company.id}
           userId={session.user.id}
           categories={categories}
+          isVatRegistered={Boolean(membership.company.vat_number)}
         />
       </div>
     </div>

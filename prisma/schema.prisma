@@ -132,7 +132,10 @@ model Expense {
   company_id            String
   category_id           String
   user_id               String    // Who created the expense
-  amount                Decimal   @db.Decimal(12, 2)
+  amount                Decimal   @db.Decimal(12, 2)  // Total amount including VAT
+  amount_excl_vat       Decimal?  @db.Decimal(12, 2)  // Amount excluding VAT (for VAT-registered businesses)
+  vat_amount            Decimal?  @db.Decimal(12, 2)  // VAT portion (claimable as input VAT)
+  is_vat_inclusive      Boolean   @default(false)     // Whether amount includes VAT
   currency              String    @default("ZAR")
   expense_date          DateTime
   vendor_name           String?
@@ -248,7 +251,10 @@ model Income {
   company_id      String
   category_id     String
   user_id         String   // Who created the income record
-  amount          Decimal  @db.Decimal(12, 2)
+  amount          Decimal  @db.Decimal(12, 2)  // Total amount including VAT
+  amount_excl_vat Decimal? @db.Decimal(12, 2)  // Amount excluding VAT (for VAT-registered businesses)
+  vat_amount      Decimal? @db.Decimal(12, 2)  // VAT portion (15% in SA)
+  is_vat_inclusive Boolean @default(false)     // Whether amount includes VAT
   currency        String   @default("ZAR")
   income_date     DateTime
   source_name     String?  // Client/customer name

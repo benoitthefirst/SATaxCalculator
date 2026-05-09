@@ -10,6 +10,7 @@ interface IncomeDetailProps {
   categories: Array<{ id: string; name: string }>
   companyId: string
   userId: string
+  isVatRegistered?: boolean
 }
 
 export default function IncomeDetail({
@@ -17,6 +18,7 @@ export default function IncomeDetail({
   categories,
   companyId,
   userId,
+  isVatRegistered = false,
 }: IncomeDetailProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -68,6 +70,7 @@ export default function IncomeDetail({
             userId={userId}
             categories={categories}
             incomeId={income.id}
+            isVatRegistered={isVatRegistered}
             initialData={{
               income_date: new Date(income.income_date).toISOString().split('T')[0],
               amount: income.amount.toString(),
@@ -77,6 +80,7 @@ export default function IncomeDetail({
               description: income.description || '',
               invoice_number: income.invoice_number || '',
               notes: income.notes || '',
+              is_vat_inclusive: income.is_vat_inclusive ?? false,
             }}
           />
         </div>

@@ -72,6 +72,7 @@ export default async function IncomeDetailPage({
         categories={categories}
         companyId={membership.company.id}
         userId={session.user.id}
+        isVatRegistered={Boolean(membership.company.vat_number)}
       />
     </div>
   )

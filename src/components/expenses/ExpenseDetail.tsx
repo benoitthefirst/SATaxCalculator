@@ -12,6 +12,7 @@ interface ExpenseDetailProps {
   categories: Array<{ id: string; name: string }>
   companyId: string
   userId: string
+  isVatRegistered?: boolean
 }
 
 export default function ExpenseDetail({
@@ -19,6 +20,7 @@ export default function ExpenseDetail({
   categories,
   companyId,
   userId,
+  isVatRegistered = false,
 }: ExpenseDetailProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -70,14 +72,19 @@ export default function ExpenseDetail({
             userId={userId}
             categories={categories}
             expenseId={expense.id}
+            isVatRegistered={isVatRegistered}
             initialData={{
               expense_date: new Date(expense.expense_date).toISOString().split('T')[0],
               amount: expense.amount.toString(),
+              is_vat_inclusive: expense.is_vat_inclusive ?? false,
               category_id: expense.category_id,
               payment_method: expense.payment_method,
               vendor_name: expense.vendor_name || '',
               description: expense.description || '',
               is_tax_deductible: expense.is_tax_deductible,
+              deductible_percentage: expense.deductible_percentage,
+              charges: expense.charges,
+              receipt_status: expense.receipt_status,
               notes: expense.notes || '',
             }}
           />
