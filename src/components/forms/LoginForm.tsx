@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -21,7 +20,6 @@ export default function LoginForm() {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const router = useRouter()
 
   const {
     register,
@@ -56,9 +54,8 @@ export default function LoginForm() {
       }
 
       if (result?.ok) {
-        // Successful login - redirect to dashboard
-        router.push('/dashboard')
-        router.refresh()
+        // Successful login - use hard navigation to ensure session is picked up
+        window.location.href = '/dashboard'
         return
       }
 
