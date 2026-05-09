@@ -21,7 +21,10 @@ export default function DashboardNav({ user, company }: DashboardNavProps) {
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard' },
+    { name: 'Income', href: '/income' },
     { name: 'Expenses', href: '/expenses' },
+    { name: 'Assets', href: '/assets' },
+    { name: 'Logbook', href: '/vehicle-logbook' },
     { name: 'Reports', href: '/reports' },
     { name: 'Settings', href: '/settings' },
   ]

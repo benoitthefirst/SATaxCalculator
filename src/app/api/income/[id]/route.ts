@@ -3,17 +3,14 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import * as z from 'zod'
 
-const expenseUpdateSchema = z.object({
-  expense_date: z.string().optional(),
+const incomeUpdateSchema = z.object({
+  income_date: z.string().optional(),
   amount: z.number().positive().optional(),
   category_id: z.string().optional(),
   payment_method: z.enum(['cash', 'credit_card', 'debit_card', 'eft', 'other']).optional(),
-  vendor_name: z.string().optional(),
+  source_name: z.string().optional(),
   description: z.string().optional(),
-  is_tax_deductible: z.boolean().optional(),
-  deductible_percentage: z.number().min(0).max(100).optional(),
-  charges: z.number().min(0).optional(),
-  receipt_status: z.enum(['yes', 'no', 'affidavit', 'bank_statement']).optional(),
+  invoice_number: z.string().optional(),
   notes: z.string().optional(),
 })
 
@@ -30,7 +27,7 @@ export async function GET(
 
     const { id } = await params
 
-    const expense = await prisma.expense.findUnique({
+    const income = await prisma.income.findUnique({
       where: { id },
       include: {
         category: true,
@@ -50,34 +47,34 @@ export async function GET(
       },
     })
 
-    if (!expense) {
+    if (!income) {
       return NextResponse.json(
-        { error: 'Expense not found' },
+        { error: 'Income not found' },
         { status: 404 }
       )
     }
 
-    // Verify user has access to this expense's company
+    // Verify user has access to this income's company
     const membership = await prisma.companyMember.findFirst({
       where: {
         user_id: session.user.id,
-        company_id: expense.company_id,
+        company_id: income.company_id,
         is_active: true,
       },
     })
 
     if (!membership) {
       return NextResponse.json(
-        { error: 'You do not have access to this expense' },
+        { error: 'You do not have access to this income record' },
         { status: 403 }
       )
     }
 
-    return NextResponse.json({ expense })
+    return NextResponse.json({ income })
   } catch (error) {
-    console.error('Expense fetch error:', error)
+    console.error('Income fetch error:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch expense' },
+      { error: 'Failed to fetch income' },
       { status: 500 }
     )
   }
@@ -96,42 +93,42 @@ export async function PUT(
 
     const { id } = await params
     const body = await request.json()
-    const validatedData = expenseUpdateSchema.parse(body)
+    const validatedData = incomeUpdateSchema.parse(body)
 
-    // Get the expense to verify ownership
-    const existingExpense = await prisma.expense.findUnique({
+    // Get the income to verify ownership
+    const existingIncome = await prisma.income.findUnique({
       where: { id },
     })
 
-    if (!existingExpense) {
+    if (!existingIncome) {
       return NextResponse.json(
-        { error: 'Expense not found' },
+        { error: 'Income not found' },
         { status: 404 }
       )
     }
 
-    // Verify user has access to this expense's company
+    // Verify user has access to this income's company
     const membership = await prisma.companyMember.findFirst({
       where: {
         user_id: session.user.id,
-        company_id: existingExpense.company_id,
+        company_id: existingIncome.company_id,
         is_active: true,
       },
     })
 
     if (!membership) {
       return NextResponse.json(
-        { error: 'You do not have access to this expense' },
+        { error: 'You do not have access to this income record' },
         { status: 403 }
       )
     }
 
-    // Update expense
-    const expense = await prisma.expense.update({
+    // Update income
+    const income = await prisma.income.update({
       where: { id },
       data: {
-        ...(validatedData.expense_date && {
-          expense_date: new Date(validatedData.expense_date),
+        ...(validatedData.income_date && {
+          income_date: new Date(validatedData.income_date),
         }),
         ...(validatedData.amount !== undefined && {
           amount: validatedData.amount,
@@ -142,23 +139,14 @@ export async function PUT(
         ...(validatedData.payment_method && {
           payment_method: validatedData.payment_method,
         }),
-        ...(validatedData.vendor_name !== undefined && {
-          vendor_name: validatedData.vendor_name,
+        ...(validatedData.source_name !== undefined && {
+          source_name: validatedData.source_name,
         }),
         ...(validatedData.description !== undefined && {
           description: validatedData.description,
         }),
-        ...(validatedData.is_tax_deductible !== undefined && {
-          is_tax_deductible: validatedData.is_tax_deductible,
-        }),
-        ...(validatedData.deductible_percentage !== undefined && {
-          deductible_percentage: validatedData.deductible_percentage,
-        }),
-        ...(validatedData.charges !== undefined && {
-          charges: validatedData.charges,
-        }),
-        ...(validatedData.receipt_status !== undefined && {
-          receipt_status: validatedData.receipt_status,
+        ...(validatedData.invoice_number !== undefined && {
+          invoice_number: validatedData.invoice_number,
         }),
         ...(validatedData.notes !== undefined && {
           notes: validatedData.notes,
@@ -177,8 +165,8 @@ export async function PUT(
     })
 
     return NextResponse.json({
-      message: 'Expense updated successfully',
-      expense,
+      message: 'Income updated successfully',
+      income,
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -188,9 +176,9 @@ export async function PUT(
       )
     }
 
-    console.error('Expense update error:', error)
+    console.error('Income update error:', error)
     return NextResponse.json(
-      { error: 'Failed to update expense. Please try again.' },
+      { error: 'Failed to update income. Please try again.' },
       { status: 500 }
     )
   }
@@ -209,36 +197,36 @@ export async function DELETE(
 
     const { id } = await params
 
-    // Get the expense to verify ownership
-    const existingExpense = await prisma.expense.findUnique({
+    // Get the income to verify ownership
+    const existingIncome = await prisma.income.findUnique({
       where: { id },
     })
 
-    if (!existingExpense) {
+    if (!existingIncome) {
       return NextResponse.json(
-        { error: 'Expense not found' },
+        { error: 'Income not found' },
         { status: 404 }
       )
     }
 
-    // Verify user has access to this expense's company
+    // Verify user has access to this income's company
     const membership = await prisma.companyMember.findFirst({
       where: {
         user_id: session.user.id,
-        company_id: existingExpense.company_id,
+        company_id: existingIncome.company_id,
         is_active: true,
       },
     })
 
     if (!membership) {
       return NextResponse.json(
-        { error: 'You do not have access to this expense' },
+        { error: 'You do not have access to this income record' },
         { status: 403 }
       )
     }
 
-    // Soft delete the expense
-    await prisma.expense.update({
+    // Soft delete the income
+    await prisma.income.update({
       where: { id },
       data: {
         is_deleted: true,
@@ -247,12 +235,12 @@ export async function DELETE(
     })
 
     return NextResponse.json({
-      message: 'Expense deleted successfully',
+      message: 'Income deleted successfully',
     })
   } catch (error) {
-    console.error('Expense delete error:', error)
+    console.error('Income delete error:', error)
     return NextResponse.json(
-      { error: 'Failed to delete expense. Please try again.' },
+      { error: 'Failed to delete income. Please try again.' },
       { status: 500 }
     )
   }

@@ -3,19 +3,16 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import * as z from 'zod'
 
-const expenseCreateSchema = z.object({
+const incomeCreateSchema = z.object({
   company_id: z.string(),
   user_id: z.string(),
-  expense_date: z.string(),
+  income_date: z.string(),
   amount: z.number().positive(),
   category_id: z.string(),
-  payment_method: z.enum(['cash', 'credit_card', 'debit_card', 'eft', 'other']),
-  vendor_name: z.string().optional(),
+  payment_method: z.enum(['cash', 'credit_card', 'debit_card', 'eft', 'other']).optional(),
+  source_name: z.string().optional(),
   description: z.string().optional(),
-  is_tax_deductible: z.boolean().default(true),
-  deductible_percentage: z.number().min(0).max(100).default(100),
-  charges: z.number().min(0).default(0),
-  receipt_status: z.enum(['yes', 'no', 'affidavit', 'bank_statement']).optional(),
+  invoice_number: z.string().optional(),
   notes: z.string().optional(),
 })
 
@@ -28,7 +25,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const validatedData = expenseCreateSchema.parse(body)
+    const validatedData = incomeCreateSchema.parse(body)
 
     // Verify user has access to this company
     const membership = await prisma.companyMember.findFirst({
@@ -46,21 +43,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create expense
-    const expense = await prisma.expense.create({
+    // Create income
+    const income = await prisma.income.create({
       data: {
         company_id: validatedData.company_id,
         user_id: session.user.id,
-        expense_date: new Date(validatedData.expense_date),
+        income_date: new Date(validatedData.income_date),
         amount: validatedData.amount,
         category_id: validatedData.category_id,
         payment_method: validatedData.payment_method,
-        vendor_name: validatedData.vendor_name,
+        source_name: validatedData.source_name,
         description: validatedData.description,
-        is_tax_deductible: validatedData.is_tax_deductible,
-        deductible_percentage: validatedData.deductible_percentage,
-        charges: validatedData.charges,
-        receipt_status: validatedData.receipt_status,
+        invoice_number: validatedData.invoice_number,
         notes: validatedData.notes,
       },
       include: {
@@ -77,8 +71,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       {
-        message: 'Expense created successfully',
-        expense,
+        message: 'Income created successfully',
+        income,
       },
       { status: 201 }
     )
@@ -90,9 +84,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.error('Expense creation error:', error)
+    console.error('Income creation error:', error)
     return NextResponse.json(
-      { error: 'Failed to create expense. Please try again.' },
+      { error: 'Failed to create income. Please try again.' },
       { status: 500 }
     )
   }
@@ -136,7 +130,8 @@ export async function GET(request: NextRequest) {
     if (search) {
       where.OR = [
         { description: { contains: search, mode: 'insensitive' } },
-        { vendor_name: { contains: search, mode: 'insensitive' } },
+        { source_name: { contains: search, mode: 'insensitive' } },
+        { invoice_number: { contains: search, mode: 'insensitive' } },
       ]
     }
 
@@ -144,10 +139,10 @@ export async function GET(request: NextRequest) {
       where.category_id = categoryId
     }
 
-    const [expenses, total] = await Promise.all([
-      prisma.expense.findMany({
+    const [incomeRecords, total] = await Promise.all([
+      prisma.income.findMany({
         where,
-        orderBy: { expense_date: 'desc' },
+        orderBy: { income_date: 'desc' },
         take: limit,
         skip,
         include: {
@@ -160,11 +155,11 @@ export async function GET(request: NextRequest) {
           },
         },
       }),
-      prisma.expense.count({ where }),
+      prisma.income.count({ where }),
     ])
 
     return NextResponse.json({
-      expenses,
+      income: incomeRecords,
       pagination: {
         total,
         page,
@@ -173,9 +168,9 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error('Expense fetch error:', error)
+    console.error('Income fetch error:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch expenses' },
+      { error: 'Failed to fetch income' },
       { status: 500 }
     )
   }
