@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function PublicFooter() {
   const currentYear = new Date().getFullYear()
@@ -9,11 +10,14 @@ export default function PublicFooter() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="col-span-1">
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-white font-bold text-xl">
-                P
-              </div>
-              <span className="text-xl font-bold text-gray-900">ProcessX</span>
+            <Link href="/" className="inline-block mb-4">
+              <Image
+                src="/ProcessX_Logo_full.webp"
+                alt="ProcessX"
+                width={140}
+                height={36}
+                className="h-9 w-auto"
+              />
             </Link>
             <p className="text-sm text-gray-600">
               Simple bookkeeping and CRM solution for South African businesses.
@@ -25,8 +29,13 @@ export default function PublicFooter() {
             <h3 className="font-semibold text-gray-900 mb-4">Product</h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/dashboard" className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
-                  Features
+                <Link href="/pricing" className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
+                  Pricing
+                </Link>
+              </li>
+              <li>
+                <Link href="/calculators" className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
+                  Tax Calculator
                 </Link>
               </li>
               <li>
@@ -44,6 +53,11 @@ export default function PublicFooter() {
               <li>
                 <Link href="/about" className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
                   About
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact" className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
+                  Contact
                 </Link>
               </li>
               <li>

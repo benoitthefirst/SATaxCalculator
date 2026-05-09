@@ -20,6 +20,10 @@ export const metadata: Metadata = {
     default: "ProcessX - Bookkeeping & CRM for South African Businesses",
     template: "%s | ProcessX"
   },
+  icons: {
+    icon: '/processx_logo.webp',
+    apple: '/processx_logo.webp',
+  },
   description: "Simple bookkeeping and CRM solution for South African businesses. Track expenses, manage income, generate reports, and stay tax compliant.",
   keywords: [
     "South African tax calculator",

@@ -2,6 +2,7 @@
 
 import { signOut } from 'next-auth/react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils/cn'
 
@@ -35,11 +36,15 @@ export default function DashboardNav({ user, company }: DashboardNavProps) {
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <Link href="/dashboard" className="flex items-center gap-2 group">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#007AFF] to-[#0051D5] flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
-                  <span className="text-white text-sm font-bold">P</span>
-                </div>
-                <span className="text-xl font-semibold text-gray-900">ProcessX</span>
+              <Link href="/dashboard" className="flex items-center group">
+                <Image
+                  src="/ProcessX_Logo_full.webp"
+                  alt="ProcessX"
+                  width={140}
+                  height={36}
+                  className="h-9 w-auto"
+                  priority
+                />
               </Link>
             </div>
             <div className="hidden sm:ml-10 sm:flex sm:space-x-1">

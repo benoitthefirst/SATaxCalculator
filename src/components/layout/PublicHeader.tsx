@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 
@@ -10,18 +11,25 @@ export default function PublicHeader() {
 
   const navItems = [
     { href: '/', label: 'Home' },
+    { href: '/pricing', label: 'Pricing' },
+    { href: '/calculators', label: 'Tax Calculator' },
     { href: '/about', label: 'About' },
+    { href: '/contact', label: 'Contact' },
   ]
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/80 backdrop-blur-md">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-white font-bold text-xl">
-            P
-          </div>
-          <span className="text-xl font-bold text-gray-900">ProcessX</span>
+        <Link href="/" className="flex items-center">
+          <Image
+            src="/ProcessX_Logo_full.webp"
+            alt="ProcessX"
+            width={140}
+            height={36}
+            className="h-9 w-auto"
+            priority
+          />
         </Link>
 
         {/* Navigation */}
