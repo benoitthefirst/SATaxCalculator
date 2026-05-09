@@ -31,7 +31,7 @@ export default function DeductionSummaryPage() {
   const [data, setData] = useState<DeductionData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [year, setYear] = useState(new Date().getFullYear())
+  const [year, setYear] = useState(2025) // Default to fiscal year with data
 
   useEffect(() => {
     fetchData()
@@ -92,7 +92,7 @@ export default function DeductionSummaryPage() {
             onChange={(e) => setYear(parseInt(e.target.value))}
             className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#007AFF]/20 focus:border-[#007AFF]"
           >
-            {[2025, 2024, 2023].map((y) => (
+            {[2026, 2025, 2024, 2023].map((y) => (
               <option key={y} value={y}>
                 {y}/{y + 1}
               </option>
