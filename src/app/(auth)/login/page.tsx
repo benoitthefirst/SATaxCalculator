@@ -1,5 +1,6 @@
 import LoginForm from '@/components/forms/LoginForm'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export const metadata = {
   title: 'Sign in - ProcessX',
@@ -12,10 +13,15 @@ export default function LoginPage() {
       <div className="w-full max-w-[400px]">
         {/* Logo */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#007AFF] to-[#0051D5] mb-6 shadow-lg shadow-blue-500/30">
-            <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-            </svg>
+          <div className="inline-block mb-6">
+            <Image
+              src="/ProcessX_Logo_full.webp"
+              alt="ProcessX"
+              width={180}
+              height={46}
+              className="h-12 w-auto"
+              priority
+            />
           </div>
           <h1 className="text-3xl font-semibold text-gray-900 mb-2 tracking-tight">Welcome back</h1>
           <p className="text-base text-gray-500">Sign in to continue to ProcessX</p>
