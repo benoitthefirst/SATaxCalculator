@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import type { VehicleLogEntry } from '@prisma/client'
+import LogbookFilters from '@/components/vehicle/LogbookFilters'
 
 type LogEntryWithAsset = VehicleLogEntry & {
   asset: {
@@ -119,46 +120,11 @@ export default async function VehicleLogbookPage({
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-4">
-        <select
-          defaultValue={year}
-          onChange={(e) => {
-            const url = new URL(window.location.href)
-            url.searchParams.set('year', e.target.value)
-            window.location.href = url.toString()
-          }}
-          className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#FF9500]/20 focus:border-[#FF9500]"
-        >
-          {[2025, 2024, 2023].map((y) => (
-            <option key={y} value={y}>
-              {y}/{y + 1}
-            </option>
-          ))}
-        </select>
-
-        {vehicles.length > 0 && (
-          <select
-            defaultValue={assetId || ''}
-            onChange={(e) => {
-              const url = new URL(window.location.href)
-              if (e.target.value) {
-                url.searchParams.set('asset', e.target.value)
-              } else {
-                url.searchParams.delete('asset')
-              }
-              window.location.href = url.toString()
-            }}
-            className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#FF9500]/20 focus:border-[#FF9500]"
-          >
-            <option value="">All Vehicles</option>
-            {vehicles.map((v) => (
-              <option key={v.id} value={v.id}>
-                {v.name}
-              </option>
-            ))}
-          </select>
-        )}
-      </div>
+      <LogbookFilters
+        year={year}
+        assetId={assetId}
+        vehicles={vehicles.map((v) => ({ id: v.id, name: v.name }))}
+      />
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
