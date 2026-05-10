@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/db'
 import DashboardNav from '@/components/layout/DashboardNav'
+import { QueryProvider } from '@/components/providers/QueryProvider'
 
 export default async function DashboardLayout({
   children,
@@ -39,20 +40,22 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <DashboardNav
-        user={{
-          name: session.user.name || '',
-          email: session.user.email || '',
-        }}
-        company={{
-          name: membership.company.name,
-          role: membership.role,
-        }}
-      />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        {children}
-      </main>
-    </div>
+    <QueryProvider>
+      <div className="min-h-screen bg-white">
+        <DashboardNav
+          user={{
+            name: session.user.name || '',
+            email: session.user.email || '',
+          }}
+          company={{
+            name: membership.company.name,
+            role: membership.role,
+          }}
+        />
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          {children}
+        </main>
+      </div>
+    </QueryProvider>
   )
 }
