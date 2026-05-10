@@ -1,0 +1,103 @@
+import { NextResponse } from 'next/server'
+import { auth } from '@/lib/auth'
+import { prisma } from '@/lib/db'
+import { cancelSubscription } from '@/lib/payfast/subscription'
+
+// POST /api/subscriptions/cancel - Cancel the user's subscription
+export async function POST() {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  try {
+    // Get user's company and subscription
+    const membership = await prisma.companyMember.findFirst({
+      where: {
+        user_id: session.user.id,
+        is_active: true,
+      },
+      include: {
+        company: {
+          include: {
+            subscription: {
+              include: { plan: true },
+            },
+          },
+        },
+      },
+    })
+
+    if (!membership) {
+      return NextResponse.json({ error: 'No company found' }, { status: 404 })
+    }
+
+    const subscription = membership.company.subscription
+
+    if (!subscription) {
+      return NextResponse.json({ error: 'No subscription found' }, { status: 404 })
+    }
+
+    if (subscription.status === 'CANCELLED' || subscription.cancel_at_period_end) {
+      return NextResponse.json(
+        { error: 'Subscription is already cancelled' },
+        { status: 400 }
+      )
+    }
+
+    // If free plan, nothing to cancel
+    if (subscription.plan.tier === 'STARTER') {
+      return NextResponse.json(
+        { error: 'Cannot cancel free plan' },
+        { status: 400 }
+      )
+    }
+
+    // Cancel with PayFast if token exists
+    if (subscription.payfast_token) {
+      try {
+        await cancelSubscription(subscription.payfast_token)
+      } catch (error) {
+        console.error('PayFast cancellation error:', error)
+        // Continue anyway - mark as cancelled in our system
+      }
+    }
+
+    // Mark subscription as cancelled but allow access until period end
+    await prisma.subscription.update({
+      where: { id: subscription.id },
+      data: {
+        cancel_at_period_end: true,
+        cancelled_at: new Date(),
+      },
+    })
+
+    // Audit log
+    await prisma.auditLog.create({
+      data: {
+        user_id: session.user.id,
+        action: 'subscription.cancelled',
+        entity_type: 'Subscription',
+        entity_id: subscription.id,
+        metadata: {
+          plan_id: subscription.plan_id,
+          plan_name: subscription.plan.name,
+          access_until: subscription.current_period_end,
+          company_id: membership.company.id,
+        },
+      },
+    })
+
+    return NextResponse.json({
+      success: true,
+      message: 'Subscription cancelled successfully',
+      access_until: subscription.current_period_end,
+    })
+  } catch (error) {
+    console.error('Cancel subscription error:', error)
+    return NextResponse.json(
+      { error: 'Failed to cancel subscription' },
+      { status: 500 }
+    )
+  }
+}
