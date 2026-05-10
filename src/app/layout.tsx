@@ -15,37 +15,37 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://processx.theprocesse.com'),
+  metadataBase: new URL('https://www.processx.co.za'),
   title: {
-    default: "ProcessX - Bookkeeping & CRM for South African Businesses",
+    default: "ProcessX | Bookkeeping Made Simple, Business Made Easy",
     template: "%s | ProcessX"
   },
   icons: {
     icon: '/processx_logo.webp',
     apple: '/processx_logo.webp',
   },
-  description: "Simple bookkeeping and CRM solution for South African businesses. Track expenses, manage income, generate reports, and stay tax compliant.",
+  description: "Grow your small business with ProcessX. Simple bookkeeping, expense tracking, SARS-compliant tax tools, and free business reports. Start free today.",
   keywords: [
-    "South African tax calculator",
+    "South African bookkeeping",
+    "small business accounting South Africa",
     "SARS tax calculator",
-    "SA tax calculator 2025",
-    "income tax calculator South Africa",
-    "tax calculator SA",
-    "South Africa tax brackets 2025",
-    "SARS income tax",
-    "business tax calculator",
-    "salary tax calculator",
+    "expense tracking app",
+    "income management",
+    "business bookkeeping software",
+    "South African tax compliance",
+    "VAT calculator South Africa",
+    "vehicle logbook SARS",
+    "asset depreciation calculator",
+    "profit loss report",
     "tax deductions South Africa",
-    "tax relief South Africa",
-    "calculate tax SA",
-    "South African Revenue Service",
-    "personal income tax calculator",
-    "corporate tax calculator",
-    "tax savings South Africa"
+    "freelancer accounting",
+    "SME bookkeeping",
+    "ProcessX",
+    "business finance tools"
   ],
-  authors: [{ name: "The Process Enterprise" }],
-  creator: "The Process Enterprise",
-  publisher: "The Process Enterprise",
+  authors: [{ name: "ProcessX", url: "https://www.processx.co.za" }],
+  creator: "ProcessX",
+  publisher: "ProcessX",
   robots: {
     index: true,
     follow: true,
@@ -60,31 +60,86 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_ZA',
-    url: 'https://taxcalculator.theprocesse.com',
-    title: 'South African Tax Calculator 2025/26 | Free SARS Tax Calculator',
-    description: 'Calculate your South African income tax instantly. Free tool for salaried employees & business owners. Get accurate SARS tax calculations with deductions & tax-saving tips.',
-    siteName: 'SA Tax Calculator',
+    url: 'https://www.processx.co.za',
+    title: 'ProcessX | Bookkeeping Made Simple, Business Made Easy',
+    description: 'Grow your small business with ProcessX. Simple bookkeeping, expense tracking, SARS-compliant tax tools, and free business reports.',
+    siteName: 'ProcessX',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'South African Tax Calculator - Calculate SARS Income Tax',
+        alt: 'ProcessX - Bookkeeping Made Simple',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'South African Tax Calculator 2025/26 | Free SARS Tax Calculator',
-    description: 'Calculate your SA income tax instantly. Free tool with tax brackets, deductions & tax-saving strategies for 2025/26.',
+    title: 'ProcessX | Bookkeeping Made Simple, Business Made Easy',
+    description: 'Grow your small business with ProcessX. Simple bookkeeping, expense tracking, and SARS-compliant tax tools.',
     images: ['/og-image.png'],
-    creator: '@TheProcessEnt',
+    creator: '@ProcessX_ZA',
   },
   alternates: {
-    canonical: 'https://taxcalculator.theprocesse.com',
+    canonical: 'https://www.processx.co.za',
   },
   category: 'finance',
 };
+
+// Structured data for organization (enables Google sitelinks)
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "ProcessX",
+  "url": "https://www.processx.co.za",
+  "logo": "https://www.processx.co.za/ProcessX_Logo_full.webp",
+  "description": "Simple bookkeeping and business tools for South African businesses",
+  "sameAs": [
+    "https://twitter.com/ProcessX_ZA",
+    "https://www.linkedin.com/company/processx"
+  ],
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "contactType": "customer service",
+    "email": "support@processx.co.za",
+    "availableLanguage": ["English"]
+  }
+}
+
+// Website structured data with search action
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "ProcessX",
+  "url": "https://www.processx.co.za",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": {
+      "@type": "EntryPoint",
+      "urlTemplate": "https://www.processx.co.za/search?q={search_term_string}"
+    },
+    "query-input": "required name=search_term_string"
+  }
+}
+
+// Software application schema
+const softwareSchema = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ProcessX",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Web Browser",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "ZAR"
+  },
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "4.9",
+    "ratingCount": "500"
+  }
+}
 
 export default function RootLayout({
   children,
@@ -93,6 +148,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

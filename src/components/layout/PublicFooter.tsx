@@ -29,6 +29,11 @@ export default function PublicFooter() {
             <h3 className="font-semibold text-gray-900 mb-4">Product</h3>
             <ul className="space-y-3">
               <li>
+                <Link href="/features" className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
+                  Features
+                </Link>
+              </li>
+              <li>
                 <Link href="/pricing" className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
                   Pricing
                 </Link>
@@ -40,30 +45,30 @@ export default function PublicFooter() {
               </li>
               <li>
                 <Link href="/register" className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
-                  Sign up
+                  Get Started
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Company */}
+          {/* Support */}
           <div>
-            <h3 className="font-semibold text-gray-900 mb-4">Company</h3>
+            <h3 className="font-semibold text-gray-900 mb-4">Support</h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/about" className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
-                  About
+                <Link href="/help" className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
+                  Help Centre
                 </Link>
               </li>
               <li>
                 <Link href="/contact" className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
-                  Contact
+                  Contact Us
                 </Link>
               </li>
               <li>
-                <a href="https://theprocesse.com" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
-                  The Process Enterprise
-                </a>
+                <Link href="/about" className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
+                  About
+                </Link>
               </li>
             </ul>
           </div>
