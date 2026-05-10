@@ -32,6 +32,6 @@ export default function robots(): MetadataRoute.Robots {
         allow: '/',
       },
     ],
-    sitemap: 'https://taxcalculator.theprocesse.com/sitemap.xml',
+    sitemap: 'https://www.processx.co.za/sitemap.xml',
   }
 }

@@ -1,8 +1,9 @@
 import Link from 'next/link'
+import { Metadata } from 'next'
 
-export const metadata = {
-  title: 'Pricing - ProcessX',
-  description: 'Simple, transparent pricing for South African businesses. Start free and scale as you grow.',
+export const metadata: Metadata = {
+  title: 'Pricing & Plans',
+  description: 'Simple, transparent pricing for South African businesses. Start free with our Starter plan and scale as you grow. No hidden fees, cancel anytime.',
 }
 
 const plans = [

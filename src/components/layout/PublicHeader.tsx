@@ -10,10 +10,10 @@ export default function PublicHeader() {
   const { data: session } = useSession()
 
   const navItems = [
-    { href: '/', label: 'Home' },
+    { href: '/features', label: 'Features' },
     { href: '/pricing', label: 'Pricing' },
     { href: '/calculators', label: 'Tax Calculator' },
-    { href: '/about', label: 'About' },
+    { href: '/help', label: 'Help Centre' },
     { href: '/contact', label: 'Contact' },
   ]
 
