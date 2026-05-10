@@ -1,11 +1,20 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
-import { auth } from "@/lib/auth"
+import { getToken } from "next-auth/jwt"
 
 export async function middleware(request: NextRequest) {
-  const session = await auth()
+  // Use the same secret that NextAuth uses
+  const secret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET
 
-  const isAuth = !!session?.user
+  const token = await getToken({
+    req: request,
+    secret,
+    cookieName: process.env.NODE_ENV === 'production'
+      ? '__Secure-authjs.session-token'
+      : 'authjs.session-token',
+  })
+
+  const isAuth = !!token
   const isAuthPage = request.nextUrl.pathname.startsWith('/login') ||
                      request.nextUrl.pathname.startsWith('/register')
 
