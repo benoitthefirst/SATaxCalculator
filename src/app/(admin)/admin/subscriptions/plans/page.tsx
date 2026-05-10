@@ -123,7 +123,7 @@ export default function AdminPlansPage() {
   const formatLimit = (value: number) => (value === -1 ? 'Unlimited' : value)
 
   return (
-    <div className="space-y-6">
+    <div className="p-8 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -134,7 +134,7 @@ export default function AdminPlansPage() {
         </div>
         <Link
           href="/admin/subscriptions"
-          className="text-sm text-gray-500 hover:text-gray-700"
+          className="text-sm text-blue-600 hover:text-blue-700 font-medium"
         >
           &larr; Back to Subscriptions
         </Link>
