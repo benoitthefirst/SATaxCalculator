@@ -1,7 +1,9 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { SubscriptionTier, SubscriptionStatus, BillingCycle } from '@prisma/client'
+import { SubscriptionTier, SubscriptionStatus } from '@prisma/client'
+
+type BillingCycle = 'MONTHLY' | 'YEARLY'
 
 export interface SubscriptionPlan {
   id: string

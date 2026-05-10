@@ -5,10 +5,10 @@ import {
   getCompanySubscription,
   getMonthlyTransactionCount,
   getTeamMemberCount,
-  TIER_LIMITS,
 } from '@/lib/subscription/feature-gate'
 import { buildSubscriptionForm, getCheckoutUrl } from '@/lib/payfast/subscription'
-import { BillingCycle } from '@prisma/client'
+
+type BillingCycle = 'MONTHLY' | 'YEARLY'
 
 // GET /api/subscriptions - Get current subscription for user's company
 export async function GET() {

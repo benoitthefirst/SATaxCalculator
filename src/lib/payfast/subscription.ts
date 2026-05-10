@@ -1,6 +1,8 @@
 import { PAYFAST_CONFIG, getPayFastUrl, getApiUrl, BILLING_CYCLE_TO_FREQUENCY } from './index'
 import { generateSignature } from './signature'
-import { BillingCycle } from '@prisma/client'
+
+// Define BillingCycle type locally to match Prisma enum
+type BillingCycle = 'MONTHLY' | 'YEARLY'
 
 export interface SubscriptionFormData {
   planId: string

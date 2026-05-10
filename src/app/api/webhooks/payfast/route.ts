@@ -3,7 +3,9 @@ import { prisma } from '@/lib/db'
 import { validateSignature } from '@/lib/payfast/signature'
 import { PAYFAST_CONFIG, PAYFAST_IPS } from '@/lib/payfast'
 import { addMonths, addYears } from 'date-fns'
-import { BillingCycle, SubscriptionStatus } from '@prisma/client'
+import { SubscriptionStatus } from '@prisma/client'
+
+type BillingCycle = 'MONTHLY' | 'YEARLY'
 
 // PayFast ITN payment status values
 type PayFastPaymentStatus = 'COMPLETE' | 'FAILED' | 'PENDING' | 'CANCELLED'
