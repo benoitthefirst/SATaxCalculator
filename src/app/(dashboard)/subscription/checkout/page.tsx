@@ -64,8 +64,8 @@ export default function CheckoutPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          plan_id: plan.id,
-          billing_cycle: cycle.toUpperCase(),
+          planId: plan.id,
+          billingCycle: cycle.toUpperCase(),
         }),
       })
 
@@ -75,9 +75,51 @@ export default function CheckoutPage() {
         throw new Error(data.error || 'Failed to create subscription')
       }
 
-      if (data.redirect_url) {
-        // Redirect to PayFast
-        window.location.href = data.redirect_url
+      if (data.checkoutUrl && data.formData) {
+        // Create a hidden form and submit to PayFast
+        // IMPORTANT: Fields must be in exact order per PayFast requirements
+        const form = document.createElement('form')
+        form.method = 'POST'
+        form.action = data.checkoutUrl
+
+        // PayFast requires fields in this exact order
+        const fieldOrder = [
+          'merchant_id',
+          'merchant_key',
+          'return_url',
+          'cancel_url',
+          'notify_url',
+          'name_first',
+          'name_last',
+          'email_address',
+          'm_payment_id',
+          'amount',
+          'item_name',
+          'item_description',
+          'custom_str1',
+          'custom_str2',
+          'custom_str3',
+          'subscription_type',
+          'billing_date',
+          'recurring_amount',
+          'frequency',
+          'cycles',
+          'signature',
+        ]
+
+        // Add form fields in the correct order
+        for (const key of fieldOrder) {
+          if (data.formData[key] !== undefined) {
+            const input = document.createElement('input')
+            input.type = 'hidden'
+            input.name = key
+            input.value = data.formData[key] as string
+            form.appendChild(input)
+          }
+        }
+
+        document.body.appendChild(form)
+        form.submit()
       } else if (data.subscription) {
         // Free plan - already subscribed
         router.push('/subscription/success')

@@ -1,5 +1,5 @@
 import { PAYFAST_CONFIG, getPayFastUrl, getApiUrl, BILLING_CYCLE_TO_FREQUENCY } from './index'
-import { generateSignature } from './signature'
+import { generateSignature, generateApiSignature } from './signature'
 
 // Define BillingCycle type locally to match Prisma enum
 type BillingCycle = 'MONTHLY' | 'YEARLY'
@@ -23,56 +23,65 @@ export interface PayFastFormData {
  * Build form data for PayFast subscription checkout
  *
  * This data will be POSTed to PayFast's payment page
+ * The signature is generated based on the exact fields we send, in the order
+ * specified by PayFast's official documentation
  */
 export function buildSubscriptionForm(data: SubscriptionFormData): PayFastFormData {
   const merchantPaymentId = `SUB-${data.companyId}-${Date.now()}`
   const today = new Date().toISOString().split('T')[0]
 
+  // Build params object with all the fields we'll send
   const params: Record<string, string | number> = {
-    // Merchant details
     merchant_id: PAYFAST_CONFIG.merchantId,
     merchant_key: PAYFAST_CONFIG.merchantKey,
-
-    // Return URLs
     return_url: process.env.PAYFAST_RETURN_URL || `${process.env.NEXT_PUBLIC_APP_URL}/subscription/success`,
     cancel_url: process.env.PAYFAST_CANCEL_URL || `${process.env.NEXT_PUBLIC_APP_URL}/subscription/cancelled`,
     notify_url: process.env.PAYFAST_NOTIFY_URL || `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/payfast`,
-
-    // Buyer details
-    email_address: data.customerEmail,
     name_first: data.customerFirstName,
     name_last: data.customerLastName,
-
-    // Transaction details
+    email_address: data.customerEmail,
     m_payment_id: merchantPaymentId,
     amount: data.amount.toFixed(2),
     item_name: data.itemName,
     item_description: `ProcessX ${data.billingCycle === 'YEARLY' ? 'Annual' : 'Monthly'} Subscription`,
-
-    // Custom data (passed back in ITN)
     custom_str1: data.companyId,
     custom_str2: data.planId,
     custom_str3: data.billingCycle,
-
-    // Subscription specific
-    subscription_type: 1, // 1 = subscription
+    subscription_type: 1,
     billing_date: today,
     recurring_amount: data.amount.toFixed(2),
     frequency: BILLING_CYCLE_TO_FREQUENCY[data.billingCycle],
-    cycles: 0, // 0 = indefinite (until cancelled)
+    cycles: 0,
   }
 
   // Generate signature
   const signature = generateSignature(params, PAYFAST_CONFIG.passphrase)
 
-  // Convert all values to strings and add signature
-  const formData: PayFastFormData = {}
-  for (const [key, value] of Object.entries(params)) {
-    formData[key] = String(value)
+  // Return form data with signature - the order in the object doesn't matter
+  // for JavaScript objects, but the signature was generated with correct order
+  return {
+    merchant_id: String(params.merchant_id),
+    merchant_key: String(params.merchant_key),
+    return_url: String(params.return_url),
+    cancel_url: String(params.cancel_url),
+    notify_url: String(params.notify_url),
+    name_first: String(params.name_first),
+    name_last: String(params.name_last),
+    email_address: String(params.email_address),
+    m_payment_id: String(params.m_payment_id),
+    amount: String(params.amount),
+    item_name: String(params.item_name),
+    item_description: String(params.item_description),
+    custom_str1: String(params.custom_str1),
+    custom_str2: String(params.custom_str2),
+    custom_str3: String(params.custom_str3),
+    subscription_type: String(params.subscription_type),
+    billing_date: String(params.billing_date),
+    recurring_amount: String(params.recurring_amount),
+    frequency: String(params.frequency),
+    cycles: String(params.cycles),
+    signature,
   }
-  formData.signature = signature
-
-  return formData
 }
 
 /**
@@ -95,17 +104,18 @@ interface ApiHeaders {
 
 /**
  * Generate headers for PayFast API calls
+ * Note: API calls use alphabetical signature ordering (different from form submissions)
  */
 function getApiHeaders(): ApiHeaders {
   const timestamp = new Date().toISOString()
 
-  // Generate signature for API authentication
+  // Generate signature for API authentication (uses alphabetical ordering)
   const signatureData = {
     'merchant-id': PAYFAST_CONFIG.merchantId,
     timestamp,
     version: 'v1',
   }
-  const signature = generateSignature(signatureData, PAYFAST_CONFIG.passphrase)
+  const signature = generateApiSignature(signatureData, PAYFAST_CONFIG.passphrase)
 
   return {
     'merchant-id': PAYFAST_CONFIG.merchantId,
