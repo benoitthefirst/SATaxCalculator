@@ -210,7 +210,9 @@ export default async function DashboardPage({
   const totalAssets = assets.reduce((sum, asset) => sum + Number(asset.purchase_cost), 0)
 
   // Calculate taxable income (using VAT-exclusive amounts for VAT-registered businesses)
-  const taxableIncome = totalIncomeExclVat - deductibleExpensesExclVat - totalDepreciation
+  // Only subtract deductions from actual income - if no income, taxable income is 0 (not negative from depreciation alone)
+  const rawTaxableIncome = totalIncomeExclVat - deductibleExpensesExclVat - totalDepreciation
+  const taxableIncome = totalIncomeExclVat > 0 ? rawTaxableIncome : 0
 
   // VAT payable to SARS (Output VAT - Input VAT)
   const vatPayable = vatCollected - vatOnExpenses
@@ -308,7 +310,7 @@ export default async function DashboardPage({
             {formatCurrency(Math.abs(taxableIncome))}
           </p>
           <p className={`text-xs mt-1 ${taxableIncome >= 0 ? 'text-blue-500' : 'text-yellow-500'}`}>
-            After deductions & depreciation
+            {totalIncomeExclVat > 0 ? 'After deductions & depreciation' : 'No income recorded'}
           </p>
         </div>
 
