@@ -13,6 +13,12 @@ datasource db {
 // AUTHENTICATION & USER MANAGEMENT
 // ============================================
 
+enum UserRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
@@ -22,6 +28,9 @@ model User {
   phone         String?
   email_verified Boolean  @default(false)
   is_active     Boolean   @default(true)
+  is_deleted    Boolean   @default(false)
+  deleted_at    DateTime?
+  role          UserRole  @default(USER)
   created_at    DateTime  @default(now())
   updated_at    DateTime  @updatedAt
   last_login_at DateTime?
@@ -35,8 +44,14 @@ model User {
   created_companies   Company[] @relation("CreatedBy")
   accounts            Account[]
   sessions            Session[]
+  audit_logs          AuditLog[]
+  support_tickets     SupportTicket[]
+  ticket_replies      TicketReply[]
+  assigned_tickets    SupportTicket[] @relation("AssignedTo")
 
   @@index([email])
+  @@index([role])
+  @@index([is_deleted])
   @@map("users")
 }
 
@@ -388,4 +403,128 @@ model VehicleLogEntry {
   @@index([trip_date])
   @@index([is_business])
   @@map("vehicle_log_entries")
+}
+
+// ============================================
+// ADMIN & SUPPORT
+// ============================================
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  WAITING_CUSTOMER
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model SupportTicket {
+  id              String         @id @default(cuid())
+  ticket_number   String         @unique  // e.g., "TKT-2024-001234"
+  user_id         String?        // NULL for contact form submissions
+  assigned_to_id  String?        // Admin assigned to ticket
+  subject         String
+  description     String         @db.Text
+  status          TicketStatus   @default(OPEN)
+  priority        TicketPriority @default(MEDIUM)
+  category        String?        // "general" | "sales" | "support" | "billing" | "feedback"
+
+  // Contact form details (when user_id is NULL)
+  contact_name    String?
+  contact_email   String?
+  contact_company String?
+
+  resolved_at     DateTime?
+  closed_at       DateTime?
+  created_at      DateTime       @default(now())
+  updated_at      DateTime       @updatedAt
+
+  // Relations
+  user        User?         @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  assigned_to User?         @relation("AssignedTo", fields: [assigned_to_id], references: [id], onDelete: SetNull)
+  replies     TicketReply[]
+
+  @@index([user_id])
+  @@index([assigned_to_id])
+  @@index([status])
+  @@index([priority])
+  @@index([created_at])
+  @@map("support_tickets")
+}
+
+model TicketReply {
+  id          String   @id @default(cuid())
+  ticket_id   String
+  user_id     String   // Who wrote the reply
+  message     String   @db.Text
+  is_internal Boolean  @default(false)  // Internal notes not visible to customer
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  // Relations
+  ticket SupportTicket @relation(fields: [ticket_id], references: [id], onDelete: Cascade)
+  user   User          @relation(fields: [user_id], references: [id])
+
+  @@index([ticket_id])
+  @@index([user_id])
+  @@map("ticket_replies")
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  user_id     String?  // NULL for system actions
+  action      String   // "user.created" | "user.updated" | "login.success" | etc.
+  entity_type String?  // "User" | "Company" | "Expense" | etc.
+  entity_id   String?
+  old_values  Json?
+  new_values  Json?
+  ip_address  String?
+  user_agent  String?
+  metadata    Json?    // Additional context
+  created_at  DateTime @default(now())
+
+  // Relations
+  user User? @relation(fields: [user_id], references: [id], onDelete: SetNull)
+
+  @@index([user_id])
+  @@index([action])
+  @@index([entity_type, entity_id])
+  @@index([created_at])
+  @@map("audit_logs")
+}
+
+model SystemSetting {
+  id         String   @id @default(cuid())
+  key        String   @unique
+  value      Json
+  category   String   // "general" | "email" | "features" | "billing"
+  is_public  Boolean  @default(false)  // Can be accessed by non-admins
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([category])
+  @@map("system_settings")
+}
+
+model Announcement {
+  id           String    @id @default(cuid())
+  title        String
+  content      String    @db.Text
+  type         String    @default("info")  // "info" | "warning" | "success" | "error"
+  target       String    @default("all")   // "all" | "users" | "admins"
+  is_active    Boolean   @default(true)
+  starts_at    DateTime  @default(now())
+  expires_at   DateTime?
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+
+  @@index([is_active])
+  @@index([starts_at, expires_at])
+  @@map("announcements")
 }

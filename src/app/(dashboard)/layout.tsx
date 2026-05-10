@@ -14,6 +14,9 @@ export default async function DashboardLayout({
     redirect('/login')
   }
 
+  // Check if user is an admin
+  const isAdmin = session.user.role === 'ADMIN' || session.user.role === 'SUPER_ADMIN'
+
   // Get user's company membership
   const membership = await prisma.companyMember.findFirst({
     where: {
@@ -25,8 +28,13 @@ export default async function DashboardLayout({
     },
   })
 
-  // If no company, redirect to onboarding
+  // If no company, redirect appropriately
   if (!membership) {
+    if (isAdmin) {
+      // Admins without a company go to admin dashboard
+      redirect('/admin')
+    }
+    // Regular users go to onboarding
     redirect('/onboarding/company')
   }
 
