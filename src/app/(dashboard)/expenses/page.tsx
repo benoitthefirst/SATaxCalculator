@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Prisma } from '@prisma/client'
 import ExpenseFilters from '@/components/expenses/ExpenseFilters'
+import { ExportButton } from '@/components/common/ExportButton'
 
 export const metadata = {
   title: 'Expenses - ProcessX',
@@ -169,7 +170,7 @@ export default async function ExpensesPage({
             </svg>
             Analytics
           </Link>
-          <Link
+          <ExportButton
             href={`/api/expenses/export?year=${year}${month ? `&month=${month}` : ''}${searchQuery ? `&search=${searchQuery}` : ''}${categoryId ? `&category=${categoryId}` : ''}`}
             className="inline-flex items-center px-6 py-3 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-50 transition-all duration-200 active:scale-[0.98]"
           >
@@ -187,7 +188,7 @@ export default async function ExpensesPage({
               />
             </svg>
             Export CSV
-          </Link>
+          </ExportButton>
           <Link
             href="/expenses/new"
             className="inline-flex items-center px-6 py-3 bg-gradient-to-br from-[#007AFF] to-[#0051D5] text-white text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-200 active:scale-[0.98]"

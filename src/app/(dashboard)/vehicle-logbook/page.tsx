@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import type { VehicleLogEntry } from '@prisma/client'
 import LogbookFilters from '@/components/vehicle/LogbookFilters'
+import { ExportButton } from '@/components/common/ExportButton'
 
 type LogEntryWithAsset = VehicleLogEntry & {
   asset: {
@@ -109,7 +110,7 @@ export default async function VehicleLogbookPage({
           </p>
         </div>
         <div className="flex gap-3">
-          <Link
+          <ExportButton
             href={`/api/vehicle-logbook/export?${assetId ? `assetId=${assetId}&` : ''}startDate=${fiscalYearStart.toISOString()}&endDate=${fiscalYearEnd.toISOString()}`}
             className="inline-flex items-center px-4 py-2 text-sm font-medium bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors"
           >
@@ -122,7 +123,7 @@ export default async function VehicleLogbookPage({
               />
             </svg>
             Export CSV
-          </Link>
+          </ExportButton>
           <Link
             href="/vehicle-logbook/new"
             className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#FF9500] rounded-xl hover:bg-[#FF6B00] transition-colors"
