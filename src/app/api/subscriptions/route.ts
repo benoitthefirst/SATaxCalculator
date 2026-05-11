@@ -91,16 +91,23 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if subscriptions are enabled
-    const subscriptionsEnabled = await prisma.systemSetting.findUnique({
-      where: { key: 'billing.subscriptions_enabled' },
-    })
+    // Check if subscriptions are enabled (skip check if setting doesn't exist)
+    try {
+      const subscriptionsEnabled = await prisma.systemSetting.findUnique({
+        where: { key: 'billing.subscriptions_enabled' },
+      })
 
-    if (!subscriptionsEnabled?.value) {
-      return NextResponse.json(
-        { error: 'Subscriptions are currently disabled' },
-        { status: 400 }
-      )
+      // If the setting exists and is explicitly set to false, block subscriptions
+      if (subscriptionsEnabled && subscriptionsEnabled.value === false) {
+        return NextResponse.json(
+          { error: 'Subscriptions are currently disabled' },
+          { status: 400 }
+        )
+      }
+    } catch {
+      // If SystemSetting table doesn't exist or query fails, allow subscriptions
+      // This handles the case during development before migrations are applied
+      console.warn('SystemSetting check failed, defaulting to enabled')
     }
 
     // Get plan
