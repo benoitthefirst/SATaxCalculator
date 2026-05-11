@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { checkFeatureAccess } from '@/lib/subscription/feature-gate'
 
 export async function GET(request: NextRequest) {
   try {
@@ -21,6 +22,24 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         { error: 'No active company found' },
         { status: 404 }
+      )
+    }
+
+    // Check feature access - asset management AND CSV exports require Professional plan
+    const [hasAssetAccess, hasExportAccess] = await Promise.all([
+      checkFeatureAccess(membership.company_id, 'asset_management'),
+      checkFeatureAccess(membership.company_id, 'csv_exports'),
+    ])
+
+    if (!hasAssetAccess || !hasExportAccess) {
+      return NextResponse.json(
+        {
+          error: 'Feature not available',
+          message: 'Asset export is available on Professional and Business plans.',
+          feature: 'csv_exports',
+          upgradeRequired: true,
+        },
+        { status: 403 }
       )
     }
 

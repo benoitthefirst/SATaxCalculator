@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { checkFeatureAccess } from '@/lib/subscription/feature-gate'
 import { Prisma } from '@prisma/client'
 
 type VehicleLogEntryWithAsset = Prisma.VehicleLogEntryGetPayload<{ include: { asset: true } }>
@@ -24,6 +25,24 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         { error: 'No active company found' },
         { status: 404 }
+      )
+    }
+
+    // Check feature access - vehicle logbook AND CSV exports require Professional plan
+    const [hasLogbookAccess, hasExportAccess] = await Promise.all([
+      checkFeatureAccess(membership.company_id, 'vehicle_logbook'),
+      checkFeatureAccess(membership.company_id, 'csv_exports'),
+    ])
+
+    if (!hasLogbookAccess || !hasExportAccess) {
+      return NextResponse.json(
+        {
+          error: 'Feature not available',
+          message: 'Vehicle logbook export is available on Professional and Business plans.',
+          feature: 'csv_exports',
+          upgradeRequired: true,
+        },
+        { status: 403 }
       )
     }
 
