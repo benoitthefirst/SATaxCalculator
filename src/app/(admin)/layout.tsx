@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import AdminNav from '@/components/layout/AdminNav'
+import { QueryProvider } from '@/components/providers/QueryProvider'
 
 export const metadata = {
   title: {
@@ -22,13 +23,15 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <AdminNav />
-      <main className="pl-64">
-        <div className="min-h-screen">
-          {children}
-        </div>
-      </main>
-    </div>
+    <QueryProvider>
+      <div className="min-h-screen bg-gray-50">
+        <AdminNav />
+        <main className="pl-64">
+          <div className="min-h-screen">
+            {children}
+          </div>
+        </main>
+      </div>
+    </QueryProvider>
   )
 }

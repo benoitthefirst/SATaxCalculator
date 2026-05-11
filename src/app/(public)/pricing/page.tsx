@@ -1,16 +1,22 @@
 import Link from 'next/link'
 import { Metadata } from 'next'
+import { prisma } from '@/lib/db'
+import { PricingPlans } from './PricingPlans'
 
 export const metadata: Metadata = {
   title: 'Pricing & Plans',
   description: 'Simple, transparent pricing for South African businesses. Start free with our Starter plan and scale as you grow. No hidden fees, cancel anytime.',
 }
 
-const plans = [
+// Static fallback plans when subscriptions are disabled
+const staticPlans = [
   {
+    id: 'starter',
     name: 'Starter',
-    price: 'Free',
+    tier: 'STARTER',
     description: 'Perfect for freelancers and solo entrepreneurs just getting started.',
+    price_monthly: 0,
+    price_yearly: 0,
     features: [
       'Up to 50 transactions/month',
       'Basic expense tracking',
@@ -19,15 +25,14 @@ const plans = [
       'Single user',
       'Email support',
     ],
-    cta: 'Get Started Free',
-    href: '/register',
-    featured: false,
   },
   {
+    id: 'professional',
     name: 'Professional',
-    price: 'R299',
-    period: '/month',
+    tier: 'PROFESSIONAL',
     description: 'For growing businesses that need more power and flexibility.',
+    price_monthly: 299,
+    price_yearly: 2990,
     features: [
       'Unlimited transactions',
       'Advanced expense tracking',
@@ -39,15 +44,14 @@ const plans = [
       'Up to 5 team members',
       'Priority email support',
     ],
-    cta: 'Start 14-Day Trial',
-    href: '/register',
-    featured: true,
   },
   {
+    id: 'business',
     name: 'Business',
-    price: 'R599',
-    period: '/month',
+    tier: 'BUSINESS',
     description: 'For established businesses with advanced needs.',
+    price_monthly: 599,
+    price_yearly: 5990,
     features: [
       'Everything in Professional',
       'Unlimited team members',
@@ -58,9 +62,6 @@ const plans = [
       'Dedicated account manager',
       'Phone support',
     ],
-    cta: 'Contact Sales',
-    href: '/contact',
-    featured: false,
   },
 ]
 
@@ -83,7 +84,7 @@ const faqs = [
   },
   {
     question: 'What payment methods do you accept?',
-    answer: 'We accept all major credit and debit cards, as well as EFT payments for annual subscriptions.',
+    answer: 'We accept all major credit and debit cards, as well as EFT payments for annual subscriptions. Payments are processed securely through PayFast.',
   },
   {
     question: 'Is ProcessX SARS compliant?',
@@ -91,7 +92,51 @@ const faqs = [
   },
 ]
 
-export default function PricingPage() {
+async function getPlans() {
+  // Check if subscriptions are enabled
+  const setting = await prisma.systemSetting.findUnique({
+    where: { key: 'billing.subscriptions_enabled' },
+  })
+
+  const subscriptionsEnabled = setting?.value === true
+
+  if (!subscriptionsEnabled) {
+    return { enabled: false, plans: staticPlans }
+  }
+
+  // Get dynamic plans from database
+  const plans = await prisma.subscriptionPlan.findMany({
+    where: { is_active: true },
+    orderBy: { display_order: 'asc' },
+    select: {
+      id: true,
+      name: true,
+      tier: true,
+      description: true,
+      price_monthly: true,
+      price_yearly: true,
+      features: true,
+    },
+  })
+
+  if (plans.length === 0) {
+    return { enabled: false, plans: staticPlans }
+  }
+
+  return {
+    enabled: true,
+    plans: plans.map(plan => ({
+      ...plan,
+      price_monthly: Number(plan.price_monthly),
+      price_yearly: Number(plan.price_yearly),
+      features: plan.features as string[],
+    })),
+  }
+}
+
+export default async function PricingPage() {
+  const { enabled, plans } = await getPlans()
+
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
@@ -109,100 +154,7 @@ export default function PricingPage() {
       </section>
 
       {/* Pricing Cards */}
-      <section className="py-16 -mt-8">
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
-            {plans.map((plan) => (
-              <div
-                key={plan.name}
-                className={`relative rounded-3xl p-8 ${
-                  plan.featured
-                    ? 'bg-blue-600 text-white ring-4 ring-blue-600 ring-offset-2 scale-105'
-                    : 'bg-white border-2 border-gray-200'
-                }`}
-              >
-                {plan.featured && (
-                  <span className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-blue-500 px-4 py-1 text-sm font-medium text-white">
-                    Most Popular
-                  </span>
-                )}
-                <div className="mb-6">
-                  <h3
-                    className={`text-xl font-semibold ${
-                      plan.featured ? 'text-white' : 'text-gray-900'
-                    }`}
-                  >
-                    {plan.name}
-                  </h3>
-                  <div className="mt-4 flex items-baseline">
-                    <span
-                      className={`text-4xl font-bold ${
-                        plan.featured ? 'text-white' : 'text-gray-900'
-                      }`}
-                    >
-                      {plan.price}
-                    </span>
-                    {plan.period && (
-                      <span
-                        className={`ml-1 text-base ${
-                          plan.featured ? 'text-blue-100' : 'text-gray-500'
-                        }`}
-                      >
-                        {plan.period}
-                      </span>
-                    )}
-                  </div>
-                  <p
-                    className={`mt-2 text-sm ${
-                      plan.featured ? 'text-blue-100' : 'text-gray-500'
-                    }`}
-                  >
-                    {plan.description}
-                  </p>
-                </div>
-
-                <ul className="space-y-3 mb-8">
-                  {plan.features.map((feature) => (
-                    <li key={feature} className="flex items-start gap-3">
-                      <svg
-                        className={`h-5 w-5 flex-shrink-0 ${
-                          plan.featured ? 'text-blue-200' : 'text-blue-600'
-                        }`}
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      <span
-                        className={`text-sm ${
-                          plan.featured ? 'text-blue-50' : 'text-gray-600'
-                        }`}
-                      >
-                        {feature}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-
-                <Link
-                  href={plan.href}
-                  className={`block w-full rounded-xl py-3 text-center text-sm font-semibold transition-all ${
-                    plan.featured
-                      ? 'bg-white text-blue-600 hover:bg-blue-50'
-                      : 'bg-blue-600 text-white hover:bg-blue-700'
-                  }`}
-                >
-                  {plan.cta}
-                </Link>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <PricingPlans plans={plans} subscriptionsEnabled={enabled} />
 
       {/* Annual Billing Banner */}
       <section className="py-12 bg-gray-50">

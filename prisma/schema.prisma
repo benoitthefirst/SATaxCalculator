@@ -93,6 +93,7 @@ model Company {
   income_categories   IncomeCategory[]
   assets              Asset[]
   vehicle_log_entries VehicleLogEntry[]
+  subscription        Subscription?
 
   @@index([created_by_id])
   @@map("companies")
@@ -527,4 +528,155 @@ model Announcement {
   @@index([is_active])
   @@index([starts_at, expires_at])
   @@map("announcements")
+}
+
+// ============================================
+// SUBSCRIPTION & BILLING
+// ============================================
+
+enum SubscriptionTier {
+  STARTER      // Free tier
+  PROFESSIONAL // R299/mo
+  BUSINESS     // R599/mo
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  CANCELLED
+  EXPIRED
+}
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+model SubscriptionPlan {
+  id                    String           @id @default(cuid())
+  name                  String           // "Starter", "Professional", "Business"
+  tier                  SubscriptionTier @unique
+  description           String?
+  price_monthly         Decimal          @db.Decimal(10, 2) // In ZAR
+  price_yearly          Decimal          @db.Decimal(10, 2) // In ZAR (includes discount)
+  features              Json             // Array of feature strings for display
+  limits                Json             // { transactions_per_month, team_members, companies, api_access, etc. }
+  is_active             Boolean          @default(true)
+  display_order         Int              @default(0)
+  created_at            DateTime         @default(now())
+  updated_at            DateTime         @updatedAt
+
+  // Relations
+  subscriptions         Subscription[]
+
+  @@index([is_active])
+  @@map("subscription_plans")
+}
+
+model Subscription {
+  id                    String             @id @default(cuid())
+  company_id            String             @unique // One subscription per company
+  plan_id               String
+  status                SubscriptionStatus @default(ACTIVE)
+  billing_cycle         BillingCycle       @default(MONTHLY)
+
+  // PayFast integration
+  payfast_token         String?            // Subscription token from PayFast
+  payfast_subscription_id String?          // PayFast's internal subscription ID
+
+  // Billing dates
+  current_period_start  DateTime
+  current_period_end    DateTime
+  next_billing_date     DateTime?
+  trial_ends_at         DateTime?
+  cancelled_at          DateTime?
+  cancel_at_period_end  Boolean            @default(false) // If true, access continues until period_end
+
+  // Pricing snapshot (in case plan prices change)
+  amount                Decimal            @db.Decimal(10, 2)
+  currency              String             @default("ZAR")
+
+  created_at            DateTime           @default(now())
+  updated_at            DateTime           @updatedAt
+
+  // Relations
+  company               Company            @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  plan                  SubscriptionPlan   @relation(fields: [plan_id], references: [id])
+  payments              Payment[]
+  usage_records         SubscriptionUsage[]
+
+  @@index([company_id])
+  @@index([plan_id])
+  @@index([status])
+  @@index([payfast_token])
+  @@index([current_period_end])
+  @@map("subscriptions")
+}
+
+model Payment {
+  id                    String        @id @default(cuid())
+  subscription_id       String
+
+  // PayFast transaction details
+  m_payment_id          String?       // Merchant payment ID sent to PayFast
+  pf_payment_id         String?       @unique // PayFast payment ID returned
+
+  amount                Decimal       @db.Decimal(10, 2)
+  fee                   Decimal?      @db.Decimal(10, 2)
+  net_amount            Decimal?      @db.Decimal(10, 2)
+  currency              String        @default("ZAR")
+  status                PaymentStatus @default(PENDING)
+  payment_method        String?       // "credit_card", "instant_eft", etc.
+
+  // Period covered by this payment
+  period_start          DateTime
+  period_end            DateTime
+
+  // ITN data
+  itn_payload           Json?         // Store full ITN for reference
+
+  paid_at               DateTime?
+  failed_at             DateTime?
+  failure_reason        String?
+
+  created_at            DateTime      @default(now())
+  updated_at            DateTime      @updatedAt
+
+  // Relations
+  subscription          Subscription  @relation(fields: [subscription_id], references: [id], onDelete: Cascade)
+
+  @@index([subscription_id])
+  @@index([pf_payment_id])
+  @@index([status])
+  @@index([created_at])
+  @@map("payments")
+}
+
+model SubscriptionUsage {
+  id                    String   @id @default(cuid())
+  subscription_id       String
+  period_start          DateTime
+  period_end            DateTime
+
+  // Usage metrics
+  transactions_count    Int      @default(0)
+  api_calls_count       Int      @default(0)
+
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
+
+  // Relations
+  subscription          Subscription @relation(fields: [subscription_id], references: [id], onDelete: Cascade)
+
+  @@unique([subscription_id, period_start])
+  @@index([subscription_id])
+  @@map("subscription_usage")
 }

@@ -83,6 +83,158 @@ async function main() {
   }
 
   console.log('✅ Income categories seeded')
+
+  // Seed subscription plans
+  const subscriptionPlans = [
+    {
+      id: 'plan-starter',
+      name: 'Starter',
+      tier: 'STARTER' as const,
+      description: 'Perfect for freelancers and solo entrepreneurs just getting started.',
+      price_monthly: 0,
+      price_yearly: 0,
+      features: [
+        'Up to 50 transactions/month',
+        'Basic expense tracking',
+        'Income management',
+        'Tax calculator access',
+        'Single user',
+        'Email support',
+      ],
+      limits: {
+        transactions_per_month: 50,
+        team_members: 1,
+        companies: 1,
+        vehicle_logbook: false,
+        asset_management: false,
+        advanced_reports: false,
+        csv_export: false,
+        api_access: false,
+      },
+      display_order: 1,
+    },
+    {
+      id: 'plan-professional',
+      name: 'Professional',
+      tier: 'PROFESSIONAL' as const,
+      description: 'For growing businesses that need more power and flexibility.',
+      price_monthly: 299,
+      price_yearly: 2990,
+      features: [
+        'Unlimited transactions',
+        'Advanced expense tracking',
+        'Income & invoicing',
+        'Vehicle logbook',
+        'Asset management',
+        'Financial reports & analytics',
+        'CSV exports',
+        'Up to 5 team members',
+        'Priority email support',
+      ],
+      limits: {
+        transactions_per_month: -1, // unlimited
+        team_members: 5,
+        companies: 1,
+        vehicle_logbook: true,
+        asset_management: true,
+        advanced_reports: true,
+        csv_export: true,
+        api_access: false,
+      },
+      display_order: 2,
+    },
+    {
+      id: 'plan-business',
+      name: 'Business',
+      tier: 'BUSINESS' as const,
+      description: 'For established businesses with advanced needs.',
+      price_monthly: 599,
+      price_yearly: 5990,
+      features: [
+        'Everything in Professional',
+        'Unlimited team members',
+        'Multi-company management',
+        'Advanced reporting',
+        'API access',
+        'Custom integrations',
+        'Dedicated account manager',
+        'Phone support',
+      ],
+      limits: {
+        transactions_per_month: -1, // unlimited
+        team_members: -1, // unlimited
+        companies: -1, // unlimited
+        vehicle_logbook: true,
+        asset_management: true,
+        advanced_reports: true,
+        csv_export: true,
+        api_access: true,
+      },
+      display_order: 3,
+    },
+  ]
+
+  for (const plan of subscriptionPlans) {
+    await prisma.subscriptionPlan.upsert({
+      where: { id: plan.id },
+      update: {
+        name: plan.name,
+        description: plan.description,
+        price_monthly: plan.price_monthly,
+        price_yearly: plan.price_yearly,
+        features: plan.features,
+        limits: plan.limits,
+        display_order: plan.display_order,
+      },
+      create: {
+        id: plan.id,
+        name: plan.name,
+        tier: plan.tier,
+        description: plan.description,
+        price_monthly: plan.price_monthly,
+        price_yearly: plan.price_yearly,
+        features: plan.features,
+        limits: plan.limits,
+        display_order: plan.display_order,
+        is_active: true,
+      },
+    })
+  }
+
+  console.log('✅ Subscription plans seeded')
+
+  // Seed default system settings for subscriptions
+  const defaultSettings = [
+    {
+      key: 'billing.subscriptions_enabled',
+      value: false, // Start disabled so admin can test
+      category: 'billing',
+    },
+    {
+      key: 'billing.sandbox_mode',
+      value: true,
+      category: 'billing',
+    },
+    {
+      key: 'billing.grace_period_days',
+      value: 3,
+      category: 'billing',
+    },
+  ]
+
+  for (const setting of defaultSettings) {
+    await prisma.systemSetting.upsert({
+      where: { key: setting.key },
+      update: {},
+      create: {
+        key: setting.key,
+        value: setting.value,
+        category: setting.category,
+      },
+    })
+  }
+
+  console.log('✅ System settings seeded')
   console.log('✅ Database seeded successfully!')
 }
 
