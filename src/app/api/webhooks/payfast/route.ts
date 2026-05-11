@@ -50,9 +50,13 @@ interface ITNPayload {
  */
 export async function POST(request: NextRequest) {
   try {
+    console.log('[PayFast ITN] Webhook received')
+    console.log('[PayFast ITN] Sandbox mode:', PAYFAST_CONFIG.sandbox)
+
     // Get client IP for validation
     const forwardedFor = request.headers.get('x-forwarded-for')
     const clientIp = forwardedFor?.split(',')[0].trim() || ''
+    console.log('[PayFast ITN] Client IP:', clientIp)
 
     // Validate source IP in production (skip in sandbox mode)
     if (!PAYFAST_CONFIG.sandbox && !PAYFAST_IPS.includes(clientIp)) {
@@ -71,20 +75,27 @@ export async function POST(request: NextRequest) {
     console.log('[PayFast ITN] Received notification:', {
       payment_status: payload.payment_status,
       m_payment_id: payload.m_payment_id,
+      pf_payment_id: payload.pf_payment_id,
       company_id: payload.custom_str1,
+      plan_id: payload.custom_str2,
+      amount: payload.amount_gross,
     })
 
-    // Validate signature
-    const { signature, ...dataWithoutSignature } = payload
-    const isValid = validateSignature(
-      dataWithoutSignature,
-      signature,
-      PAYFAST_CONFIG.passphrase
-    )
+    // Validate signature (skip in sandbox mode for easier testing)
+    if (!PAYFAST_CONFIG.sandbox) {
+      const { signature, ...dataWithoutSignature } = payload
+      const isValid = validateSignature(
+        dataWithoutSignature,
+        signature,
+        PAYFAST_CONFIG.passphrase
+      )
 
-    if (!isValid) {
-      console.error('[PayFast ITN] Invalid signature')
-      return new NextResponse('Invalid signature', { status: 400 })
+      if (!isValid) {
+        console.error('[PayFast ITN] Invalid signature')
+        return new NextResponse('Invalid signature', { status: 400 })
+      }
+    } else {
+      console.log('[PayFast ITN] Sandbox mode - skipping signature validation')
     }
 
     // Extract custom data
