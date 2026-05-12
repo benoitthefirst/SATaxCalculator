@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { hash } from 'bcryptjs'
 import { prisma } from '@/lib/db'
 import { z } from 'zod'
+import { sendEmail, welcomeEmail } from '@/lib/email'
 
 const registerSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -46,6 +47,19 @@ export async function POST(req: Request) {
         last_name: true,
       },
     })
+
+    // Send welcome email
+    const loginUrl = `${process.env.NEXTAUTH_URL || 'https://www.processx.co.za'}/login`
+    const welcomeEmailContent = welcomeEmail({
+      firstName: user.first_name,
+      loginUrl,
+    })
+
+    // Send email asynchronously (don't block registration)
+    sendEmail({
+      to: user.email,
+      ...welcomeEmailContent,
+    }).catch((err) => console.error('Failed to send welcome email:', err))
 
     return NextResponse.json(
       {

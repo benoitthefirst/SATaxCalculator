@@ -20,20 +20,22 @@ enum UserRole {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  password_hash String?
-  first_name    String
-  last_name     String
-  phone         String?
-  email_verified Boolean  @default(false)
-  is_active     Boolean   @default(true)
-  is_deleted    Boolean   @default(false)
-  deleted_at    DateTime?
-  role          UserRole  @default(USER)
-  created_at    DateTime  @default(now())
-  updated_at    DateTime  @updatedAt
-  last_login_at DateTime?
+  id                   String    @id @default(cuid())
+  email                String    @unique
+  password_hash        String?
+  first_name           String
+  last_name            String
+  phone                String?
+  email_verified       Boolean   @default(false)
+  is_active            Boolean   @default(true)
+  is_deleted           Boolean   @default(false)
+  deleted_at           DateTime?
+  role                 UserRole  @default(USER)
+  created_at           DateTime  @default(now())
+  updated_at           DateTime  @updatedAt
+  last_login_at        DateTime?
+  reset_token          String?   @unique
+  reset_token_expires  DateTime?
 
   // Relations
   company_members     CompanyMember[]

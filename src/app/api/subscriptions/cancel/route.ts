@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { cancelSubscription } from '@/lib/payfast/subscription'
+import { sendEmail, subscriptionCancelledEmail } from '@/lib/email'
+import { format } from 'date-fns'
 
 // POST /api/subscriptions/cancel - Cancel the user's subscription
 export async function POST() {
@@ -87,6 +89,28 @@ export async function POST() {
         },
       },
     })
+
+    // Send cancellation confirmation email
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { email: true, first_name: true },
+      })
+
+      if (user) {
+        const resubscribeUrl = `${process.env.NEXTAUTH_URL || 'https://www.processx.co.za'}/settings/subscription`
+        const emailContent = subscriptionCancelledEmail({
+          firstName: user.first_name,
+          planName: subscription.plan.name,
+          accessUntil: format(subscription.current_period_end, 'd MMMM yyyy'),
+          resubscribeUrl,
+        })
+
+        await sendEmail({ to: user.email, ...emailContent })
+      }
+    } catch (emailError) {
+      console.error('Failed to send cancellation email:', emailError)
+    }
 
     return NextResponse.json({
       success: true,
