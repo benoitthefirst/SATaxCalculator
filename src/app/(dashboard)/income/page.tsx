@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Prisma } from '@prisma/client'
 import IncomeFilters from '@/components/income/IncomeFilters'
+import { getActiveCompanyForUser } from '@/lib/company-context'
 
 export const metadata = {
   title: 'Income - ProcessX',
@@ -21,17 +22,9 @@ export default async function IncomePage({
     redirect('/login')
   }
 
-  const membership = await prisma.companyMember.findFirst({
-    where: {
-      user_id: session.user.id,
-      is_active: true,
-    },
-    include: {
-      company: true,
-    },
-  })
+  const companyId = await getActiveCompanyForUser(session.user.id)
 
-  if (!membership) {
+  if (!companyId) {
     redirect('/onboarding/company')
   }
 
@@ -79,7 +72,7 @@ export default async function IncomePage({
   }
 
   const where: Prisma.IncomeWhereInput = {
-    company_id: membership.company.id,
+    company_id: companyId,
     is_deleted: false,
     ...dateFilter,
     ...(search && {
@@ -114,7 +107,7 @@ export default async function IncomePage({
       where: {
         OR: [
           { is_system: true },
-          { company_id: membership.company.id },
+          { company_id: companyId },
         ],
         is_active: true,
       },

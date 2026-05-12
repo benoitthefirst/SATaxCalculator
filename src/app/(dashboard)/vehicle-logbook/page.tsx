@@ -1,9 +1,11 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { redirect } from 'next/navigation'
+import { getActiveCompanyForUser } from '@/lib/company-context'
 import Link from 'next/link'
 import type { VehicleLogEntry } from '@prisma/client'
 import LogbookFilters from '@/components/vehicle/LogbookFilters'
+import { ExportButton } from '@/components/common/ExportButton'
 
 type LogEntryWithAsset = VehicleLogEntry & {
   asset: {
@@ -29,17 +31,9 @@ export default async function VehicleLogbookPage({
     redirect('/login')
   }
 
-  const membership = await prisma.companyMember.findFirst({
-    where: {
-      user_id: session.user.id,
-      is_active: true,
-    },
-    include: {
-      company: true,
-    },
-  })
+  const companyId = await getActiveCompanyForUser(session.user.id)
 
-  if (!membership) {
+  if (!companyId) {
     redirect('/onboarding/company')
   }
 
@@ -54,7 +48,7 @@ export default async function VehicleLogbookPage({
   // Get all vehicles
   const vehicles = await prisma.asset.findMany({
     where: {
-      company_id: membership.company.id,
+      company_id: companyId,
       asset_type: 'vehicle',
       is_deleted: false,
     },
@@ -64,7 +58,7 @@ export default async function VehicleLogbookPage({
   // Get log entries
   const entriesData = await prisma.vehicleLogEntry.findMany({
     where: {
-      company_id: membership.company.id,
+      company_id: companyId,
       ...(assetId && { asset_id: assetId }),
       trip_date: {
         gte: fiscalYearStart,
@@ -109,7 +103,7 @@ export default async function VehicleLogbookPage({
           </p>
         </div>
         <div className="flex gap-3">
-          <Link
+          <ExportButton
             href={`/api/vehicle-logbook/export?${assetId ? `assetId=${assetId}&` : ''}startDate=${fiscalYearStart.toISOString()}&endDate=${fiscalYearEnd.toISOString()}`}
             className="inline-flex items-center px-4 py-2 text-sm font-medium bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors"
           >
@@ -122,7 +116,7 @@ export default async function VehicleLogbookPage({
               />
             </svg>
             Export CSV
-          </Link>
+          </ExportButton>
           <Link
             href="/vehicle-logbook/new"
             className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#FF9500] rounded-xl hover:bg-[#FF6B00] transition-colors"

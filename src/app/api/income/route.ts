@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { canAddTransaction } from '@/lib/subscription/feature-gate'
 import * as z from 'zod'
 
 const incomeCreateSchema = z.object({
@@ -39,6 +40,21 @@ export async function POST(request: NextRequest) {
     if (!membership) {
       return NextResponse.json(
         { error: 'You do not have access to this company' },
+        { status: 403 }
+      )
+    }
+
+    // Check transaction limit
+    const transactionLimit = await canAddTransaction(validatedData.company_id)
+    if (!transactionLimit.allowed) {
+      return NextResponse.json(
+        {
+          error: 'Transaction limit reached',
+          message: `You have reached your monthly limit of ${transactionLimit.limit} transactions. Upgrade your plan to add more.`,
+          limit: transactionLimit.limit,
+          usage: transactionLimit.usage,
+          upgradeRequired: true,
+        },
         { status: 403 }
       )
     }

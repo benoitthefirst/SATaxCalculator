@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { checkFeatureAccess } from '@/lib/subscription/feature-gate'
 import { Prisma } from '@prisma/client'
 
 export async function GET(request: NextRequest) {
@@ -23,6 +24,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         { error: 'No active company found' },
         { status: 404 }
+      )
+    }
+
+    // Check feature access - CSV exports requires Professional plan or higher
+    const hasAccess = await checkFeatureAccess(membership.company_id, 'csv_exports')
+    if (!hasAccess) {
+      return NextResponse.json(
+        {
+          error: 'Feature not available',
+          message: 'CSV exports are available on Professional and Business plans. Upgrade to export your data.',
+          feature: 'csv_exports',
+          upgradeRequired: true,
+        },
+        { status: 403 }
       )
     }
 

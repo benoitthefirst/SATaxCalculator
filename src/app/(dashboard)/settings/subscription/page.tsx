@@ -134,7 +134,7 @@ export default function SubscriptionSettingsPage() {
                 {subscription?.plan?.name || 'Starter'}
               </span>
               {subscription?.cancel_at_period_end && (
-                <span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 text-xs font-medium rounded">
+                <span className="px-2 py-0.5 bg-amber-100 text-amber-800 text-xs font-medium rounded">
                   Cancelling
                 </span>
               )}
@@ -162,7 +162,7 @@ export default function SubscriptionSettingsPage() {
           <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
               <p className="text-sm text-gray-500">Status</p>
-              <p className="font-medium">
+              <p className={`font-medium ${subscription.cancel_at_period_end ? 'text-amber-700' : 'text-gray-900'}`}>
                 {subscription.cancel_at_period_end ? 'Cancelling' : subscription.status}
               </p>
             </div>
@@ -170,7 +170,7 @@ export default function SubscriptionSettingsPage() {
               <p className="text-sm text-gray-500">
                 {subscription.cancel_at_period_end ? 'Access Until' : 'Next Billing'}
               </p>
-              <p className="font-medium">{formatDate(subscription.current_period_end)}</p>
+              <p className="font-medium text-gray-900">{formatDate(subscription.current_period_end)}</p>
             </div>
             {!subscription.cancel_at_period_end && (
               <div>
@@ -185,8 +185,8 @@ export default function SubscriptionSettingsPage() {
         )}
 
         {subscription?.cancel_at_period_end && (
-          <div className="mt-4 p-4 bg-yellow-50 rounded-lg">
-            <p className="text-sm text-yellow-800">
+          <div className="mt-4 p-4 bg-amber-50 rounded-lg border border-amber-200">
+            <p className="text-sm text-amber-800">
               Your subscription has been cancelled. You will continue to have access to{' '}
               {subscription.plan?.name} features until{' '}
               {formatDate(subscription.current_period_end)}. After that, you will be

@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { redirect, notFound } from 'next/navigation'
 import ExpenseDetail from '@/components/expenses/ExpenseDetail'
+import { getActiveCompanyForUser } from '@/lib/company-context'
 
 export const metadata = {
   title: 'Expense Details - ProcessX',
@@ -19,19 +20,17 @@ export default async function ExpenseDetailPage({
     redirect('/login')
   }
 
-  const membership = await prisma.companyMember.findFirst({
-    where: {
-      user_id: session.user.id,
-      is_active: true,
-    },
-    include: {
-      company: true,
-    },
-  })
+  const companyId = await getActiveCompanyForUser(session.user.id)
 
-  if (!membership) {
+  if (!companyId) {
     redirect('/onboarding/company')
   }
+
+  // Get company details for VAT registration status
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: { vat_number: true },
+  })
 
   const { id } = await params
 
@@ -49,7 +48,7 @@ export default async function ExpenseDetailPage({
     },
   })
 
-  if (!expense || expense.company_id !== membership.company.id || expense.is_deleted) {
+  if (!expense || expense.company_id !== companyId || expense.is_deleted) {
     notFound()
   }
 
@@ -62,9 +61,9 @@ export default async function ExpenseDetailPage({
       <ExpenseDetail
         expense={expense}
         categories={categories}
-        companyId={membership.company.id}
+        companyId={companyId}
         userId={session.user.id}
-        isVatRegistered={Boolean(membership.company.vat_number)}
+        isVatRegistered={Boolean(company?.vat_number)}
       />
     </div>
   )

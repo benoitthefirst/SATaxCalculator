@@ -2,8 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { validateSignature } from '@/lib/payfast/signature'
 import { PAYFAST_CONFIG, PAYFAST_IPS } from '@/lib/payfast'
-import { addMonths, addYears } from 'date-fns'
+import { addMonths, addYears, format } from 'date-fns'
 import { SubscriptionStatus } from '@prisma/client'
+import {
+  sendEmail,
+  subscriptionCreatedEmail,
+  paymentSuccessEmail,
+  paymentFailedEmail,
+} from '@/lib/email'
 
 type BillingCycle = 'MONTHLY' | 'YEARLY'
 
@@ -218,6 +224,57 @@ async function handleSuccessfulPayment(
     },
   })
 
+  // Send email notification
+  try {
+    // Get company owner's details
+    const companyOwner = await prisma.companyMember.findFirst({
+      where: {
+        company_id: companyId,
+        role: 'owner',
+        is_active: true,
+      },
+      include: {
+        user: { select: { email: true, first_name: true } },
+      },
+    })
+
+    const plan = await prisma.subscriptionPlan.findUnique({
+      where: { id: planId },
+    })
+
+    if (companyOwner?.user && plan) {
+      const isNewSubscription = subscription.created_at.getTime() === subscription.updated_at.getTime()
+      const formattedAmount = `R ${amount.toLocaleString('en-ZA', { minimumFractionDigits: 2 })}`
+      const dashboardUrl = `${process.env.NEXTAUTH_URL || 'https://www.processx.co.za'}/dashboard`
+
+      if (isNewSubscription) {
+        // Send subscription created email
+        const emailContent = subscriptionCreatedEmail({
+          firstName: companyOwner.user.first_name,
+          planName: plan.name,
+          amount: formattedAmount,
+          billingCycle: billingCycle === 'YEARLY' ? 'year' : 'month',
+          nextBillingDate: format(periodEnd, 'd MMMM yyyy'),
+          dashboardUrl,
+        })
+
+        await sendEmail({ to: companyOwner.user.email, ...emailContent })
+      } else {
+        // Send payment success email for recurring payments
+        const emailContent = paymentSuccessEmail({
+          firstName: companyOwner.user.first_name,
+          planName: plan.name,
+          amount: formattedAmount,
+          paymentDate: format(now, 'd MMMM yyyy'),
+        })
+
+        await sendEmail({ to: companyOwner.user.email, ...emailContent })
+      }
+    }
+  } catch (emailError) {
+    console.error('[PayFast ITN] Failed to send payment email:', emailError)
+  }
+
   console.log('[PayFast ITN] Payment processed successfully:', {
     subscription_id: subscription.id,
     company_id: companyId,
@@ -270,6 +327,43 @@ async function handleFailedPayment(payload: ITNPayload, companyId: string) {
       },
     },
   })
+
+  // Send payment failed email
+  try {
+    const companyOwner = await prisma.companyMember.findFirst({
+      where: {
+        company_id: companyId,
+        role: 'owner',
+        is_active: true,
+      },
+      include: {
+        user: { select: { email: true, first_name: true } },
+        company: { select: { name: true } },
+      },
+    })
+
+    const plan = await prisma.subscriptionPlan.findUnique({
+      where: { id: subscription.plan_id },
+    })
+
+    if (companyOwner?.user && plan) {
+      const formattedAmount = `R ${parseFloat(payload.amount_gross || '0').toLocaleString('en-ZA', { minimumFractionDigits: 2 })}`
+      const retryDate = format(addMonths(new Date(), 0), 'd MMMM yyyy') // PayFast will retry
+      const updatePaymentUrl = `${process.env.NEXTAUTH_URL || 'https://www.processx.co.za'}/settings/subscription`
+
+      const emailContent = paymentFailedEmail({
+        firstName: companyOwner.user.first_name,
+        planName: plan.name,
+        amount: formattedAmount,
+        retryDate,
+        updatePaymentUrl,
+      })
+
+      await sendEmail({ to: companyOwner.user.email, ...emailContent })
+    }
+  } catch (emailError) {
+    console.error('[PayFast ITN] Failed to send payment failed email:', emailError)
+  }
 
   console.log('[PayFast ITN] Payment failed:', {
     subscription_id: subscription.id,

@@ -145,11 +145,18 @@ export async function getCompanySubscription(
 
 /**
  * Check if a company has access to a specific feature
+ * Returns true if subscriptions are disabled globally (all features accessible)
  */
 export async function checkFeatureAccess(
   companyId: string,
   feature: keyof FeatureLimits
 ): Promise<boolean> {
+  // If subscriptions are disabled, all features are accessible
+  const subscriptionsEnabled = await isSubscriptionsEnabled()
+  if (!subscriptionsEnabled) {
+    return true
+  }
+
   const { limits, isActive } = await getCompanySubscription(companyId)
 
   if (!isActive) {
@@ -172,12 +179,25 @@ export interface UsageLimitResult {
 
 /**
  * Check if a company is within usage limits for a numeric feature
+ * Returns unlimited if subscriptions are disabled globally
  */
 export async function checkUsageLimit(
   companyId: string,
   feature: 'transactions_per_month' | 'team_members' | 'companies',
   currentUsage: number
 ): Promise<UsageLimitResult> {
+  // If subscriptions are disabled, no limits apply
+  const subscriptionsEnabled = await isSubscriptionsEnabled()
+  if (!subscriptionsEnabled) {
+    return {
+      allowed: true,
+      limit: -1,
+      usage: currentUsage,
+      remaining: -1,
+      isUnlimited: true,
+    }
+  }
+
   const { limits, isActive } = await getCompanySubscription(companyId)
 
   // If not active, use STARTER limits
@@ -277,8 +297,22 @@ export async function canAddTeamMember(companyId: string): Promise<UsageLimitRes
 
 /**
  * Check if a user can create another company
+ * Returns unlimited if subscriptions are disabled globally
  */
 export async function canCreateCompany(userId: string): Promise<UsageLimitResult> {
+  // If subscriptions are disabled, no limits apply
+  const subscriptionsEnabled = await isSubscriptionsEnabled()
+  if (!subscriptionsEnabled) {
+    const companyCount = await getUserCompanyCount(userId)
+    return {
+      allowed: true,
+      limit: -1,
+      usage: companyCount,
+      remaining: -1,
+      isUnlimited: true,
+    }
+  }
+
   // Get the user's primary company subscription
   const membership = await prisma.companyMember.findFirst({
     where: {
@@ -352,18 +386,24 @@ export async function canCreateCompany(userId: string): Promise<UsageLimitResult
 
 /**
  * Check if subscriptions are enabled in system settings
+ * Returns false if setting doesn't exist or if there's an error (subscriptions disabled by default)
  */
 export async function isSubscriptionsEnabled(): Promise<boolean> {
-  const setting = await prisma.systemSetting.findUnique({
-    where: { key: 'billing.subscriptions_enabled' },
-  })
+  try {
+    const setting = await prisma.systemSetting.findUnique({
+      where: { key: 'billing.subscriptions_enabled' },
+    })
 
-  // Default to false if setting doesn't exist (for safety during development)
-  if (!setting) {
+    // Default to false if setting doesn't exist (for safety during development)
+    if (!setting) {
+      return false
+    }
+
+    return setting.value === true
+  } catch {
+    // If SystemSetting table doesn't exist or any error, default to disabled
     return false
   }
-
-  return setting.value === true
 }
 
 /**

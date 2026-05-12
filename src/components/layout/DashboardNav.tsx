@@ -5,19 +5,25 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils/cn'
+import CompanySwitcher from './CompanySwitcher'
+
+interface Company {
+  id: string
+  name: string
+  role: string
+}
 
 interface DashboardNavProps {
   user: {
     name: string
     email: string
   }
-  company: {
-    name: string
-    role: string
-  }
+  companies: Company[]
+  currentCompanyId: string
+  canCreateCompany: boolean
 }
 
-export default function DashboardNav({ user, company }: DashboardNavProps) {
+export default function DashboardNav({ user, companies, currentCompanyId, canCreateCompany }: DashboardNavProps) {
   const pathname = usePathname()
 
   const navigation = [
@@ -66,10 +72,11 @@ export default function DashboardNav({ user, company }: DashboardNavProps) {
           </div>
 
           <div className="flex items-center space-x-4">
-            <div className="hidden sm:block text-right">
-              <p className="text-sm font-medium text-gray-900">{company.name}</p>
-              <p className="text-xs text-gray-500 capitalize">{company.role}</p>
-            </div>
+            <CompanySwitcher
+              companies={companies}
+              currentCompanyId={currentCompanyId}
+              canCreateCompany={canCreateCompany}
+            />
 
             <div className="relative group">
               <button className="flex items-center space-x-2 p-1.5 rounded-lg hover:bg-gray-50 transition-colors">

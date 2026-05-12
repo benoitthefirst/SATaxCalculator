@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { redirect } from 'next/navigation'
+import { getActiveCompanyForUser } from '@/lib/company-context'
 import AssetForm from '@/components/forms/AssetForm'
 
 export const metadata = {
@@ -15,17 +16,9 @@ export default async function NewAssetPage() {
     redirect('/login')
   }
 
-  const membership = await prisma.companyMember.findFirst({
-    where: {
-      user_id: session.user.id,
-      is_active: true,
-    },
-    include: {
-      company: true,
-    },
-  })
+  const companyId = await getActiveCompanyForUser(session.user.id)
 
-  if (!membership) {
+  if (!companyId) {
     redirect('/onboarding/company')
   }
 
@@ -39,7 +32,7 @@ export default async function NewAssetPage() {
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 p-8">
-        <AssetForm companyId={membership.company.id} />
+        <AssetForm companyId={companyId} />
       </div>
     </div>
   )

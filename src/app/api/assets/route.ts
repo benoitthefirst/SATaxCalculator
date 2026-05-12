@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { checkFeatureAccess } from '@/lib/subscription/feature-gate'
 import * as z from 'zod'
 
 // SARS Depreciation Rates (Interpretation Note 47)
@@ -51,6 +52,20 @@ export async function POST(request: NextRequest) {
     if (!membership) {
       return NextResponse.json(
         { error: 'You do not have access to this company' },
+        { status: 403 }
+      )
+    }
+
+    // Check feature access - asset management requires Professional plan or higher
+    const hasAccess = await checkFeatureAccess(validatedData.company_id, 'asset_management')
+    if (!hasAccess) {
+      return NextResponse.json(
+        {
+          error: 'Feature not available',
+          message: 'Asset management is available on Professional and Business plans. Upgrade to track and depreciate your business assets.',
+          feature: 'asset_management',
+          upgradeRequired: true,
+        },
         { status: 403 }
       )
     }
@@ -121,6 +136,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         { error: 'No active company found' },
         { status: 404 }
+      )
+    }
+
+    // Check feature access
+    const hasAccess = await checkFeatureAccess(membership.company_id, 'asset_management')
+    if (!hasAccess) {
+      return NextResponse.json(
+        {
+          error: 'Feature not available',
+          message: 'Asset management is available on Professional and Business plans.',
+          feature: 'asset_management',
+          upgradeRequired: true,
+        },
+        { status: 403 }
       )
     }
 

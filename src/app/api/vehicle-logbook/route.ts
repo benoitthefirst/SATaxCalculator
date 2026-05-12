@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { checkFeatureAccess } from '@/lib/subscription/feature-gate'
 import * as z from 'zod'
 
 const logEntryCreateSchema = z.object({
@@ -35,6 +36,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         { error: 'No active company found' },
         { status: 404 }
+      )
+    }
+
+    // Check feature access - vehicle logbook requires Professional plan or higher
+    const hasAccess = await checkFeatureAccess(membership.company_id, 'vehicle_logbook')
+    if (!hasAccess) {
+      return NextResponse.json(
+        {
+          error: 'Feature not available',
+          message: 'Vehicle logbook is available on Professional and Business plans. Upgrade to track your business travel and claim SARS deductions.',
+          feature: 'vehicle_logbook',
+          upgradeRequired: true,
+        },
+        { status: 403 }
       )
     }
 
@@ -142,6 +157,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'No active company found' },
         { status: 404 }
+      )
+    }
+
+    // Check feature access
+    const hasAccess = await checkFeatureAccess(membership.company_id, 'vehicle_logbook')
+    if (!hasAccess) {
+      return NextResponse.json(
+        {
+          error: 'Feature not available',
+          message: 'Vehicle logbook is available on Professional and Business plans.',
+          feature: 'vehicle_logbook',
+          upgradeRequired: true,
+        },
+        { status: 403 }
       )
     }
 

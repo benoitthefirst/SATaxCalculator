@@ -1,7 +1,9 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { redirect } from 'next/navigation'
+import { getActiveCompanyForUser } from '@/lib/company-context'
 import Link from 'next/link'
+import { ExportButton } from '@/components/common/ExportButton'
 
 export const metadata = {
   title: 'Assets - ProcessX',
@@ -15,23 +17,15 @@ export default async function AssetsPage() {
     redirect('/login')
   }
 
-  const membership = await prisma.companyMember.findFirst({
-    where: {
-      user_id: session.user.id,
-      is_active: true,
-    },
-    include: {
-      company: true,
-    },
-  })
+  const companyId = await getActiveCompanyForUser(session.user.id)
 
-  if (!membership) {
+  if (!companyId) {
     redirect('/onboarding/company')
   }
 
   const assets = await prisma.asset.findMany({
     where: {
-      company_id: membership.company.id,
+      company_id: companyId,
       is_deleted: false,
     },
     orderBy: { purchase_date: 'desc' },
@@ -87,7 +81,7 @@ export default async function AssetsPage() {
           </p>
         </div>
         <div className="flex gap-3">
-          <Link
+          <ExportButton
             href="/api/assets/export"
             className="inline-flex items-center px-6 py-3 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-50 transition-all duration-200 active:scale-[0.98]"
           >
@@ -105,7 +99,7 @@ export default async function AssetsPage() {
               />
             </svg>
             Export CSV
-          </Link>
+          </ExportButton>
           <Link
             href="/assets/new"
             className="inline-flex items-center px-6 py-3 bg-gradient-to-br from-[#FF9500] to-[#FF6B00] text-white text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-orange-500/30 transition-all duration-200 active:scale-[0.98]"

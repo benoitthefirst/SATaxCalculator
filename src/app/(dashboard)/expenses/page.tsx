@@ -4,6 +4,8 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Prisma } from '@prisma/client'
 import ExpenseFilters from '@/components/expenses/ExpenseFilters'
+import { ExportButton } from '@/components/common/ExportButton'
+import { getActiveCompanyForUser } from '@/lib/company-context'
 
 export const metadata = {
   title: 'Expenses - ProcessX',
@@ -21,17 +23,9 @@ export default async function ExpensesPage({
     redirect('/login')
   }
 
-  const membership = await prisma.companyMember.findFirst({
-    where: {
-      user_id: session.user.id,
-      is_active: true,
-    },
-    include: {
-      company: true,
-    },
-  })
+  const companyId = await getActiveCompanyForUser(session.user.id)
 
-  if (!membership) {
+  if (!companyId) {
     redirect('/onboarding/company')
   }
 
@@ -68,7 +62,7 @@ export default async function ExpensesPage({
   }
 
   const where: Prisma.ExpenseWhereInput = {
-    company_id: membership.company.id,
+    company_id: companyId,
     is_deleted: false,
     expense_date: {
       gte: dateStart,
@@ -101,7 +95,7 @@ export default async function ExpensesPage({
     }),
     prisma.expense.count({ where }),
     prisma.expenseCategory.findMany({
-      where: { company_id: membership.company.id },
+      where: { company_id: companyId },
       orderBy: { name: 'asc' },
     }),
     prisma.expense.aggregate({
@@ -169,7 +163,7 @@ export default async function ExpensesPage({
             </svg>
             Analytics
           </Link>
-          <Link
+          <ExportButton
             href={`/api/expenses/export?year=${year}${month ? `&month=${month}` : ''}${searchQuery ? `&search=${searchQuery}` : ''}${categoryId ? `&category=${categoryId}` : ''}`}
             className="inline-flex items-center px-6 py-3 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-50 transition-all duration-200 active:scale-[0.98]"
           >
@@ -187,7 +181,7 @@ export default async function ExpensesPage({
               />
             </svg>
             Export CSV
-          </Link>
+          </ExportButton>
           <Link
             href="/expenses/new"
             className="inline-flex items-center px-6 py-3 bg-gradient-to-br from-[#007AFF] to-[#0051D5] text-white text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-200 active:scale-[0.98]"
