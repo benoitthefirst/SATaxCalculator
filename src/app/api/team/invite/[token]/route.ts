@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { sendEmail, inviteAcceptedEmail } from '@/lib/email'
 
 // GET /api/team/invite/[token] - Get invite details
 export async function GET(
@@ -179,6 +180,36 @@ export async function POST(
         },
       },
     })
+
+    // Notify the inviter that the invitation was accepted
+    try {
+      const inviter = await prisma.user.findUnique({
+        where: { id: invite.invited_by },
+        select: { email: true, first_name: true },
+      })
+
+      if (inviter) {
+        const teamUrl = `${process.env.NEXTAUTH_URL || 'https://www.processx.co.za'}/settings/team`
+        const memberName = `${user.first_name} ${user.last_name}`.trim()
+
+        const emailContent = inviteAcceptedEmail({
+          inviterName: inviter.first_name,
+          memberName,
+          memberEmail: user.email,
+          companyName: invite.company.name,
+          role: invite.role,
+          teamUrl,
+        })
+
+        await sendEmail({
+          to: inviter.email,
+          ...emailContent,
+        })
+      }
+    } catch (emailError) {
+      console.error('Failed to send invite accepted email:', emailError)
+      // Don't fail - the acceptance was successful
+    }
 
     return NextResponse.json({
       success: true,

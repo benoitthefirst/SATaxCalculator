@@ -467,3 +467,55 @@ If you have any feedback about why you cancelled, we'd love to hear it.
     `.trim(),
   }
 }
+
+// Team invite accepted notification (sent to the inviter)
+export function inviteAcceptedEmail(params: {
+  inviterName: string
+  memberName: string
+  memberEmail: string
+  companyName: string
+  role: string
+  teamUrl: string
+}) {
+  const { inviterName, memberName, memberEmail, companyName, role, teamUrl } = params
+
+  const roleLabel = {
+    admin: 'Admin',
+    accountant: 'Accountant',
+    viewer: 'Viewer',
+  }[role] || role
+
+  const html = emailWrapper(`
+    <h2 style="margin-top: 0; color: #111;">Invitation Accepted!</h2>
+    <p>Hi ${inviterName},</p>
+    <p>Great news! <strong>${memberName}</strong> (${memberEmail}) has accepted your invitation to join <strong>${companyName}</strong> as a <strong>${roleLabel}</strong>.</p>
+
+    <div style="background: #ecfdf5; border-radius: 8px; padding: 20px; margin: 20px 0; border-left: 4px solid #10b981;">
+      <p style="margin: 0; color: #065f46;">
+        <strong>${memberName}</strong> now has access to ${companyName} with ${roleLabel} permissions.
+      </p>
+    </div>
+
+    <div style="text-align: center; margin: 30px 0;">
+      <a href="${teamUrl}" style="display: inline-block; background: linear-gradient(135deg, #FF9500, #FF6B00); color: white; text-decoration: none; padding: 14px 30px; border-radius: 10px; font-weight: 600;">
+        View Team Members
+      </a>
+    </div>
+  `)
+
+  return {
+    subject: `${memberName} has joined ${companyName}`,
+    html,
+    text: `
+Invitation Accepted!
+
+Hi ${inviterName},
+
+Great news! ${memberName} (${memberEmail}) has accepted your invitation to join ${companyName} as a ${roleLabel}.
+
+${memberName} now has access to ${companyName} with ${roleLabel} permissions.
+
+View team members: ${teamUrl}
+    `.trim(),
+  }
+}

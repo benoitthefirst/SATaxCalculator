@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { canAddTeamMember } from '@/lib/subscription/feature-gate'
-import { sendEmail } from '@/lib/email'
+import { sendEmail, teamInviteEmail } from '@/lib/email'
 import crypto from 'crypto'
 
 // POST /api/team/invite - Send a team member invitation
@@ -138,31 +138,21 @@ export async function POST(request: NextRequest) {
       select: { first_name: true, last_name: true },
     })
 
-    // Send invitation email
+    // Send invitation email using template
     const inviteUrl = `${process.env.NEXTAUTH_URL || 'https://www.processx.co.za'}/invite/${token}`
+    const inviterName = `${inviter?.first_name || ''} ${inviter?.last_name || ''}`.trim() || 'A team member'
+
+    const emailContent = teamInviteEmail({
+      companyName: membership.company.name,
+      inviterName,
+      role,
+      acceptUrl: inviteUrl,
+    })
 
     try {
       await sendEmail({
         to: email,
-        subject: `You've been invited to join ${membership.company.name} on ProcessX`,
-        html: `
-          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2>You've been invited to join a team!</h2>
-            <p>
-              <strong>${inviter?.first_name} ${inviter?.last_name}</strong> has invited you to join
-              <strong>${membership.company.name}</strong> as a <strong>${role}</strong> on ProcessX.
-            </p>
-            <p>ProcessX is a bookkeeping platform for South African businesses.</p>
-            <p style="margin: 30px 0;">
-              <a href="${inviteUrl}" style="background: #FF9500; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block;">
-                Accept Invitation
-              </a>
-            </p>
-            <p style="color: #666; font-size: 14px;">
-              This invitation will expire in 7 days. If you didn't expect this invitation, you can ignore this email.
-            </p>
-          </div>
-        `,
+        ...emailContent,
       })
     } catch (emailError) {
       console.error('Failed to send invite email:', emailError)
