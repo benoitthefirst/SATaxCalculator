@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Prisma } from '@prisma/client'
 import ExpenseFilters from '@/components/expenses/ExpenseFilters'
 import { ExportButton } from '@/components/common/ExportButton'
+import { getActiveCompanyForUser } from '@/lib/company-context'
 
 export const metadata = {
   title: 'Expenses - ProcessX',
@@ -22,17 +23,9 @@ export default async function ExpensesPage({
     redirect('/login')
   }
 
-  const membership = await prisma.companyMember.findFirst({
-    where: {
-      user_id: session.user.id,
-      is_active: true,
-    },
-    include: {
-      company: true,
-    },
-  })
+  const companyId = await getActiveCompanyForUser(session.user.id)
 
-  if (!membership) {
+  if (!companyId) {
     redirect('/onboarding/company')
   }
 
@@ -69,7 +62,7 @@ export default async function ExpensesPage({
   }
 
   const where: Prisma.ExpenseWhereInput = {
-    company_id: membership.company.id,
+    company_id: companyId,
     is_deleted: false,
     expense_date: {
       gte: dateStart,
@@ -102,7 +95,7 @@ export default async function ExpensesPage({
     }),
     prisma.expense.count({ where }),
     prisma.expenseCategory.findMany({
-      where: { company_id: membership.company.id },
+      where: { company_id: companyId },
       orderBy: { name: 'asc' },
     }),
     prisma.expense.aggregate({

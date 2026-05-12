@@ -17,26 +17,29 @@ export async function getUserCompanies(userId: string): Promise<CompanyMembershi
       user_id: userId,
       is_active: true,
     },
-    include: {
-      company: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
-    },
     orderBy: [
       { role: 'asc' }, // owner first
       { joined_at: 'asc' },
     ],
   })
 
-  return memberships.map((m) => ({
-    id: m.id,
-    companyId: m.company.id,
-    companyName: m.company.name,
-    role: m.role,
-  }))
+  // Get company details separately to avoid TypeScript issues with Prisma includes
+  const companyIds = memberships.map((m) => m.company_id)
+  const companies = await prisma.company.findMany({
+    where: { id: { in: companyIds } },
+    select: { id: true, name: true },
+  })
+  const companyMap = new Map(companies.map((c) => [c.id, c]))
+
+  return memberships.map((m) => {
+    const company = companyMap.get(m.company_id)
+    return {
+      id: m.id,
+      companyId: m.company_id,
+      companyName: company?.name || 'Unknown Company',
+      role: m.role,
+    }
+  })
 }
 
 /**
@@ -71,4 +74,13 @@ export async function getActiveCompany(userId: string): Promise<CompanyMembershi
 export async function getActiveCompanyId(): Promise<string | undefined> {
   const cookieStore = await cookies()
   return cookieStore.get('active_company_id')?.value
+}
+
+/**
+ * Get the active company ID for a user, ensuring they have access
+ * Returns the company ID or null if user has no companies
+ */
+export async function getActiveCompanyForUser(userId: string): Promise<string | null> {
+  const activeCompany = await getActiveCompany(userId)
+  return activeCompany?.companyId ?? null
 }

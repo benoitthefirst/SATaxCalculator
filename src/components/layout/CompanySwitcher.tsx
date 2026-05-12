@@ -62,13 +62,11 @@ export default function CompanySwitcher({
       })
 
       if (response.ok) {
-        // Refresh the page to load new company data
-        router.refresh()
-        setIsOpen(false)
+        // Full page reload to update all data for the new company
+        window.location.href = '/dashboard'
       }
     } catch (error) {
       console.error('Failed to switch company:', error)
-    } finally {
       setIsSwitching(false)
     }
   }

@@ -226,8 +226,8 @@ export default function TeamSettingsPage() {
       {/* Pending Invites */}
       {data?.pendingInvites && data.pendingInvites.length > 0 && (
         <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 bg-yellow-50">
-            <h3 className="text-lg font-semibold text-yellow-800">
+          <div className="px-6 py-4 border-b border-gray-100 bg-amber-50">
+            <h3 className="text-lg font-semibold text-amber-800">
               Pending Invitations ({data.pendingInvites.length})
             </h3>
           </div>

@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth'
 import Link from 'next/link'
 import { prisma } from '@/lib/db'
 import CompanySettings from '@/components/settings/CompanySettings'
+import { getActiveCompany } from '@/lib/company-context'
 
 export const metadata = {
   title: 'Settings - ProcessX',
@@ -15,19 +16,26 @@ export default async function SettingsPage() {
     return null
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-  })
+  const [user, activeCompanyMembership] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+    }),
+    getActiveCompany(session.user.id),
+  ])
 
-  const membership = await prisma.companyMember.findFirst({
-    where: {
-      user_id: session.user.id,
-      is_active: true,
-    },
-    include: {
-      company: true,
-    },
-  })
+  // Get the full company details and membership role if we have an active company
+  const membership = activeCompanyMembership
+    ? await prisma.companyMember.findFirst({
+        where: {
+          user_id: session.user.id,
+          company_id: activeCompanyMembership.companyId,
+          is_active: true,
+        },
+        include: {
+          company: true,
+        },
+      })
+    : null
 
   return (
     <div className="space-y-6">

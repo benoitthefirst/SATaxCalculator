@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { redirect } from 'next/navigation'
+import { getActiveCompanyForUser } from '@/lib/company-context'
 import Link from 'next/link'
 import { ExportButton } from '@/components/common/ExportButton'
 
@@ -16,23 +17,15 @@ export default async function AssetsPage() {
     redirect('/login')
   }
 
-  const membership = await prisma.companyMember.findFirst({
-    where: {
-      user_id: session.user.id,
-      is_active: true,
-    },
-    include: {
-      company: true,
-    },
-  })
+  const companyId = await getActiveCompanyForUser(session.user.id)
 
-  if (!membership) {
+  if (!companyId) {
     redirect('/onboarding/company')
   }
 
   const assets = await prisma.asset.findMany({
     where: {
-      company_id: membership.company.id,
+      company_id: companyId,
       is_deleted: false,
     },
     orderBy: { purchase_date: 'desc' },

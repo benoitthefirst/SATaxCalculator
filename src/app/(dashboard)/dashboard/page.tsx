@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db'
 import Link from 'next/link'
 import { Prisma } from '@prisma/client'
 import TaxYearSelector from '@/components/dashboard/TaxYearSelector'
+import { getActiveCompany } from '@/lib/company-context'
 
 type IncomeWithCategory = Prisma.IncomeGetPayload<{ include: { category: true } }>
 type ExpenseWithCategory = Prisma.ExpenseGetPayload<{ include: { category: true } }>
@@ -23,18 +24,19 @@ export default async function DashboardPage({
     return null
   }
 
-  // Get user's company
-  const membership = await prisma.companyMember.findFirst({
-    where: {
-      user_id: session.user.id,
-      is_active: true,
-    },
-    include: {
-      company: true,
-    },
+  // Get user's active company (from cookie or default to first)
+  const activeCompany = await getActiveCompany(session.user.id)
+
+  if (!activeCompany) {
+    return null
+  }
+
+  // Get company details
+  const company = await prisma.company.findUnique({
+    where: { id: activeCompany.companyId },
   })
 
-  if (!membership) {
+  if (!company) {
     return null
   }
 
@@ -46,7 +48,7 @@ export default async function DashboardPage({
   const fiscalYearStart = new Date(selectedYear, 2, 1) // March 1
   const fiscalYearEnd = new Date(selectedYear + 1, 1, 28, 23, 59, 59) // Feb 28
 
-  const companyId = membership.company.id
+  const companyId = company.id
 
   // Get all stats in parallel
   const [
@@ -183,7 +185,7 @@ export default async function DashboardPage({
   const totalDeductibleExpenses = Number(deductibleExpenseAgg._sum.amount || 0)
 
   // Check if company is VAT registered
-  const isVatRegistered = Boolean(membership.company.vat_number)
+  const isVatRegistered = Boolean(company.vat_number)
   const vatRate = 0.15 // 15% VAT in South Africa
 
   // For VAT-registered businesses, income includes VAT collected which is not taxable income
@@ -237,7 +239,7 @@ export default async function DashboardPage({
           <div className="mt-1 flex items-center gap-3">
             <TaxYearSelector currentYear={selectedYear} />
             <span className="text-sm text-gray-400">•</span>
-            <span className="text-sm text-gray-500">{membership.company.name}</span>
+            <span className="text-sm text-gray-500">{company.name}</span>
             {isVatRegistered && (
               <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-blue-100 text-blue-700">
                 VAT Registered

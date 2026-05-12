@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { redirect } from 'next/navigation'
 import ExpenseForm from '@/components/forms/ExpenseForm'
+import { getActiveCompanyForUser } from '@/lib/company-context'
 
 export const metadata = {
   title: 'Add Expense - ProcessX',
@@ -15,19 +16,17 @@ export default async function NewExpensePage() {
     redirect('/login')
   }
 
-  const membership = await prisma.companyMember.findFirst({
-    where: {
-      user_id: session.user.id,
-      is_active: true,
-    },
-    include: {
-      company: true,
-    },
-  })
+  const companyId = await getActiveCompanyForUser(session.user.id)
 
-  if (!membership) {
+  if (!companyId) {
     redirect('/onboarding/company')
   }
+
+  // Get company details for VAT registration status
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: { vat_number: true },
+  })
 
   const categories = await prisma.expenseCategory.findMany({
     orderBy: { name: 'asc' },
@@ -44,10 +43,10 @@ export default async function NewExpensePage() {
 
       <div className="bg-white rounded-2xl border border-gray-100 p-8">
         <ExpenseForm
-          companyId={membership.company.id}
+          companyId={companyId}
           userId={session.user.id}
           categories={categories}
-          isVatRegistered={Boolean(membership.company.vat_number)}
+          isVatRegistered={Boolean(company?.vat_number)}
         />
       </div>
     </div>

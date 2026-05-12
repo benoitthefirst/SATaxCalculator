@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { redirect, notFound } from 'next/navigation'
+import { getActiveCompanyForUser } from '@/lib/company-context'
 import Link from 'next/link'
 import AssetForm from '@/components/forms/AssetForm'
 import type { Asset, VehicleLogEntry } from '@prisma/client'
@@ -25,17 +26,9 @@ export default async function AssetDetailPage({
     redirect('/login')
   }
 
-  const membership = await prisma.companyMember.findFirst({
-    where: {
-      user_id: session.user.id,
-      is_active: true,
-    },
-    include: {
-      company: true,
-    },
-  })
+  const companyId = await getActiveCompanyForUser(session.user.id)
 
-  if (!membership) {
+  if (!companyId) {
     redirect('/onboarding/company')
   }
 
@@ -51,7 +44,7 @@ export default async function AssetDetailPage({
     },
   })
 
-  if (!assetData || assetData.company_id !== membership.company.id || assetData.is_deleted) {
+  if (!assetData || assetData.company_id !== companyId || assetData.is_deleted) {
     notFound()
   }
 
@@ -248,7 +241,7 @@ export default async function AssetDetailPage({
       <div className="bg-white rounded-2xl border border-gray-100 p-8">
         <h3 className="text-lg font-semibold text-gray-900 mb-6">Edit Asset</h3>
         <AssetForm
-          companyId={membership.company.id}
+          companyId={companyId}
           assetId={asset.id}
           initialData={{
             name: asset.name,

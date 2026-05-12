@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { redirect } from 'next/navigation'
 import IncomeForm from '@/components/forms/IncomeForm'
+import { getActiveCompanyForUser } from '@/lib/company-context'
 
 export const metadata = {
   title: 'Add Income - ProcessX',
@@ -15,26 +16,24 @@ export default async function NewIncomePage() {
     redirect('/login')
   }
 
-  const membership = await prisma.companyMember.findFirst({
-    where: {
-      user_id: session.user.id,
-      is_active: true,
-    },
-    include: {
-      company: true,
-    },
-  })
+  const companyId = await getActiveCompanyForUser(session.user.id)
 
-  if (!membership) {
+  if (!companyId) {
     redirect('/onboarding/company')
   }
+
+  // Get company details for VAT registration status
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: { vat_number: true },
+  })
 
   // Get income categories (system + company-specific)
   let categories = await prisma.incomeCategory.findMany({
     where: {
       OR: [
         { is_system: true },
-        { company_id: membership.company.id },
+        { company_id: companyId },
       ],
       is_active: true,
     },
@@ -76,10 +75,10 @@ export default async function NewIncomePage() {
 
       <div className="bg-white rounded-2xl border border-gray-100 p-8">
         <IncomeForm
-          companyId={membership.company.id}
+          companyId={companyId}
           userId={session.user.id}
           categories={categories}
-          isVatRegistered={Boolean(membership.company.vat_number)}
+          isVatRegistered={Boolean(company?.vat_number)}
         />
       </div>
     </div>

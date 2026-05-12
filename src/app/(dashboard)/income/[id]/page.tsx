@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { redirect, notFound } from 'next/navigation'
 import IncomeDetail from '@/components/income/IncomeDetail'
+import { getActiveCompanyForUser } from '@/lib/company-context'
 
 export const metadata = {
   title: 'Income Details - ProcessX',
@@ -19,19 +20,17 @@ export default async function IncomeDetailPage({
     redirect('/login')
   }
 
-  const membership = await prisma.companyMember.findFirst({
-    where: {
-      user_id: session.user.id,
-      is_active: true,
-    },
-    include: {
-      company: true,
-    },
-  })
+  const companyId = await getActiveCompanyForUser(session.user.id)
 
-  if (!membership) {
+  if (!companyId) {
     redirect('/onboarding/company')
   }
+
+  // Get company details for VAT registration status
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: { vat_number: true },
+  })
 
   const { id } = await params
 
@@ -50,7 +49,7 @@ export default async function IncomeDetailPage({
   })
 
   // Security check: income must belong to user's company
-  if (!income || income.company_id !== membership.company.id || income.is_deleted) {
+  if (!income || income.company_id !== companyId || income.is_deleted) {
     notFound()
   }
 
@@ -58,7 +57,7 @@ export default async function IncomeDetailPage({
     where: {
       OR: [
         { is_system: true },
-        { company_id: membership.company.id },
+        { company_id: companyId },
       ],
       is_active: true,
     },
@@ -70,9 +69,9 @@ export default async function IncomeDetailPage({
       <IncomeDetail
         income={income}
         categories={categories}
-        companyId={membership.company.id}
+        companyId={companyId}
         userId={session.user.id}
-        isVatRegistered={Boolean(membership.company.vat_number)}
+        isVatRegistered={Boolean(company?.vat_number)}
       />
     </div>
   )

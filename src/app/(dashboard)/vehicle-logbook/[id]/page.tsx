@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { redirect, notFound } from 'next/navigation'
+import { getActiveCompanyForUser } from '@/lib/company-context'
 import Link from 'next/link'
 import VehicleLogDetail from '@/components/vehicle/VehicleLogDetail'
 
@@ -20,17 +21,9 @@ export default async function VehicleLogDetailPage({
     redirect('/login')
   }
 
-  const membership = await prisma.companyMember.findFirst({
-    where: {
-      user_id: session.user.id,
-      is_active: true,
-    },
-    include: {
-      company: true,
-    },
-  })
+  const companyId = await getActiveCompanyForUser(session.user.id)
 
-  if (!membership) {
+  if (!companyId) {
     redirect('/onboarding/company')
   }
 
@@ -39,7 +32,7 @@ export default async function VehicleLogDetailPage({
   const entry = await prisma.vehicleLogEntry.findFirst({
     where: {
       id,
-      company_id: membership.company.id,
+      company_id: companyId,
     },
     include: {
       asset: {
@@ -59,7 +52,7 @@ export default async function VehicleLogDetailPage({
   // Get all vehicles for edit form
   const vehicles = await prisma.asset.findMany({
     where: {
-      company_id: membership.company.id,
+      company_id: companyId,
       asset_type: 'vehicle',
       is_deleted: false,
     },
@@ -76,7 +69,7 @@ export default async function VehicleLogDetailPage({
       <VehicleLogDetail
         entry={entry}
         vehicles={vehicles}
-        companyId={membership.company.id}
+        companyId={companyId}
       />
     </div>
   )

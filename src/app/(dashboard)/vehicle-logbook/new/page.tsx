@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { redirect } from 'next/navigation'
+import { getActiveCompanyForUser } from '@/lib/company-context'
 import Link from 'next/link'
 import VehicleLogForm from '@/components/forms/VehicleLogForm'
 
@@ -20,24 +21,16 @@ export default async function NewVehicleLogPage({
     redirect('/login')
   }
 
-  const membership = await prisma.companyMember.findFirst({
-    where: {
-      user_id: session.user.id,
-      is_active: true,
-    },
-    include: {
-      company: true,
-    },
-  })
+  const companyId = await getActiveCompanyForUser(session.user.id)
 
-  if (!membership) {
+  if (!companyId) {
     redirect('/onboarding/company')
   }
 
   // Get all vehicles (assets of type 'vehicle')
   const vehicles = await prisma.asset.findMany({
     where: {
-      company_id: membership.company.id,
+      company_id: companyId,
       asset_type: 'vehicle',
       is_deleted: false,
     },
@@ -70,7 +63,7 @@ export default async function NewVehicleLogPage({
       {/* Form */}
       <div className="bg-white rounded-2xl border border-gray-100 p-8">
         <VehicleLogForm
-          companyId={membership.company.id}
+          companyId={companyId}
           vehicles={vehicles}
           preselectedVehicleId={preselectedVehicleId}
         />

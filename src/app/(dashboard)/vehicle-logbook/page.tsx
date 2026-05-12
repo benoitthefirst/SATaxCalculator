@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { redirect } from 'next/navigation'
+import { getActiveCompanyForUser } from '@/lib/company-context'
 import Link from 'next/link'
 import type { VehicleLogEntry } from '@prisma/client'
 import LogbookFilters from '@/components/vehicle/LogbookFilters'
@@ -30,17 +31,9 @@ export default async function VehicleLogbookPage({
     redirect('/login')
   }
 
-  const membership = await prisma.companyMember.findFirst({
-    where: {
-      user_id: session.user.id,
-      is_active: true,
-    },
-    include: {
-      company: true,
-    },
-  })
+  const companyId = await getActiveCompanyForUser(session.user.id)
 
-  if (!membership) {
+  if (!companyId) {
     redirect('/onboarding/company')
   }
 
@@ -55,7 +48,7 @@ export default async function VehicleLogbookPage({
   // Get all vehicles
   const vehicles = await prisma.asset.findMany({
     where: {
-      company_id: membership.company.id,
+      company_id: companyId,
       asset_type: 'vehicle',
       is_deleted: false,
     },
@@ -65,7 +58,7 @@ export default async function VehicleLogbookPage({
   // Get log entries
   const entriesData = await prisma.vehicleLogEntry.findMany({
     where: {
-      company_id: membership.company.id,
+      company_id: companyId,
       ...(assetId && { asset_id: assetId }),
       trip_date: {
         gte: fiscalYearStart,
