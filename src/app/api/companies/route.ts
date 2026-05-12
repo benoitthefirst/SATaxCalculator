@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import { auth } from '@/lib/auth'
 
 import { prisma } from '@/lib/db'
 import { z } from 'zod'
+import { canCreateCompany } from '@/lib/subscription/feature-gate'
 
 const createCompanySchema = z.object({
   name: z.string().min(1, 'Company name is required'),
@@ -33,18 +35,14 @@ export async function POST(req: Request) {
     const body = await req.json()
     const data = createCompanySchema.parse(body)
 
-    // Check if user already has a company
-    const existingMembership = await prisma.companyMember.findFirst({
-      where: {
-        user_id: session.user.id,
-        is_active: true,
-      },
-    })
-
-    if (existingMembership) {
+    // Check if user can create another company based on subscription
+    const canCreate = await canCreateCompany(session.user.id)
+    if (!canCreate.allowed) {
       return NextResponse.json(
-        { error: 'User already belongs to a company' },
-        { status: 400 }
+        {
+          error: `You've reached your company limit. Your plan allows ${canCreate.limit} ${canCreate.limit === 1 ? 'company' : 'companies'}. Please upgrade to create more.`,
+        },
+        { status: 403 }
       )
     }
 
@@ -79,6 +77,16 @@ export async function POST(req: Request) {
       })
 
       return company
+    })
+
+    // Set the new company as the active company
+    const cookieStore = await cookies()
+    cookieStore.set('active_company_id', result.id, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 365, // 1 year
+      path: '/',
     })
 
     return NextResponse.json(

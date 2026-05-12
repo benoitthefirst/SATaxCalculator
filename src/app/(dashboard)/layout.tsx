@@ -1,8 +1,9 @@
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
-import { prisma } from '@/lib/db'
 import DashboardNav from '@/components/layout/DashboardNav'
 import { QueryProvider } from '@/components/providers/QueryProvider'
+import { getUserCompanies, getActiveCompany } from '@/lib/company-context'
+import { canCreateCompany } from '@/lib/subscription/feature-gate'
 
 export default async function DashboardLayout({
   children,
@@ -18,19 +19,15 @@ export default async function DashboardLayout({
   // Check if user is an admin
   const isAdmin = session.user.role === 'ADMIN' || session.user.role === 'SUPER_ADMIN'
 
-  // Get user's company membership
-  const membership = await prisma.companyMember.findFirst({
-    where: {
-      user_id: session.user.id,
-      is_active: true,
-    },
-    include: {
-      company: true,
-    },
-  })
+  // Get all user's companies and the active one
+  const [companies, activeCompany, canCreate] = await Promise.all([
+    getUserCompanies(session.user.id),
+    getActiveCompany(session.user.id),
+    canCreateCompany(session.user.id),
+  ])
 
   // If no company, redirect appropriately
-  if (!membership) {
+  if (!activeCompany) {
     if (isAdmin) {
       // Admins without a company go to admin dashboard
       redirect('/admin')
@@ -47,10 +44,13 @@ export default async function DashboardLayout({
             name: session.user.name || '',
             email: session.user.email || '',
           }}
-          company={{
-            name: membership.company.name,
-            role: membership.role,
-          }}
+          companies={companies.map((c) => ({
+            id: c.companyId,
+            name: c.companyName,
+            role: c.role,
+          }))}
+          currentCompanyId={activeCompany.companyId}
+          canCreateCompany={canCreate.allowed}
         />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           {children}
