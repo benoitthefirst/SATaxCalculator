@@ -67,19 +67,28 @@ export const metadata: Metadata = {
     siteName: 'ProcessX',
     images: [
       {
-        url: '/og-image.png',
+        url: 'https://www.processx.co.za/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'ProcessX - Bookkeeping Made Simple',
+        alt: 'ProcessX - Bookkeeping Made Simple, Business Made Easy',
+        type: 'image/png',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
+    site: '@ProcessX_ZA',
+    creator: '@ProcessX_ZA',
     title: 'ProcessX | Bookkeeping Made Simple, Business Made Easy',
     description: 'Grow your small business with ProcessX. Simple bookkeeping, expense tracking, and SARS-compliant tax tools.',
-    images: ['/og-image.png'],
-    creator: '@ProcessX_ZA',
+    images: [
+      {
+        url: 'https://www.processx.co.za/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'ProcessX - Bookkeeping Made Simple, Business Made Easy',
+      },
+    ],
   },
   alternates: {
     canonical: 'https://www.processx.co.za',
