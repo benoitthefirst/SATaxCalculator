@@ -1,6 +1,3 @@
-// This is your Prisma schema file for ProcessX
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -9,48 +6,36 @@ datasource db {
   provider = "postgresql"
 }
 
-// ============================================
-// AUTHENTICATION & USER MANAGEMENT
-// ============================================
-
-enum UserRole {
-  USER
-  ADMIN
-  SUPER_ADMIN
-}
-
 model User {
-  id                   String    @id @default(cuid())
-  email                String    @unique
+  id                   String              @id @default(cuid())
+  email                String              @unique
   password_hash        String?
   first_name           String
   last_name            String
   phone                String?
-  email_verified       Boolean   @default(false)
-  is_active            Boolean   @default(true)
-  is_deleted           Boolean   @default(false)
+  email_verified       Boolean             @default(false)
+  is_active            Boolean             @default(true)
+  is_deleted           Boolean             @default(false)
   deleted_at           DateTime?
-  role                 UserRole  @default(USER)
-  created_at           DateTime  @default(now())
-  updated_at           DateTime  @updatedAt
+  role                 UserRole            @default(USER)
+  created_at           DateTime            @default(now())
+  updated_at           DateTime            @updatedAt
   last_login_at        DateTime?
-  reset_token          String?   @unique
+  reset_token          String?             @unique
   reset_token_expires  DateTime?
-
-  // Relations
-  company_members     CompanyMember[]
-  sent_invites        TeamInvite[] @relation("InvitedBy")
-  expenses            Expense[]
-  expense_attachments ExpenseAttachment[]
-  recurring_expenses  RecurringExpense[]
-  income              Income[]
-  created_companies   Company[] @relation("CreatedBy")
-  accounts            Account[]
-  sessions            Session[]
-  audit_logs          AuditLog[]
-  support_tickets     SupportTicket[]
-  ticket_replies      TicketReply[]
-  assigned_tickets    SupportTicket[] @relation("AssignedTo")
+  accounts             Account[]
+  audit_logs           AuditLog[]
+  created_companies    Company[]           @relation("CreatedBy")
+  company_members      CompanyMember[]
+  expense_attachments  ExpenseAttachment[]
+  expenses             Expense[]
+  income               Income[]
+  recurring_expenses   RecurringExpense[]
+  sessions             Session[]
+  assigned_tickets     SupportTicket[]     @relation("AssignedTo")
+  support_tickets      SupportTicket[]
+  sent_invites         TeamInvite[]        @relation("InvitedBy")
+  ticket_replies       TicketReply[]
 
   @@index([email])
   @@index([role])
@@ -58,46 +43,40 @@ model User {
   @@map("users")
 }
 
-// ============================================
-// COMPANY MANAGEMENT
-// ============================================
-
 model Company {
-  id                    String    @id @default(cuid())
-  name                  String
-  registration_number   String?
-  tax_number            String?
-  vat_number            String?
-  business_type         String?   // "small_business_corporation" | "standard_company" | "sole_proprietor"
-  address_line1         String?
-  address_line2         String?
-  city                  String?
-  province              String?
-  postal_code           String?
-  country               String    @default("South Africa")
-  phone                 String?
-  email                 String?
-  website               String?
-  fiscal_year_end       String?   // MM-DD format
-  currency              String    @default("ZAR")
-  logo_url              String?
-  is_active             Boolean   @default(true)
-  created_at            DateTime  @default(now())
-  updated_at            DateTime  @updatedAt
-  created_by_id         String
-
-  // Relations
-  created_by          User                @relation("CreatedBy", fields: [created_by_id], references: [id])
-  members             CompanyMember[]
-  invites             TeamInvite[]
-  expenses            Expense[]
-  recurring_expenses  RecurringExpense[]
-  income              Income[]
-  expense_categories  ExpenseCategory[]
-  income_categories   IncomeCategory[]
+  id                  String             @id @default(cuid())
+  name                String
+  registration_number String?
+  tax_number          String?
+  vat_number          String?
+  business_type       String?
+  address_line1       String?
+  address_line2       String?
+  city                String?
+  province            String?
+  postal_code         String?
+  country             String             @default("South Africa")
+  phone               String?
+  email               String?
+  website             String?
+  fiscal_year_end     String?
+  currency            String             @default("ZAR")
+  logo_url            String?
+  is_active           Boolean            @default(true)
+  created_at          DateTime           @default(now())
+  updated_at          DateTime           @updatedAt
+  created_by_id       String
   assets              Asset[]
-  vehicle_log_entries VehicleLogEntry[]
+  created_by          User               @relation("CreatedBy", fields: [created_by_id], references: [id])
+  members             CompanyMember[]
+  expense_categories  ExpenseCategory[]
+  expenses            Expense[]
+  income              Income[]
+  income_categories   IncomeCategory[]
+  recurring_expenses  RecurringExpense[]
   subscription        Subscription?
+  invites             TeamInvite[]
+  vehicle_log_entries VehicleLogEntry[]
 
   @@index([created_by_id])
   @@map("companies")
@@ -107,15 +86,13 @@ model CompanyMember {
   id          String   @id @default(cuid())
   company_id  String
   user_id     String
-  role        String   // "owner" | "admin" | "accountant" | "viewer"
-  permissions Json?    // Additional granular permissions
+  role        String
+  permissions Json?
   is_active   Boolean  @default(true)
   joined_at   DateTime @default(now())
   updated_at  DateTime @updatedAt
-
-  // Relations
-  company Company @relation(fields: [company_id], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  company     Company  @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@unique([company_id, user_id])
   @@index([company_id])
@@ -127,16 +104,14 @@ model TeamInvite {
   id          String    @id @default(cuid())
   company_id  String
   email       String
-  role        String    // "admin" | "accountant" | "viewer" (cannot invite as owner)
+  role        String
   token       String    @unique
   invited_by  String
   expires_at  DateTime
   accepted_at DateTime?
   created_at  DateTime  @default(now())
-
-  // Relations
-  company Company @relation(fields: [company_id], references: [id], onDelete: Cascade)
-  inviter User    @relation("InvitedBy", fields: [invited_by], references: [id])
+  company     Company   @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  inviter     User      @relation("InvitedBy", fields: [invited_by], references: [id])
 
   @@index([company_id])
   @@index([email])
@@ -144,22 +119,16 @@ model TeamInvite {
   @@map("team_invites")
 }
 
-// ============================================
-// EXPENSE MANAGEMENT
-// ============================================
-
 model ExpenseCategory {
-  id         String   @id @default(cuid())
-  company_id String?  // NULL for system categories
-  name       String
-  color      String?  // Hex color for UI
-  icon       String?  // Icon name
-  is_system  Boolean  @default(false)
-  is_active  Boolean  @default(true)
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  // Relations
+  id                 String             @id @default(cuid())
+  company_id         String?
+  name               String
+  color              String?
+  icon               String?
+  is_system          Boolean            @default(false)
+  is_active          Boolean            @default(true)
+  created_at         DateTime           @default(now())
+  updated_at         DateTime           @updatedAt
   company            Company?           @relation(fields: [company_id], references: [id], onDelete: Cascade)
   expenses           Expense[]
   recurring_expenses RecurringExpense[]
@@ -169,40 +138,38 @@ model ExpenseCategory {
 }
 
 model Expense {
-  id                    String    @id @default(cuid())
+  id                    String              @id @default(cuid())
   company_id            String
   category_id           String
-  user_id               String    // Who created the expense
-  amount                Decimal   @db.Decimal(12, 2)  // Total amount including VAT
-  amount_excl_vat       Decimal?  @db.Decimal(12, 2)  // Amount excluding VAT (for VAT-registered businesses)
-  vat_amount            Decimal?  @db.Decimal(12, 2)  // VAT portion (claimable as input VAT)
-  is_vat_inclusive      Boolean   @default(false)     // Whether amount includes VAT
-  currency              String    @default("ZAR")
+  user_id               String
+  amount                Decimal             @db.Decimal(12, 2)
+  currency              String              @default("ZAR")
   expense_date          DateTime
   vendor_name           String?
   description           String?
-  payment_method        String?   // "cash" | "bank_transfer" | "credit_card" | "debit_card"
+  payment_method        String?
   receipt_url           String?
-  is_tax_deductible     Boolean   @default(true)
-  deductible_percentage Int       @default(100)  // 0-100% for partial deductions
-  charges               Decimal   @db.Decimal(12, 2) @default(0)  // Bank charges/fees
-  receipt_status        String?   // "yes" | "no" | "affidavit" | "bank_statement"
-  recurring_expense_id  String?   // Link to recurring expense template if created from one
-  status                String    @default("pending") // "pending" | "approved" | "rejected"
+  is_tax_deductible     Boolean             @default(true)
+  status                String              @default("pending")
   approved_by_id        String?
   approved_at           DateTime?
-  notes                 String?   @db.Text
-  is_deleted            Boolean   @default(false)
+  notes                 String?
+  is_deleted            Boolean             @default(false)
   deleted_at            DateTime?
-  created_at            DateTime  @default(now())
-  updated_at            DateTime  @updatedAt
-
-  // Relations
-  company           Company            @relation(fields: [company_id], references: [id], onDelete: Cascade)
-  category          ExpenseCategory    @relation(fields: [category_id], references: [id])
-  user              User               @relation(fields: [user_id], references: [id])
-  recurring_expense RecurringExpense?  @relation(fields: [recurring_expense_id], references: [id])
-  attachments       ExpenseAttachment[]
+  created_at            DateTime            @default(now())
+  updated_at            DateTime            @updatedAt
+  recurring_expense_id  String?
+  charges               Decimal             @default(0) @db.Decimal(12, 2)
+  deductible_percentage Int                 @default(100)
+  receipt_status        String?
+  amount_excl_vat       Decimal?            @db.Decimal(12, 2)
+  vat_amount            Decimal?            @db.Decimal(12, 2)
+  is_vat_inclusive      Boolean             @default(false)
+  attachments           ExpenseAttachment[]
+  category              ExpenseCategory     @relation(fields: [category_id], references: [id])
+  company               Company             @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  recurring_expense     RecurringExpense?   @relation(fields: [recurring_expense_id], references: [id])
+  user                  User                @relation(fields: [user_id], references: [id])
 
   @@index([company_id])
   @@index([category_id])
@@ -214,31 +181,29 @@ model Expense {
 }
 
 model RecurringExpense {
-  id                String    @id @default(cuid())
-  company_id        String
-  category_id       String
-  created_by_id     String
-  amount            Decimal   @db.Decimal(12, 2)
-  currency          String    @default("ZAR")
-  vendor_name       String?
-  description       String
-  payment_method    String?
-  is_tax_deductible Boolean   @default(true)
-  frequency         String    // "monthly" | "quarterly" | "annually"
-  start_date        DateTime
-  end_date          DateTime? // NULL for indefinite
-  next_occurrence   DateTime  // Next date to generate expense
-  last_generated_at DateTime?
-  is_active         Boolean   @default(true)
-  notes             String?   @db.Text
-  created_at        DateTime  @default(now())
-  updated_at        DateTime  @updatedAt
-
-  // Relations
-  company  Company         @relation(fields: [company_id], references: [id], onDelete: Cascade)
-  category ExpenseCategory @relation(fields: [category_id], references: [id])
-  created_by User          @relation(fields: [created_by_id], references: [id])
+  id                 String          @id @default(cuid())
+  company_id         String
+  category_id        String
+  created_by_id      String
+  amount             Decimal         @db.Decimal(12, 2)
+  currency           String          @default("ZAR")
+  vendor_name        String?
+  description        String
+  payment_method     String?
+  is_tax_deductible  Boolean         @default(true)
+  frequency          String
+  start_date         DateTime
+  end_date           DateTime?
+  next_occurrence    DateTime
+  last_generated_at  DateTime?
+  is_active          Boolean         @default(true)
+  notes              String?
+  created_at         DateTime        @default(now())
+  updated_at         DateTime        @updatedAt
   generated_expenses Expense[]
+  category           ExpenseCategory @relation(fields: [category_id], references: [id])
+  company            Company         @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  created_by         User            @relation(fields: [created_by_id], references: [id])
 
   @@index([company_id])
   @@index([is_active])
@@ -250,27 +215,21 @@ model ExpenseAttachment {
   id          String   @id @default(cuid())
   expense_id  String
   file_name   String
-  file_type   String   // "image/jpeg", "image/png", "application/pdf"
-  file_size   Int      // in bytes
-  file_url    String   // URL to stored file
+  file_type   String
+  file_size   Int
+  file_url    String
   uploaded_by String
   created_at  DateTime @default(now())
-
-  // Relations
-  expense Expense @relation(fields: [expense_id], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [uploaded_by], references: [id])
+  expense     Expense  @relation(fields: [expense_id], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [uploaded_by], references: [id])
 
   @@index([expense_id])
   @@map("expense_attachments")
 }
 
-// ============================================
-// INCOME MANAGEMENT (Future Phase)
-// ============================================
-
 model IncomeCategory {
   id         String   @id @default(cuid())
-  company_id String?  // NULL for system categories
+  company_id String?
   name       String
   color      String?
   icon       String?
@@ -278,40 +237,36 @@ model IncomeCategory {
   is_active  Boolean  @default(true)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
-
-  // Relations
-  company Company? @relation(fields: [company_id], references: [id], onDelete: Cascade)
-  income  Income[]
+  income     Income[]
+  company    Company? @relation(fields: [company_id], references: [id], onDelete: Cascade)
 
   @@index([company_id])
   @@map("income_categories")
 }
 
 model Income {
-  id              String   @id @default(cuid())
-  company_id      String
-  category_id     String
-  user_id         String   // Who created the income record
-  amount          Decimal  @db.Decimal(12, 2)  // Total amount including VAT
-  amount_excl_vat Decimal? @db.Decimal(12, 2)  // Amount excluding VAT (for VAT-registered businesses)
-  vat_amount      Decimal? @db.Decimal(12, 2)  // VAT portion (15% in SA)
-  is_vat_inclusive Boolean @default(false)     // Whether amount includes VAT
-  currency        String   @default("ZAR")
-  income_date     DateTime
-  source_name     String?  // Client/customer name
-  description     String?
-  payment_method  String?
-  invoice_number  String?
-  notes           String?  @db.Text
-  is_deleted      Boolean  @default(false)
-  deleted_at      DateTime?
-  created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
-
-  // Relations
-  company  Company        @relation(fields: [company_id], references: [id], onDelete: Cascade)
-  category IncomeCategory @relation(fields: [category_id], references: [id])
-  user     User           @relation(fields: [user_id], references: [id])
+  id               String         @id @default(cuid())
+  company_id       String
+  category_id      String
+  amount           Decimal        @db.Decimal(12, 2)
+  currency         String         @default("ZAR")
+  income_date      DateTime
+  source_name      String?
+  description      String?
+  payment_method   String?
+  invoice_number   String?
+  notes            String?
+  is_deleted       Boolean        @default(false)
+  deleted_at       DateTime?
+  created_at       DateTime       @default(now())
+  updated_at       DateTime       @updatedAt
+  user_id          String
+  amount_excl_vat  Decimal?       @db.Decimal(12, 2)
+  vat_amount       Decimal?       @db.Decimal(12, 2)
+  is_vat_inclusive Boolean        @default(false)
+  category         IncomeCategory @relation(fields: [category_id], references: [id])
+  company          Company        @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  user             User           @relation(fields: [user_id], references: [id])
 
   @@index([company_id])
   @@index([category_id])
@@ -321,25 +276,20 @@ model Income {
   @@map("income")
 }
 
-// ============================================
-// NEXTAUTH MODELS
-// ============================================
-
 model Account {
   id                String  @id @default(cuid())
   userId            String  @map("user_id")
   type              String
   provider          String
   providerAccountId String  @map("provider_account_id")
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@map("accounts")
@@ -364,34 +314,28 @@ model VerificationToken {
   @@map("verification_tokens")
 }
 
-// ============================================
-// ASSET MANAGEMENT & DEPRECIATION
-// ============================================
-
 model Asset {
-  id                    String    @id @default(cuid())
-  company_id            String
-  name                  String
-  description           String?
-  asset_type            String    // "vehicle" | "computer" | "phone" | "camera" | "furniture" | "equipment" | "other"
-  purchase_date         DateTime
-  purchase_cost         Decimal   @db.Decimal(12, 2)
-  useful_life_years     Int
-  depreciation_rate     Decimal   @db.Decimal(5, 2)  // Calculated: 100 / useful_life_years
-  residual_value        Decimal   @db.Decimal(12, 2) @default(0)
-  business_use_percent  Int       @default(100)      // 0-100% for mixed-use assets
-  disposal_date         DateTime?
-  disposal_proceeds     Decimal?  @db.Decimal(12, 2)
-  serial_number         String?
-  notes                 String?   @db.Text
-  is_deleted            Boolean   @default(false)
-  deleted_at            DateTime?
-  created_at            DateTime  @default(now())
-  updated_at            DateTime  @updatedAt
-
-  // Relations
-  company             Company           @relation(fields: [company_id], references: [id], onDelete: Cascade)
-  vehicle_log_entries VehicleLogEntry[]
+  id                   String            @id @default(cuid())
+  company_id           String
+  name                 String
+  description          String?
+  asset_type           String
+  purchase_date        DateTime
+  purchase_cost        Decimal           @db.Decimal(12, 2)
+  useful_life_years    Int
+  depreciation_rate    Decimal           @db.Decimal(5, 2)
+  residual_value       Decimal           @default(0) @db.Decimal(12, 2)
+  business_use_percent Int               @default(100)
+  disposal_date        DateTime?
+  disposal_proceeds    Decimal?          @db.Decimal(12, 2)
+  serial_number        String?
+  notes                String?
+  is_deleted           Boolean           @default(false)
+  deleted_at           DateTime?
+  created_at           DateTime          @default(now())
+  updated_at           DateTime          @updatedAt
+  company              Company           @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  vehicle_log_entries  VehicleLogEntry[]
 
   @@index([company_id])
   @@index([asset_type])
@@ -399,30 +343,24 @@ model Asset {
   @@map("assets")
 }
 
-// ============================================
-// VEHICLE LOGBOOK (SARS Compliance)
-// ============================================
-
 model VehicleLogEntry {
-  id              String   @id @default(cuid())
-  company_id      String
-  asset_id        String   // Links to Asset (vehicle)
-  trip_date       DateTime
-  start_location  String
-  end_location    String
-  start_odometer  Int
-  end_odometer    Int
-  distance_km     Int      // Calculated: end_odometer - start_odometer
-  purpose         String   // Business purpose of trip
-  client_name     String?  // Client visited (if applicable)
-  is_business     Boolean  @default(true)  // Business vs Personal trip
-  notes           String?
-  created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
-
-  // Relations
-  company Company @relation(fields: [company_id], references: [id], onDelete: Cascade)
-  asset   Asset   @relation(fields: [asset_id], references: [id], onDelete: Cascade)
+  id             String   @id @default(cuid())
+  company_id     String
+  asset_id       String
+  trip_date      DateTime
+  start_location String
+  end_location   String
+  start_odometer Int
+  end_odometer   Int
+  distance_km    Int
+  purpose        String
+  client_name    String?
+  is_business    Boolean  @default(true)
+  notes          String?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+  asset          Asset    @relation(fields: [asset_id], references: [id], onDelete: Cascade)
+  company        Company  @relation(fields: [company_id], references: [id], onDelete: Cascade)
 
   @@index([company_id])
   @@index([asset_id])
@@ -431,9 +369,201 @@ model VehicleLogEntry {
   @@map("vehicle_log_entries")
 }
 
-// ============================================
-// ADMIN & SUPPORT
-// ============================================
+model SupportTicket {
+  id              String         @id @default(cuid())
+  ticket_number   String         @unique
+  user_id         String?
+  assigned_to_id  String?
+  subject         String
+  description     String
+  status          TicketStatus   @default(OPEN)
+  priority        TicketPriority @default(MEDIUM)
+  category        String?
+  contact_name    String?
+  contact_email   String?
+  contact_company String?
+  resolved_at     DateTime?
+  closed_at       DateTime?
+  created_at      DateTime       @default(now())
+  updated_at      DateTime       @updatedAt
+  assigned_to     User?          @relation("AssignedTo", fields: [assigned_to_id], references: [id])
+  user            User?          @relation(fields: [user_id], references: [id])
+  replies         TicketReply[]
+
+  @@index([user_id])
+  @@index([assigned_to_id])
+  @@index([status])
+  @@index([priority])
+  @@index([created_at])
+  @@map("support_tickets")
+}
+
+model TicketReply {
+  id          String        @id @default(cuid())
+  ticket_id   String
+  user_id     String
+  message     String
+  is_internal Boolean       @default(false)
+  created_at  DateTime      @default(now())
+  updated_at  DateTime      @updatedAt
+  ticket      SupportTicket @relation(fields: [ticket_id], references: [id], onDelete: Cascade)
+  user        User          @relation(fields: [user_id], references: [id])
+
+  @@index([ticket_id])
+  @@index([user_id])
+  @@map("ticket_replies")
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  user_id     String?
+  action      String
+  entity_type String?
+  entity_id   String?
+  old_values  Json?
+  new_values  Json?
+  ip_address  String?
+  user_agent  String?
+  metadata    Json?
+  created_at  DateTime @default(now())
+  user        User?    @relation(fields: [user_id], references: [id])
+
+  @@index([user_id])
+  @@index([action])
+  @@index([entity_type, entity_id])
+  @@index([created_at])
+  @@map("audit_logs")
+}
+
+model SystemSetting {
+  id         String   @id @default(cuid())
+  key        String   @unique
+  value      Json
+  category   String
+  is_public  Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([category])
+  @@map("system_settings")
+}
+
+model Announcement {
+  id         String    @id @default(cuid())
+  title      String
+  content    String
+  type       String    @default("info")
+  target     String    @default("all")
+  is_active  Boolean   @default(true)
+  starts_at  DateTime  @default(now())
+  expires_at DateTime?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
+  @@index([is_active])
+  @@index([starts_at, expires_at])
+  @@map("announcements")
+}
+
+model SubscriptionPlan {
+  id            String           @id @default(cuid())
+  name          String
+  tier          SubscriptionTier @unique
+  description   String?
+  price_monthly Decimal          @db.Decimal(10, 2)
+  price_yearly  Decimal          @db.Decimal(10, 2)
+  features      Json
+  limits        Json
+  is_active     Boolean          @default(true)
+  display_order Int              @default(0)
+  created_at    DateTime         @default(now())
+  updated_at    DateTime         @updatedAt
+  subscriptions Subscription[]
+
+  @@index([is_active])
+  @@map("subscription_plans")
+}
+
+model Subscription {
+  id                      String              @id @default(cuid())
+  company_id              String              @unique
+  plan_id                 String
+  status                  SubscriptionStatus  @default(ACTIVE)
+  billing_cycle           BillingCycle        @default(MONTHLY)
+  payfast_token           String?
+  payfast_subscription_id String?
+  current_period_start    DateTime
+  current_period_end      DateTime
+  next_billing_date       DateTime?
+  trial_ends_at           DateTime?
+  cancelled_at            DateTime?
+  cancel_at_period_end    Boolean             @default(false)
+  amount                  Decimal             @db.Decimal(10, 2)
+  currency                String              @default("ZAR")
+  created_at              DateTime            @default(now())
+  updated_at              DateTime            @updatedAt
+  payments                Payment[]
+  usage_records           SubscriptionUsage[]
+  company                 Company             @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  plan                    SubscriptionPlan    @relation(fields: [plan_id], references: [id])
+
+  @@index([company_id])
+  @@index([plan_id])
+  @@index([status])
+  @@index([payfast_token])
+  @@index([current_period_end])
+  @@map("subscriptions")
+}
+
+model Payment {
+  id              String        @id @default(cuid())
+  subscription_id String
+  m_payment_id    String?
+  pf_payment_id   String?       @unique
+  amount          Decimal       @db.Decimal(10, 2)
+  fee             Decimal?      @db.Decimal(10, 2)
+  net_amount      Decimal?      @db.Decimal(10, 2)
+  currency        String        @default("ZAR")
+  status          PaymentStatus @default(PENDING)
+  payment_method  String?
+  period_start    DateTime
+  period_end      DateTime
+  itn_payload     Json?
+  paid_at         DateTime?
+  failed_at       DateTime?
+  failure_reason  String?
+  created_at      DateTime      @default(now())
+  updated_at      DateTime      @updatedAt
+  subscription    Subscription  @relation(fields: [subscription_id], references: [id], onDelete: Cascade)
+
+  @@index([subscription_id])
+  @@index([pf_payment_id])
+  @@index([status])
+  @@index([created_at])
+  @@map("payments")
+}
+
+model SubscriptionUsage {
+  id                 String       @id @default(cuid())
+  subscription_id    String
+  period_start       DateTime
+  period_end         DateTime
+  transactions_count Int          @default(0)
+  api_calls_count    Int          @default(0)
+  created_at         DateTime     @default(now())
+  updated_at         DateTime     @updatedAt
+  subscription       Subscription @relation(fields: [subscription_id], references: [id], onDelete: Cascade)
+
+  @@unique([subscription_id, period_start])
+  @@index([subscription_id])
+  @@map("subscription_usage")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
 
 enum TicketStatus {
   OPEN
@@ -450,119 +580,10 @@ enum TicketPriority {
   URGENT
 }
 
-model SupportTicket {
-  id              String         @id @default(cuid())
-  ticket_number   String         @unique  // e.g., "TKT-2024-001234"
-  user_id         String?        // NULL for contact form submissions
-  assigned_to_id  String?        // Admin assigned to ticket
-  subject         String
-  description     String         @db.Text
-  status          TicketStatus   @default(OPEN)
-  priority        TicketPriority @default(MEDIUM)
-  category        String?        // "general" | "sales" | "support" | "billing" | "feedback"
-
-  // Contact form details (when user_id is NULL)
-  contact_name    String?
-  contact_email   String?
-  contact_company String?
-
-  resolved_at     DateTime?
-  closed_at       DateTime?
-  created_at      DateTime       @default(now())
-  updated_at      DateTime       @updatedAt
-
-  // Relations
-  user        User?         @relation(fields: [user_id], references: [id], onDelete: SetNull)
-  assigned_to User?         @relation("AssignedTo", fields: [assigned_to_id], references: [id], onDelete: SetNull)
-  replies     TicketReply[]
-
-  @@index([user_id])
-  @@index([assigned_to_id])
-  @@index([status])
-  @@index([priority])
-  @@index([created_at])
-  @@map("support_tickets")
-}
-
-model TicketReply {
-  id          String   @id @default(cuid())
-  ticket_id   String
-  user_id     String   // Who wrote the reply
-  message     String   @db.Text
-  is_internal Boolean  @default(false)  // Internal notes not visible to customer
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
-
-  // Relations
-  ticket SupportTicket @relation(fields: [ticket_id], references: [id], onDelete: Cascade)
-  user   User          @relation(fields: [user_id], references: [id])
-
-  @@index([ticket_id])
-  @@index([user_id])
-  @@map("ticket_replies")
-}
-
-model AuditLog {
-  id          String   @id @default(cuid())
-  user_id     String?  // NULL for system actions
-  action      String   // "user.created" | "user.updated" | "login.success" | etc.
-  entity_type String?  // "User" | "Company" | "Expense" | etc.
-  entity_id   String?
-  old_values  Json?
-  new_values  Json?
-  ip_address  String?
-  user_agent  String?
-  metadata    Json?    // Additional context
-  created_at  DateTime @default(now())
-
-  // Relations
-  user User? @relation(fields: [user_id], references: [id], onDelete: SetNull)
-
-  @@index([user_id])
-  @@index([action])
-  @@index([entity_type, entity_id])
-  @@index([created_at])
-  @@map("audit_logs")
-}
-
-model SystemSetting {
-  id         String   @id @default(cuid())
-  key        String   @unique
-  value      Json
-  category   String   // "general" | "email" | "features" | "billing"
-  is_public  Boolean  @default(false)  // Can be accessed by non-admins
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  @@index([category])
-  @@map("system_settings")
-}
-
-model Announcement {
-  id           String    @id @default(cuid())
-  title        String
-  content      String    @db.Text
-  type         String    @default("info")  // "info" | "warning" | "success" | "error"
-  target       String    @default("all")   // "all" | "users" | "admins"
-  is_active    Boolean   @default(true)
-  starts_at    DateTime  @default(now())
-  expires_at   DateTime?
-  created_at   DateTime  @default(now())
-  updated_at   DateTime  @updatedAt
-
-  @@index([is_active])
-  @@index([starts_at, expires_at])
-  @@map("announcements")
-}
-
-// ============================================
-// SUBSCRIPTION & BILLING
-// ============================================
-
 enum SubscriptionTier {
-  STARTER      // Free tier
-  PROFESSIONAL // R299/mo
-  BUSINESS     // R599/mo
+  STARTER
+  PROFESSIONAL
+  BUSINESS
 }
 
 enum SubscriptionStatus {
@@ -583,125 +604,4 @@ enum PaymentStatus {
   COMPLETED
   FAILED
   REFUNDED
-}
-
-model SubscriptionPlan {
-  id                    String           @id @default(cuid())
-  name                  String           // "Starter", "Professional", "Business"
-  tier                  SubscriptionTier @unique
-  description           String?
-  price_monthly         Decimal          @db.Decimal(10, 2) // In ZAR
-  price_yearly          Decimal          @db.Decimal(10, 2) // In ZAR (includes discount)
-  features              Json             // Array of feature strings for display
-  limits                Json             // { transactions_per_month, team_members, companies, api_access, etc. }
-  is_active             Boolean          @default(true)
-  display_order         Int              @default(0)
-  created_at            DateTime         @default(now())
-  updated_at            DateTime         @updatedAt
-
-  // Relations
-  subscriptions         Subscription[]
-
-  @@index([is_active])
-  @@map("subscription_plans")
-}
-
-model Subscription {
-  id                    String             @id @default(cuid())
-  company_id            String             @unique // One subscription per company
-  plan_id               String
-  status                SubscriptionStatus @default(ACTIVE)
-  billing_cycle         BillingCycle       @default(MONTHLY)
-
-  // PayFast integration
-  payfast_token         String?            // Subscription token from PayFast
-  payfast_subscription_id String?          // PayFast's internal subscription ID
-
-  // Billing dates
-  current_period_start  DateTime
-  current_period_end    DateTime
-  next_billing_date     DateTime?
-  trial_ends_at         DateTime?
-  cancelled_at          DateTime?
-  cancel_at_period_end  Boolean            @default(false) // If true, access continues until period_end
-
-  // Pricing snapshot (in case plan prices change)
-  amount                Decimal            @db.Decimal(10, 2)
-  currency              String             @default("ZAR")
-
-  created_at            DateTime           @default(now())
-  updated_at            DateTime           @updatedAt
-
-  // Relations
-  company               Company            @relation(fields: [company_id], references: [id], onDelete: Cascade)
-  plan                  SubscriptionPlan   @relation(fields: [plan_id], references: [id])
-  payments              Payment[]
-  usage_records         SubscriptionUsage[]
-
-  @@index([company_id])
-  @@index([plan_id])
-  @@index([status])
-  @@index([payfast_token])
-  @@index([current_period_end])
-  @@map("subscriptions")
-}
-
-model Payment {
-  id                    String        @id @default(cuid())
-  subscription_id       String
-
-  // PayFast transaction details
-  m_payment_id          String?       // Merchant payment ID sent to PayFast
-  pf_payment_id         String?       @unique // PayFast payment ID returned
-
-  amount                Decimal       @db.Decimal(10, 2)
-  fee                   Decimal?      @db.Decimal(10, 2)
-  net_amount            Decimal?      @db.Decimal(10, 2)
-  currency              String        @default("ZAR")
-  status                PaymentStatus @default(PENDING)
-  payment_method        String?       // "credit_card", "instant_eft", etc.
-
-  // Period covered by this payment
-  period_start          DateTime
-  period_end            DateTime
-
-  // ITN data
-  itn_payload           Json?         // Store full ITN for reference
-
-  paid_at               DateTime?
-  failed_at             DateTime?
-  failure_reason        String?
-
-  created_at            DateTime      @default(now())
-  updated_at            DateTime      @updatedAt
-
-  // Relations
-  subscription          Subscription  @relation(fields: [subscription_id], references: [id], onDelete: Cascade)
-
-  @@index([subscription_id])
-  @@index([pf_payment_id])
-  @@index([status])
-  @@index([created_at])
-  @@map("payments")
-}
-
-model SubscriptionUsage {
-  id                    String   @id @default(cuid())
-  subscription_id       String
-  period_start          DateTime
-  period_end            DateTime
-
-  // Usage metrics
-  transactions_count    Int      @default(0)
-  api_calls_count       Int      @default(0)
-
-  created_at            DateTime @default(now())
-  updated_at            DateTime @updatedAt
-
-  // Relations
-  subscription          Subscription @relation(fields: [subscription_id], references: [id], onDelete: Cascade)
-
-  @@unique([subscription_id, period_start])
-  @@index([subscription_id])
-  @@map("subscription_usage")
 }
