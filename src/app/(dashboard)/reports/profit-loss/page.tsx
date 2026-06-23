@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { getCurrentFiscalYear } from '@/lib/utils/fiscal-year'
 import {
   BarChart,
   Bar,
@@ -44,7 +45,7 @@ interface ReportData {
 export default function ProfitLossPage() {
   const [data, setData] = useState<ReportData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [selectedYear, setSelectedYear] = useState(2025)
+  const [selectedYear, setSelectedYear] = useState(() => getCurrentFiscalYear())
 
   useEffect(() => {
     fetchReport()

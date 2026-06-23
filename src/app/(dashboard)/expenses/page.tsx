@@ -6,6 +6,7 @@ import { Prisma } from '@prisma/client'
 import ExpenseFilters from '@/components/expenses/ExpenseFilters'
 import { ExportButton } from '@/components/common/ExportButton'
 import { getActiveCompanyForUser } from '@/lib/company-context'
+import { getCurrentFiscalYear } from '@/lib/utils/fiscal-year'
 
 export const metadata = {
   title: 'Expenses - ProcessX',
@@ -36,9 +37,9 @@ export default async function ExpensesPage({
   const searchQuery = search || ''
   const categoryId = categoryFilter || ''
 
-  // Default to fiscal year 2025/2026 (most recent with data)
+  // Default to current fiscal year
   // Users can select different years from the dropdown
-  const year = yearParam ? parseInt(yearParam) : 2025
+  const year = yearParam ? parseInt(yearParam) : getCurrentFiscalYear()
   const month = monthParam ? parseInt(monthParam) : null
 
   // Calculate date range based on year/month

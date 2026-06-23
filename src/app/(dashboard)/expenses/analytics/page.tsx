@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { getCurrentFiscalYear } from '@/lib/utils/fiscal-year'
 import {
   PieChart,
   Pie,
@@ -58,7 +59,7 @@ const COLORS = [
 export default function ExpenseAnalyticsPage() {
   const [data, setData] = useState<AnalyticsData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [selectedYear, setSelectedYear] = useState(2025) // Default to fiscal year with data
+  const [selectedYear, setSelectedYear] = useState(() => getCurrentFiscalYear())
 
   useEffect(() => {
     fetchAnalytics()

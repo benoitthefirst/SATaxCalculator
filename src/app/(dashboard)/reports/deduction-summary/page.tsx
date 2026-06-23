@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { getCurrentFiscalYear } from '@/lib/utils/fiscal-year'
 
 interface DeductionData {
   fiscalYear: string
@@ -31,7 +32,7 @@ export default function DeductionSummaryPage() {
   const [data, setData] = useState<DeductionData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [year, setYear] = useState(2025) // Default to fiscal year with data
+  const [year, setYear] = useState(() => getCurrentFiscalYear())
 
   useEffect(() => {
     fetchData()

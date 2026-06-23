@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Prisma } from '@prisma/client'
 import TaxYearSelector from '@/components/dashboard/TaxYearSelector'
 import { getActiveCompany } from '@/lib/company-context'
+import { getCurrentFiscalYear } from '@/lib/utils/fiscal-year'
 
 type IncomeWithCategory = Prisma.IncomeGetPayload<{ include: { category: true } }>
 type ExpenseWithCategory = Prisma.ExpenseGetPayload<{ include: { category: true } }>
@@ -40,9 +41,9 @@ export default async function DashboardPage({
     return null
   }
 
-  // Get year from search params (default to 2025 for fiscal year 2025/2026)
+  // Get year from search params (default to current fiscal year)
   const params = await searchParams
-  const selectedYear = params.year ? parseInt(params.year) : 2025
+  const selectedYear = params.year ? parseInt(params.year) : getCurrentFiscalYear()
 
   // Fiscal year starts March 1 of selected year, ends Feb 28/29 of next year
   const fiscalYearStart = new Date(selectedYear, 2, 1) // March 1

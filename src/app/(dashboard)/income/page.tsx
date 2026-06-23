@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Prisma } from '@prisma/client'
 import IncomeFilters from '@/components/income/IncomeFilters'
 import { getActiveCompanyForUser } from '@/lib/company-context'
+import { getCurrentFiscalYear } from '@/lib/utils/fiscal-year'
 
 export const metadata = {
   title: 'Income - ProcessX',
@@ -42,9 +43,9 @@ export default async function IncomePage({
   const search = searchParam || ''
   const categoryFilter = categoryParam || ''
 
-  // Default to fiscal year 2025/2026 (most recent with data)
+  // Default to current fiscal year
   // Users can select different years from the dropdown
-  const year = yearParam ? parseInt(yearParam) : 2025
+  const year = yearParam ? parseInt(yearParam) : getCurrentFiscalYear()
   const month = monthParam ? parseInt(monthParam) : null
 
   // Build date filter
