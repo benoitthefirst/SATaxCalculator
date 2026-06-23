@@ -231,15 +231,15 @@ export default async function DashboardPage({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-semibold text-gray-900">
+          <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">
             Welcome back, {session.user.name?.split(' ')[0]}
           </h1>
-          <div className="mt-1 flex items-center gap-3">
+          <div className="mt-2 flex flex-wrap items-center gap-2 sm:gap-3">
             <TaxYearSelector currentYear={selectedYear} />
-            <span className="text-sm text-gray-400">•</span>
-            <span className="text-sm text-gray-500">{company.name}</span>
+            <span className="hidden sm:inline text-sm text-gray-400">•</span>
+            <span className="text-sm text-gray-500 truncate max-w-[150px] sm:max-w-none">{company.name}</span>
             {isVatRegistered && (
               <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-blue-100 text-blue-700">
                 VAT Registered
@@ -249,7 +249,7 @@ export default async function DashboardPage({
         </div>
         <Link
           href={`/reports/tax-computation?year=${selectedYear}`}
-          className="inline-flex items-center px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-xl hover:bg-gray-800 transition-colors"
+          className="inline-flex items-center justify-center w-full sm:w-auto px-4 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-xl hover:bg-gray-800 transition-colors"
         >
           View Tax Report →
         </Link>

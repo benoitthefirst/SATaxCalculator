@@ -73,24 +73,24 @@ export default function DeductionSummaryPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <Link
-            href="/reports"
-            className="text-[#007AFF] hover:text-[#0051D5] text-sm font-medium mb-2 inline-block"
-          >
-            ← Back to Reports
-          </Link>
-          <h1 className="text-3xl font-semibold text-gray-900">Deduction Summary</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Expense Categories - Tax Year {data.fiscalYear}
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col gap-4">
+        <Link
+          href="/reports"
+          className="text-[#007AFF] hover:text-[#0051D5] text-sm font-medium"
+        >
+          ← Back to Reports
+        </Link>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">Deduction Summary</h1>
+            <p className="mt-1 text-sm text-gray-500">
+              Expense Categories - Tax Year {data.fiscalYear}
+            </p>
+          </div>
           <select
             value={year}
             onChange={(e) => setYear(parseInt(e.target.value))}
-            className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#007AFF]/20 focus:border-[#007AFF]"
+            className="w-full sm:w-auto px-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#007AFF]/20 focus:border-[#007AFF]"
           >
             {[2026, 2025, 2024, 2023].map((y) => (
               <option key={y} value={y}>

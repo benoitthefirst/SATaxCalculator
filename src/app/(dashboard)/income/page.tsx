@@ -137,34 +137,32 @@ export default async function IncomePage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-semibold text-gray-900">Income</h1>
+          <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">Income</h1>
           <p className="mt-1 text-sm text-gray-500">
             Track and manage all your business income
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <Link
-            href="/income/new"
-            className="inline-flex items-center px-6 py-3 bg-gradient-to-br from-[#34C759] to-[#248A3D] text-white text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-green-500/30 transition-all duration-200 active:scale-[0.98]"
+        <Link
+          href="/income/new"
+          className="inline-flex items-center justify-center w-full sm:w-auto px-6 py-3 bg-gradient-to-br from-[#34C759] to-[#248A3D] text-white text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-green-500/30 transition-all duration-200 active:scale-[0.98]"
+        >
+          <svg
+            className="w-5 h-5 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
           >
-            <svg
-              className="w-5 h-5 mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
-            Add Income
-          </Link>
-        </div>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 4v16m8-8H4"
+            />
+          </svg>
+          Add Income
+        </Link>
       </div>
 
       {/* Summary Cards */}

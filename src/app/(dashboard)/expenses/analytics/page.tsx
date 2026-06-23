@@ -112,38 +112,38 @@ export default function ExpenseAnalyticsPage() {
   const years = Array.from({ length: 5 }, (_, i) => currentYear - i)
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <Link
-              href="/expenses"
-              className="text-[#007AFF] hover:text-[#0051D5] transition-colors"
-            >
-              ← Back to Expenses
-            </Link>
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Expense Analytics
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Visualize and analyze your expense data
-          </p>
-        </div>
-
-        {/* Year Selector */}
-        <select
-          value={selectedYear}
-          onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-          className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent"
+      <div className="flex flex-col gap-3">
+        <Link
+          href="/expenses"
+          className="text-[#007AFF] hover:text-[#0051D5] transition-colors text-sm"
         >
-          {years.map((year) => (
-            <option key={year} value={year}>
-              {year}
-            </option>
-          ))}
-        </select>
+          ← Back to Expenses
+        </Link>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+              Expense Analytics
+            </h1>
+            <p className="text-gray-600 mt-1 text-sm sm:text-base">
+              Visualize and analyze your expense data
+            </p>
+          </div>
+
+          {/* Year Selector */}
+          <select
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+            className="w-full sm:w-auto px-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent"
+          >
+            {years.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Summary Cards */}

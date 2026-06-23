@@ -118,40 +118,40 @@ export default function IncomeAnalyticsPage() {
   const years = Array.from({ length: 6 }, (_, i) => currentYear - i)
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <Link
-              href="/income"
-              className="text-[#34C759] hover:text-[#248A3D] transition-colors"
-            >
-              ← Back to Income
-            </Link>
+      <div className="flex flex-col gap-3">
+        <Link
+          href="/income"
+          className="text-[#34C759] hover:text-[#248A3D] transition-colors text-sm"
+        >
+          ← Back to Income
+        </Link>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+              Income Analytics
+            </h1>
+            <p className="text-gray-600 mt-1 text-sm sm:text-base">
+              Track revenue trends and identify growth opportunities
+            </p>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Income Analytics
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Track revenue trends and identify growth opportunities
-          </p>
-        </div>
 
-        {/* Year Selector */}
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">Tax Year:</span>
-          <select
-            value={selectedYear}
-            onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-            className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#34C759] focus:border-transparent"
-          >
-            {years.map((year) => (
-              <option key={year} value={year}>
-                {year}/{year + 1}
-              </option>
-            ))}
-          </select>
+          {/* Year Selector */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">Tax Year:</span>
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+              className="flex-1 sm:flex-none px-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#34C759] focus:border-transparent"
+            >
+              {years.map((year) => (
+                <option key={year} value={year}>
+                  {year}/{year + 1}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 

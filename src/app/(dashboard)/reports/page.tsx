@@ -107,7 +107,7 @@ export default async function ReportsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-semibold text-gray-900">Reports</h1>
+        <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">Reports</h1>
         <p className="mt-1 text-sm text-gray-500">
           Tax reports and financial summaries for SARS compliance
         </p>

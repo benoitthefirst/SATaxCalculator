@@ -99,24 +99,24 @@ export default function TaxComputationPage() {
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <Link
-            href="/reports"
-            className="text-[#007AFF] hover:text-[#0051D5] text-sm font-medium mb-2 inline-block"
-          >
-            ← Back to Reports
-          </Link>
-          <h1 className="text-3xl font-semibold text-gray-900">Tax Computation</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Corporate Income Tax - Year of Assessment {data.fiscalYear}
-          </p>
-        </div>
-        <div>
+      <div className="flex flex-col gap-4">
+        <Link
+          href="/reports"
+          className="text-[#007AFF] hover:text-[#0051D5] text-sm font-medium"
+        >
+          ← Back to Reports
+        </Link>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">Tax Computation</h1>
+            <p className="mt-1 text-sm text-gray-500">
+              Corporate Income Tax - Year of Assessment {data.fiscalYear}
+            </p>
+          </div>
           <select
             value={year}
             onChange={(e) => setYear(parseInt(e.target.value))}
-            className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#007AFF]/20 focus:border-[#007AFF]"
+            className="w-full sm:w-auto px-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#007AFF]/20 focus:border-[#007AFF]"
           >
             {[2026, 2025, 2024, 2023].map((y) => (
               <option key={y} value={y}>
@@ -128,26 +128,26 @@ export default function TaxComputationPage() {
       </div>
 
       {/* Company Info */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-6">
-        <div className="flex items-center justify-between">
+      <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">{data.company.name}</h2>
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900">{data.company.name}</h2>
             <p className="text-sm text-gray-500 mt-1">
               Tax Number: {data.company.taxNumber || 'Not set'}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {data.company.isVatRegistered && (
-              <div className="px-4 py-2 rounded-xl text-sm font-medium bg-cyan-50 text-cyan-700">
+              <div className="px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-cyan-50 text-cyan-700">
                 VAT Registered
               </div>
             )}
-            <div className={`px-4 py-2 rounded-xl text-sm font-medium ${
+            <div className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium ${
               data.company.isSBC
                 ? 'bg-green-50 text-green-700'
                 : 'bg-blue-50 text-blue-700'
             }`}>
-              {data.company.isSBC ? 'Small Business Corporation' : 'Standard Company'}
+              {data.company.isSBC ? 'Small Business Corp' : 'Standard Company'}
             </div>
           </div>
         </div>

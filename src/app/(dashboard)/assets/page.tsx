@@ -73,20 +73,20 @@ export default async function AssetsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-semibold text-gray-900">Assets</h1>
+          <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">Assets</h1>
           <p className="mt-1 text-sm text-gray-500">
             Track capital assets and depreciation for SARS
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-2 sm:gap-3">
           <ExportButton
             href="/api/assets/export"
-            className="inline-flex items-center px-6 py-3 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-50 transition-all duration-200 active:scale-[0.98]"
+            className="inline-flex items-center justify-center flex-1 sm:flex-none px-4 py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-50 transition-all duration-200 active:scale-[0.98]"
           >
             <svg
-              className="w-5 h-5 mr-2"
+              className="w-4 h-4 mr-2"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -98,14 +98,14 @@ export default async function AssetsPage() {
                 d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
               />
             </svg>
-            Export CSV
+            Export
           </ExportButton>
           <Link
             href="/assets/new"
-            className="inline-flex items-center px-6 py-3 bg-gradient-to-br from-[#FF9500] to-[#FF6B00] text-white text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-orange-500/30 transition-all duration-200 active:scale-[0.98]"
+            className="inline-flex items-center justify-center flex-1 sm:flex-none px-4 py-2.5 bg-gradient-to-br from-[#FF9500] to-[#FF6B00] text-white text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-orange-500/30 transition-all duration-200 active:scale-[0.98]"
           >
             <svg
-              className="w-5 h-5 mr-2"
+              className="w-4 h-4 mr-2"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"

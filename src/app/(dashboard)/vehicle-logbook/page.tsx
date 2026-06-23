@@ -95,17 +95,17 @@ export default async function VehicleLogbookPage({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-semibold text-gray-900">Vehicle Logbook</h1>
+          <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">Vehicle Logbook</h1>
           <p className="mt-1 text-sm text-gray-500">
             Track trips for SARS compliance - Tax Year {year}/{year + 1}
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-2 sm:gap-3">
           <ExportButton
             href={`/api/vehicle-logbook/export?${assetId ? `assetId=${assetId}&` : ''}startDate=${fiscalYearStart.toISOString()}&endDate=${fiscalYearEnd.toISOString()}`}
-            className="inline-flex items-center px-4 py-2 text-sm font-medium bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors"
+            className="inline-flex items-center justify-center flex-1 sm:flex-none px-4 py-2.5 text-sm font-medium bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors"
           >
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -115,11 +115,11 @@ export default async function VehicleLogbookPage({
                 d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
               />
             </svg>
-            Export CSV
+            Export
           </ExportButton>
           <Link
             href="/vehicle-logbook/new"
-            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#FF9500] rounded-xl hover:bg-[#FF6B00] transition-colors"
+            className="inline-flex items-center justify-center flex-1 sm:flex-none px-4 py-2.5 text-sm font-medium text-white bg-[#FF9500] rounded-xl hover:bg-[#FF6B00] transition-colors"
           >
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
