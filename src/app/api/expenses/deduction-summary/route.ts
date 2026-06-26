@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { getActiveCompanyForUser } from '@/lib/company-context'
+import { checkFeatureAccess } from '@/lib/subscription/feature-gate'
 import type { Expense, ExpenseCategory } from '@prisma/client'
 
 type ExpenseWithCategory = Expense & {
@@ -34,6 +35,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         { error: 'Company not found' },
         { status: 404 }
+      )
+    }
+
+    // Check feature access - advanced reports requires Professional plan or higher
+    const hasAccess = await checkFeatureAccess(companyId, 'advanced_reports')
+    if (!hasAccess) {
+      return NextResponse.json(
+        {
+          error: 'Feature not available',
+          message: 'Deduction Summary reports are available on Professional and Business plans. Upgrade to view your tax-deductible expenses by category.',
+          feature: 'advanced_reports',
+          upgradeRequired: true,
+        },
+        { status: 403 }
       )
     }
 

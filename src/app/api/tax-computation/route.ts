@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { getActiveCompanyForUser } from '@/lib/company-context'
+import { checkFeatureAccess } from '@/lib/subscription/feature-gate'
 
 // SARS Tax Rates 2025/2026
 const CIT_RATE = 0.27 // Corporate Income Tax rate
@@ -51,6 +52,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         { error: 'Company not found' },
         { status: 404 }
+      )
+    }
+
+    // Check feature access - advanced reports requires Professional plan or higher
+    const hasAccess = await checkFeatureAccess(companyId, 'advanced_reports')
+    if (!hasAccess) {
+      return NextResponse.json(
+        {
+          error: 'Feature not available',
+          message: 'Tax Computation reports are available on Professional and Business plans. Upgrade to access detailed tax calculations and SARS filing assistance.',
+          feature: 'advanced_reports',
+          upgradeRequired: true,
+        },
+        { status: 403 }
       )
     }
 

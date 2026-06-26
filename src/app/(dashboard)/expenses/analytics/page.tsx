@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { getCurrentFiscalYear } from '@/lib/utils/fiscal-year'
+import UpgradePrompt from '@/components/reports/UpgradePrompt'
 import {
   PieChart,
   Pie,
@@ -18,6 +19,13 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts'
+
+interface UpgradeRequired {
+  error: string
+  message: string
+  feature: string
+  upgradeRequired: true
+}
 
 interface AnalyticsData {
   summary: {
@@ -60,6 +68,7 @@ export default function ExpenseAnalyticsPage() {
   const [data, setData] = useState<AnalyticsData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [selectedYear, setSelectedYear] = useState(() => getCurrentFiscalYear())
+  const [upgradeRequired, setUpgradeRequired] = useState<UpgradeRequired | null>(null)
 
   useEffect(() => {
     fetchAnalytics()
@@ -68,10 +77,15 @@ export default function ExpenseAnalyticsPage() {
   const fetchAnalytics = async () => {
     try {
       setIsLoading(true)
+      setUpgradeRequired(null)
       const res = await fetch(`/api/expenses/analytics?year=${selectedYear}`)
-      if (res.ok) {
-        const analyticsData = await res.json()
-        setData(analyticsData)
+      const responseData = await res.json()
+
+      if (res.status === 403 && responseData.upgradeRequired) {
+        setUpgradeRequired(responseData)
+        setData(null)
+      } else if (res.ok) {
+        setData(responseData)
       }
     } catch (error) {
       console.error('Failed to fetch analytics:', error)
@@ -96,6 +110,17 @@ export default function ExpenseAnalyticsPage() {
           <p className="text-gray-600">Loading analytics...</p>
         </div>
       </div>
+    )
+  }
+
+  if (upgradeRequired) {
+    return (
+      <UpgradePrompt
+        title="Unlock Expense Analytics"
+        message={upgradeRequired.message}
+        backLink="/expenses"
+        backLabel="Back to Expenses"
+      />
     )
   }
 

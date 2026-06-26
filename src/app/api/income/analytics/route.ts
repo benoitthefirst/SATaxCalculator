@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { getActiveCompanyForUser } from '@/lib/company-context'
+import { checkFeatureAccess } from '@/lib/subscription/feature-gate'
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,6 +17,20 @@ export async function GET(request: NextRequest) {
     if (!companyId) {
       return NextResponse.json(
         { error: 'No active company found' },
+        { status: 403 }
+      )
+    }
+
+    // Check feature access - advanced reports requires Professional plan or higher
+    const hasAccess = await checkFeatureAccess(companyId, 'advanced_reports')
+    if (!hasAccess) {
+      return NextResponse.json(
+        {
+          error: 'Feature not available',
+          message: 'Income Analytics is available on Professional and Business plans. Upgrade to access detailed income trends and insights.',
+          feature: 'advanced_reports',
+          upgradeRequired: true,
+        },
         { status: 403 }
       )
     }
