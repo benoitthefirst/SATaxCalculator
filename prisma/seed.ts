@@ -126,6 +126,7 @@ async function main() {
         'Income & invoicing',
         'Vehicle logbook',
         'Asset management',
+        'AI Document Analyzer',
         'Financial reports & analytics',
         'CSV exports',
         'Up to 5 team members',
@@ -134,11 +135,12 @@ async function main() {
       limits: {
         transactions_per_month: -1, // unlimited
         team_members: 5,
-        companies: 1,
+        companies: -1, // unlimited - user-level subscription
         vehicle_logbook: true,
         asset_management: true,
         advanced_reports: true,
         csv_export: true,
+        document_analyzer: true,
         api_access: false,
       },
       display_order: 2,
@@ -153,7 +155,8 @@ async function main() {
       features: [
         'Everything in Professional',
         'Unlimited team members',
-        'Create unlimited companies',
+        'Multi-company management',
+        'AI Document Analyzer',
         'Advanced reporting',
         'API access',
         'Custom integrations',
@@ -168,6 +171,7 @@ async function main() {
         asset_management: true,
         advanced_reports: true,
         csv_export: true,
+        document_analyzer: true,
         api_access: true,
       },
       display_order: 3,

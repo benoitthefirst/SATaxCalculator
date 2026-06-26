@@ -12,6 +12,7 @@ export interface FeatureLimits {
   advanced_reports: boolean
   csv_exports: boolean
   multi_company: boolean
+  document_analyzer: boolean
   priority_support: boolean
 }
 
@@ -27,18 +28,20 @@ export const TIER_LIMITS: Record<SubscriptionTier, FeatureLimits> = {
     advanced_reports: false,
     csv_exports: false,
     multi_company: false,
+    document_analyzer: false,
     priority_support: false,
   },
   PROFESSIONAL: {
     transactions_per_month: -1, // Unlimited
     team_members: 5,
-    companies: 1,
+    companies: -1, // Unlimited - subscription covers all companies
     api_access: false,
     vehicle_logbook: true,
     asset_management: true,
     advanced_reports: true,
     csv_exports: true,
-    multi_company: false,
+    multi_company: true,
+    document_analyzer: true,
     priority_support: true,
   },
   BUSINESS: {
@@ -51,6 +54,7 @@ export const TIER_LIMITS: Record<SubscriptionTier, FeatureLimits> = {
     advanced_reports: true,
     csv_exports: true,
     multi_company: true,
+    document_analyzer: true,
     priority_support: true,
   },
 }
@@ -65,11 +69,12 @@ export const FEATURE_NAMES: Record<keyof FeatureLimits, string> = {
   asset_management: 'Asset management',
   advanced_reports: 'Advanced reports & analytics',
   csv_exports: 'CSV exports',
-  multi_company: 'Create unlimited companies',
+  multi_company: 'Multi-company management',
+  document_analyzer: 'AI Document Analyzer',
   priority_support: 'Priority support',
 }
 
-export interface CompanySubscriptionInfo {
+export interface UserSubscriptionInfo {
   tier: SubscriptionTier
   limits: FeatureLimits
   isActive: boolean
@@ -88,13 +93,13 @@ export interface CompanySubscriptionInfo {
 }
 
 /**
- * Get subscription information for a company
+ * Get subscription information for a user (USER-LEVEL SUBSCRIPTION)
  */
-export async function getCompanySubscription(
-  companyId: string
-): Promise<CompanySubscriptionInfo> {
+export async function getUserSubscription(
+  userId: string
+): Promise<UserSubscriptionInfo> {
   const subscription = await prisma.subscription.findUnique({
-    where: { company_id: companyId },
+    where: { user_id: userId },
     include: {
       plan: {
         select: {
@@ -144,8 +149,67 @@ export async function getCompanySubscription(
 }
 
 /**
- * Check if a company has access to a specific feature
+ * Get subscription for a company by looking up the company owner's subscription
+ * This is a helper to maintain backward compatibility during migration
+ */
+export async function getSubscriptionForCompany(
+  companyId: string
+): Promise<UserSubscriptionInfo> {
+  // Find the company owner
+  const owner = await prisma.companyMember.findFirst({
+    where: {
+      company_id: companyId,
+      role: 'owner',
+      is_active: true,
+    },
+    select: {
+      user_id: true,
+    },
+  })
+
+  if (!owner) {
+    // No owner found, return STARTER
+    return {
+      tier: 'STARTER',
+      limits: TIER_LIMITS.STARTER,
+      isActive: true,
+      isPaidPlan: false,
+      subscription: null,
+    }
+  }
+
+  return getUserSubscription(owner.user_id)
+}
+
+/**
+ * Check if a user has access to a specific feature
  * Returns true if subscriptions are disabled globally (all features accessible)
+ */
+export async function checkUserFeatureAccess(
+  userId: string,
+  feature: keyof FeatureLimits
+): Promise<boolean> {
+  // If subscriptions are disabled, all features are accessible
+  const subscriptionsEnabled = await isSubscriptionsEnabled()
+  if (!subscriptionsEnabled) {
+    return true
+  }
+
+  const { limits, isActive } = await getUserSubscription(userId)
+
+  if (!isActive) {
+    // If subscription is not active, use STARTER limits
+    const starterValue = TIER_LIMITS.STARTER[feature]
+    return typeof starterValue === 'boolean' ? starterValue : starterValue !== 0
+  }
+
+  const value = limits[feature]
+  return typeof value === 'boolean' ? value : value !== 0
+}
+
+/**
+ * Check if a company has access to a specific feature (via owner's subscription)
+ * This is a convenience wrapper for company-context operations
  */
 export async function checkFeatureAccess(
   companyId: string,
@@ -157,7 +221,7 @@ export async function checkFeatureAccess(
     return true
   }
 
-  const { limits, isActive } = await getCompanySubscription(companyId)
+  const { limits, isActive } = await getSubscriptionForCompany(companyId)
 
   if (!isActive) {
     // If subscription is not active, use STARTER limits
@@ -178,7 +242,57 @@ export interface UsageLimitResult {
 }
 
 /**
- * Check if a company is within usage limits for a numeric feature
+ * Check if a user is within usage limits for a numeric feature
+ * Returns unlimited if subscriptions are disabled globally
+ */
+export async function checkUserUsageLimit(
+  userId: string,
+  feature: 'transactions_per_month' | 'team_members' | 'companies',
+  currentUsage: number
+): Promise<UsageLimitResult> {
+  // If subscriptions are disabled, no limits apply
+  const subscriptionsEnabled = await isSubscriptionsEnabled()
+  if (!subscriptionsEnabled) {
+    return {
+      allowed: true,
+      limit: -1,
+      usage: currentUsage,
+      remaining: -1,
+      isUnlimited: true,
+    }
+  }
+
+  const { limits, isActive } = await getUserSubscription(userId)
+
+  // If not active, use STARTER limits
+  const effectiveLimits = isActive ? limits : TIER_LIMITS.STARTER
+  const limit = effectiveLimits[feature]
+
+  // -1 means unlimited
+  if (limit === -1) {
+    return {
+      allowed: true,
+      limit: -1,
+      usage: currentUsage,
+      remaining: -1,
+      isUnlimited: true,
+    }
+  }
+
+  const remaining = Math.max(0, limit - currentUsage)
+  const allowed = currentUsage < limit
+
+  return {
+    allowed,
+    limit,
+    usage: currentUsage,
+    remaining,
+    isUnlimited: false,
+  }
+}
+
+/**
+ * Check if a company is within usage limits for a numeric feature (via owner's subscription)
  * Returns unlimited if subscriptions are disabled globally
  */
 export async function checkUsageLimit(
@@ -198,7 +312,7 @@ export async function checkUsageLimit(
     }
   }
 
-  const { limits, isActive } = await getCompanySubscription(companyId)
+  const { limits, isActive } = await getSubscriptionForCompany(companyId)
 
   // If not active, use STARTER limits
   const effectiveLimits = isActive ? limits : TIER_LIMITS.STARTER
@@ -255,12 +369,79 @@ export async function getMonthlyTransactionCount(companyId: string): Promise<num
 }
 
 /**
+ * Get total transaction count across all user's companies in the current month
+ */
+export async function getUserMonthlyTransactionCount(userId: string): Promise<number> {
+  const now = new Date()
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+
+  // Get all companies the user owns
+  const memberships = await prisma.companyMember.findMany({
+    where: {
+      user_id: userId,
+      role: 'owner',
+      is_active: true,
+    },
+    select: { company_id: true },
+  })
+
+  const companyIds = memberships.map(m => m.company_id)
+
+  if (companyIds.length === 0) return 0
+
+  const [expenseCount, incomeCount] = await Promise.all([
+    prisma.expense.count({
+      where: {
+        company_id: { in: companyIds },
+        is_deleted: false,
+        created_at: { gte: startOfMonth },
+      },
+    }),
+    prisma.income.count({
+      where: {
+        company_id: { in: companyIds },
+        is_deleted: false,
+        created_at: { gte: startOfMonth },
+      },
+    }),
+  ])
+
+  return expenseCount + incomeCount
+}
+
+/**
  * Get current team member count for a company
  */
 export async function getTeamMemberCount(companyId: string): Promise<number> {
   return prisma.companyMember.count({
     where: {
       company_id: companyId,
+      is_active: true,
+    },
+  })
+}
+
+/**
+ * Get total team member count across all user's companies
+ */
+export async function getUserTeamMemberCount(userId: string): Promise<number> {
+  // Get all companies the user owns
+  const memberships = await prisma.companyMember.findMany({
+    where: {
+      user_id: userId,
+      role: 'owner',
+      is_active: true,
+    },
+    select: { company_id: true },
+  })
+
+  const companyIds = memberships.map(m => m.company_id)
+
+  if (companyIds.length === 0) return 0
+
+  return prisma.companyMember.count({
+    where: {
+      company_id: { in: companyIds },
       is_active: true,
     },
   })
@@ -280,7 +461,7 @@ export async function getUserCompanyCount(userId: string): Promise<number> {
 }
 
 /**
- * Check if adding a transaction would exceed the limit
+ * Check if adding a transaction would exceed the limit (company context)
  */
 export async function canAddTransaction(companyId: string): Promise<UsageLimitResult> {
   const currentCount = await getMonthlyTransactionCount(companyId)
@@ -288,7 +469,7 @@ export async function canAddTransaction(companyId: string): Promise<UsageLimitRe
 }
 
 /**
- * Check if adding a team member would exceed the limit
+ * Check if adding a team member would exceed the limit (company context)
  */
 export async function canAddTeamMember(companyId: string): Promise<UsageLimitResult> {
   const currentCount = await getTeamMemberCount(companyId)
@@ -313,57 +494,13 @@ export async function canCreateCompany(userId: string): Promise<UsageLimitResult
     }
   }
 
-  // Get the user's primary company subscription
-  const membership = await prisma.companyMember.findFirst({
-    where: {
-      user_id: userId,
-      is_active: true,
-      role: 'owner',
-    },
-    include: {
-      company: {
-        include: {
-          subscription: {
-            include: { plan: true },
-          },
-        },
-      },
-    },
-    orderBy: {
-      joined_at: 'asc', // First company
-    },
-  })
-
-  if (!membership) {
-    // No company yet, they can create one
-    return {
-      allowed: true,
-      limit: 1,
-      usage: 0,
-      remaining: 1,
-      isUnlimited: false,
-    }
-  }
-
+  // Get the user's subscription directly
+  const { limits, isActive } = await getUserSubscription(userId)
   const companyCount = await getUserCompanyCount(userId)
-  const membershipWithCompany = membership as typeof membership & {
-    company: { subscription: { plan: { tier: SubscriptionTier; limits: unknown } } | null }
-  }
-  const subscription = membershipWithCompany.company.subscription
 
-  if (!subscription) {
-    // No subscription, use STARTER limits
-    return {
-      allowed: companyCount < 1,
-      limit: 1,
-      usage: companyCount,
-      remaining: Math.max(0, 1 - companyCount),
-      isUnlimited: false,
-    }
-  }
-
-  const limits = (subscription.plan.limits as FeatureLimits) || TIER_LIMITS[subscription.plan.tier]
-  const limit = limits.companies
+  // If no subscription or not active, use STARTER limits
+  const effectiveLimits = isActive ? limits : TIER_LIMITS.STARTER
+  const limit = effectiveLimits.companies
 
   if (limit === -1) {
     return {
@@ -407,9 +544,32 @@ export async function isSubscriptionsEnabled(): Promise<boolean> {
 }
 
 /**
- * Get the effective tier for a company (considering subscription status)
+ * Get the effective tier for a user (considering subscription status)
  */
-export async function getEffectiveTier(companyId: string): Promise<SubscriptionTier> {
-  const { tier, isActive } = await getCompanySubscription(companyId)
+export async function getEffectiveTier(userId: string): Promise<SubscriptionTier> {
+  const { tier, isActive } = await getUserSubscription(userId)
   return isActive ? tier : 'STARTER'
+}
+
+/**
+ * Get the effective tier for a company (via owner's subscription)
+ */
+export async function getEffectiveTierForCompany(companyId: string): Promise<SubscriptionTier> {
+  const { tier, isActive } = await getSubscriptionForCompany(companyId)
+  return isActive ? tier : 'STARTER'
+}
+
+// ============================================================
+// LEGACY COMPATIBILITY - These functions are deprecated
+// They now use user-level subscriptions via company owner lookup
+// ============================================================
+
+/**
+ * @deprecated Use getUserSubscription instead
+ * Get subscription information for a company (via owner's subscription)
+ */
+export async function getCompanySubscription(
+  companyId: string
+): Promise<UserSubscriptionInfo> {
+  return getSubscriptionForCompany(companyId)
 }

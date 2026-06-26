@@ -5,7 +5,7 @@ import { cancelSubscription } from '@/lib/payfast/subscription'
 import { sendEmail, subscriptionCancelledEmail } from '@/lib/email'
 import { format } from 'date-fns'
 
-// POST /api/subscriptions/cancel - Cancel the user's subscription
+// POST /api/subscriptions/cancel - Cancel the user's subscription (USER-LEVEL)
 export async function POST() {
   const session = await auth()
   if (!session?.user?.id) {
@@ -13,28 +13,11 @@ export async function POST() {
   }
 
   try {
-    // Get user's company and subscription
-    const membership = await prisma.companyMember.findFirst({
-      where: {
-        user_id: session.user.id,
-        is_active: true,
-      },
-      include: {
-        company: {
-          include: {
-            subscription: {
-              include: { plan: true },
-            },
-          },
-        },
-      },
+    // Get user's subscription directly (user-level subscription)
+    const subscription = await prisma.subscription.findUnique({
+      where: { user_id: session.user.id },
+      include: { plan: true },
     })
-
-    if (!membership) {
-      return NextResponse.json({ error: 'No company found' }, { status: 404 })
-    }
-
-    const subscription = membership.company.subscription
 
     if (!subscription) {
       return NextResponse.json({ error: 'No subscription found' }, { status: 404 })
@@ -85,7 +68,7 @@ export async function POST() {
           plan_id: subscription.plan_id,
           plan_name: subscription.plan.name,
           access_until: subscription.current_period_end,
-          company_id: membership.company.id,
+          user_id: session.user.id,
         },
       },
     })

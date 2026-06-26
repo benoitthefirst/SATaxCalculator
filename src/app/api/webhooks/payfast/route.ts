@@ -25,7 +25,7 @@ interface ITNPayload {
   amount_gross: string
   amount_fee: string
   amount_net: string
-  custom_str1: string // company_id
+  custom_str1: string // user_id (changed from company_id for user-level subscriptions)
   custom_str2: string // plan_id
   custom_str3: string // billing_cycle
   custom_str4?: string
@@ -53,6 +53,9 @@ interface ITNPayload {
  * - A recurring payment is processed
  * - A payment fails
  * - A subscription is cancelled
+ *
+ * NOTE: As of the user-level subscription migration, custom_str1 now contains
+ * the user_id instead of company_id. Subscriptions are now user-level.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -82,7 +85,7 @@ export async function POST(request: NextRequest) {
       payment_status: payload.payment_status,
       m_payment_id: payload.m_payment_id,
       pf_payment_id: payload.pf_payment_id,
-      company_id: payload.custom_str1,
+      user_id: payload.custom_str1,
       plan_id: payload.custom_str2,
       amount: payload.amount_gross,
     })
@@ -104,28 +107,28 @@ export async function POST(request: NextRequest) {
       console.log('[PayFast ITN] Sandbox mode - skipping signature validation')
     }
 
-    // Extract custom data
-    const companyId = payload.custom_str1
+    // Extract custom data - now user_id instead of company_id
+    const userId = payload.custom_str1
     const planId = payload.custom_str2
     const billingCycle = payload.custom_str3 as BillingCycle
 
-    if (!companyId || !planId) {
-      console.error('[PayFast ITN] Missing company_id or plan_id')
+    if (!userId || !planId) {
+      console.error('[PayFast ITN] Missing user_id or plan_id')
       return new NextResponse('Missing required data', { status: 400 })
     }
 
     // Handle based on payment status
     switch (payload.payment_status) {
       case 'COMPLETE':
-        await handleSuccessfulPayment(payload, companyId, planId, billingCycle)
+        await handleSuccessfulPayment(payload, userId, planId, billingCycle)
         break
 
       case 'FAILED':
-        await handleFailedPayment(payload, companyId)
+        await handleFailedPayment(payload, userId)
         break
 
       case 'CANCELLED':
-        await handleCancelledSubscription(companyId)
+        await handleCancelledSubscription(userId)
         break
 
       case 'PENDING':
@@ -149,7 +152,7 @@ export async function POST(request: NextRequest) {
 
 async function handleSuccessfulPayment(
   payload: ITNPayload,
-  companyId: string,
+  userId: string,
   planId: string,
   billingCycle: BillingCycle
 ) {
@@ -161,11 +164,11 @@ async function handleSuccessfulPayment(
   const fee = payload.amount_fee ? parseFloat(payload.amount_fee) : null
   const netAmount = payload.amount_net ? parseFloat(payload.amount_net) : null
 
-  // Upsert subscription (create if new, update if existing)
+  // Upsert subscription (create if new, update if existing) - NOW USER-LEVEL
   const subscription = await prisma.subscription.upsert({
-    where: { company_id: companyId },
+    where: { user_id: userId },
     create: {
-      company_id: companyId,
+      user_id: userId,
       plan_id: planId,
       status: 'ACTIVE' as SubscriptionStatus,
       billing_cycle: billingCycle,
@@ -211,11 +214,12 @@ async function handleSuccessfulPayment(
   // Create audit log
   await prisma.auditLog.create({
     data: {
+      user_id: userId,
       action: 'subscription.payment_received',
       entity_type: 'Subscription',
       entity_id: subscription.id,
       metadata: {
-        company_id: companyId,
+        user_id: userId,
         plan_id: planId,
         amount: payload.amount_gross,
         pf_payment_id: payload.pf_payment_id,
@@ -226,23 +230,17 @@ async function handleSuccessfulPayment(
 
   // Send email notification
   try {
-    // Get company owner's details
-    const companyOwner = await prisma.companyMember.findFirst({
-      where: {
-        company_id: companyId,
-        role: 'owner',
-        is_active: true,
-      },
-      include: {
-        user: { select: { email: true, first_name: true } },
-      },
+    // Get user's details directly (no need to look up via company)
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true, first_name: true },
     })
 
     const plan = await prisma.subscriptionPlan.findUnique({
       where: { id: planId },
     })
 
-    if (companyOwner?.user && plan) {
+    if (user && plan) {
       const isNewSubscription = subscription.created_at.getTime() === subscription.updated_at.getTime()
       const formattedAmount = `R ${amount.toLocaleString('en-ZA', { minimumFractionDigits: 2 })}`
       const dashboardUrl = `${process.env.NEXTAUTH_URL || 'https://www.processx.co.za'}/dashboard`
@@ -250,7 +248,7 @@ async function handleSuccessfulPayment(
       if (isNewSubscription) {
         // Send subscription created email
         const emailContent = subscriptionCreatedEmail({
-          firstName: companyOwner.user.first_name,
+          firstName: user.first_name,
           planName: plan.name,
           amount: formattedAmount,
           billingCycle: billingCycle === 'YEARLY' ? 'year' : 'month',
@@ -258,17 +256,17 @@ async function handleSuccessfulPayment(
           dashboardUrl,
         })
 
-        await sendEmail({ to: companyOwner.user.email, ...emailContent })
+        await sendEmail({ to: user.email, ...emailContent })
       } else {
         // Send payment success email for recurring payments
         const emailContent = paymentSuccessEmail({
-          firstName: companyOwner.user.first_name,
+          firstName: user.first_name,
           planName: plan.name,
           amount: formattedAmount,
           paymentDate: format(now, 'd MMMM yyyy'),
         })
 
-        await sendEmail({ to: companyOwner.user.email, ...emailContent })
+        await sendEmail({ to: user.email, ...emailContent })
       }
     }
   } catch (emailError) {
@@ -277,18 +275,18 @@ async function handleSuccessfulPayment(
 
   console.log('[PayFast ITN] Payment processed successfully:', {
     subscription_id: subscription.id,
-    company_id: companyId,
+    user_id: userId,
     amount: payload.amount_gross,
   })
 }
 
-async function handleFailedPayment(payload: ITNPayload, companyId: string) {
+async function handleFailedPayment(payload: ITNPayload, userId: string) {
   const subscription = await prisma.subscription.findUnique({
-    where: { company_id: companyId },
+    where: { user_id: userId },
   })
 
   if (!subscription) {
-    console.error('[PayFast ITN] No subscription found for failed payment:', companyId)
+    console.error('[PayFast ITN] No subscription found for failed payment:', userId)
     return
   }
 
@@ -317,11 +315,12 @@ async function handleFailedPayment(payload: ITNPayload, companyId: string) {
   // Create audit log
   await prisma.auditLog.create({
     data: {
+      user_id: userId,
       action: 'subscription.payment_failed',
       entity_type: 'Subscription',
       entity_id: subscription.id,
       metadata: {
-        company_id: companyId,
+        user_id: userId,
         m_payment_id: payload.m_payment_id,
         amount: payload.amount_gross,
       },
@@ -330,36 +329,29 @@ async function handleFailedPayment(payload: ITNPayload, companyId: string) {
 
   // Send payment failed email
   try {
-    const companyOwner = await prisma.companyMember.findFirst({
-      where: {
-        company_id: companyId,
-        role: 'owner',
-        is_active: true,
-      },
-      include: {
-        user: { select: { email: true, first_name: true } },
-        company: { select: { name: true } },
-      },
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true, first_name: true },
     })
 
     const plan = await prisma.subscriptionPlan.findUnique({
       where: { id: subscription.plan_id },
     })
 
-    if (companyOwner?.user && plan) {
+    if (user && plan) {
       const formattedAmount = `R ${parseFloat(payload.amount_gross || '0').toLocaleString('en-ZA', { minimumFractionDigits: 2 })}`
       const retryDate = format(addMonths(new Date(), 0), 'd MMMM yyyy') // PayFast will retry
       const updatePaymentUrl = `${process.env.NEXTAUTH_URL || 'https://www.processx.co.za'}/settings/subscription`
 
       const emailContent = paymentFailedEmail({
-        firstName: companyOwner.user.first_name,
+        firstName: user.first_name,
         planName: plan.name,
         amount: formattedAmount,
         retryDate,
         updatePaymentUrl,
       })
 
-      await sendEmail({ to: companyOwner.user.email, ...emailContent })
+      await sendEmail({ to: user.email, ...emailContent })
     }
   } catch (emailError) {
     console.error('[PayFast ITN] Failed to send payment failed email:', emailError)
@@ -367,17 +359,17 @@ async function handleFailedPayment(payload: ITNPayload, companyId: string) {
 
   console.log('[PayFast ITN] Payment failed:', {
     subscription_id: subscription.id,
-    company_id: companyId,
+    user_id: userId,
   })
 }
 
-async function handleCancelledSubscription(companyId: string) {
+async function handleCancelledSubscription(userId: string) {
   const subscription = await prisma.subscription.findUnique({
-    where: { company_id: companyId },
+    where: { user_id: userId },
   })
 
   if (!subscription) {
-    console.error('[PayFast ITN] No subscription found for cancellation:', companyId)
+    console.error('[PayFast ITN] No subscription found for cancellation:', userId)
     return
   }
 
@@ -395,11 +387,12 @@ async function handleCancelledSubscription(companyId: string) {
   // Create audit log
   await prisma.auditLog.create({
     data: {
+      user_id: userId,
       action: 'subscription.cancelled_by_payfast',
       entity_type: 'Subscription',
       entity_id: subscription.id,
       metadata: {
-        company_id: companyId,
+        user_id: userId,
         access_until: subscription.current_period_end,
       },
     },
@@ -407,7 +400,7 @@ async function handleCancelledSubscription(companyId: string) {
 
   console.log('[PayFast ITN] Subscription cancelled:', {
     subscription_id: subscription.id,
-    company_id: companyId,
+    user_id: userId,
     access_until: subscription.current_period_end,
   })
 }

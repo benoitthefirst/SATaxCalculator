@@ -38,6 +38,7 @@ model User {
   ticket_replies            TicketReply[]
   uploaded_pending_docs     PendingDocument[]   @relation("PendingDocUploader")
   approved_pending_docs     PendingDocument[]   @relation("PendingDocApprover")
+  subscription              Subscription?
 
   @@index([email])
   @@index([role])
@@ -76,7 +77,6 @@ model Company {
   income              Income[]
   income_categories   IncomeCategory[]
   recurring_expenses  RecurringExpense[]
-  subscription        Subscription?
   invites             TeamInvite[]
   vehicle_log_entries VehicleLogEntry[]
   pending_documents   PendingDocument[]
@@ -497,7 +497,7 @@ model SubscriptionPlan {
 
 model Subscription {
   id                      String              @id @default(cuid())
-  company_id              String              @unique
+  user_id                 String              @unique
   plan_id                 String
   status                  SubscriptionStatus  @default(ACTIVE)
   billing_cycle           BillingCycle        @default(MONTHLY)
@@ -515,10 +515,10 @@ model Subscription {
   updated_at              DateTime            @updatedAt
   payments                Payment[]
   usage_records           SubscriptionUsage[]
-  company                 Company             @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  user                    User                @relation(fields: [user_id], references: [id], onDelete: Cascade)
   plan                    SubscriptionPlan    @relation(fields: [plan_id], references: [id])
 
-  @@index([company_id])
+  @@index([user_id])
   @@index([plan_id])
   @@index([status])
   @@index([payfast_token])

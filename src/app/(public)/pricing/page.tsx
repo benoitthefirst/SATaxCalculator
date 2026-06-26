@@ -39,6 +39,7 @@ const staticPlans = [
       'Income & invoicing',
       'Vehicle logbook',
       'Asset management',
+      'AI Document Analyzer',
       'Financial reports & analytics',
       'CSV exports',
       'Up to 5 team members',
@@ -55,7 +56,8 @@ const staticPlans = [
     features: [
       'Everything in Professional',
       'Unlimited team members',
-      'Create unlimited companies',
+      'Multi-company management',
+      'AI Document Analyzer',
       'Advanced reporting',
       'API access',
       'Custom integrations',
@@ -72,7 +74,7 @@ const faqs = [
   },
   {
     question: 'How do subscriptions work with multiple companies?',
-    answer: 'Each company requires its own subscription. With the Business plan, you can create unlimited companies under your account. Each company you create starts on the Starter plan and can be upgraded individually to access premium features.',
+    answer: 'Your subscription covers all companies under your account. You pay once and get access to all features across all your companies. This is the industry standard model - no need to pay separately for each company.',
   },
   {
     question: 'Can I change plans at any time?',

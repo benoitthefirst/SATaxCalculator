@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { getActiveCompanyForUser } from '@/lib/company-context'
 import { FileService } from '@/lib/fileService'
+import { checkUserFeatureAccess } from '@/lib/subscription/feature-gate'
 import Anthropic from '@anthropic-ai/sdk'
 
 const client = new Anthropic({
@@ -21,6 +22,17 @@ export async function POST(request: NextRequest) {
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Check if user has access to document analyzer feature
+    const hasAccess = await checkUserFeatureAccess(session.user.id, 'document_analyzer')
+    if (!hasAccess) {
+      return NextResponse.json({
+        error: 'Feature not available',
+        message: 'AI Document Analyzer is available on Professional and Business plans. Upgrade to automatically extract data from invoices, receipts, and bank statements.',
+        feature: 'document_analyzer',
+        upgradeRequired: true,
+      }, { status: 403 })
     }
 
     const companyId = await getActiveCompanyForUser(session.user.id)
