@@ -269,10 +269,14 @@ export default function SubscriptionSettingsPage() {
       )}
 
       {/* Upgrade Plans */}
-      {plans && plans.length > 0 && currentTier !== 'BUSINESS' && (
+      {plans && plans.length > 0 && (currentTier !== 'BUSINESS' || subscription?.cancel_at_period_end) && (
         <div className="bg-white rounded-xl border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            {currentTier === 'STARTER' ? 'Upgrade Your Plan' : 'Change Plan'}
+            {subscription?.cancel_at_period_end
+              ? 'Resubscribe or Change Plan'
+              : currentTier === 'STARTER'
+              ? 'Upgrade Your Plan'
+              : 'Change Plan'}
           </h2>
 
           {/* Billing cycle toggle */}
@@ -302,7 +306,14 @@ export default function SubscriptionSettingsPage() {
 
           <div className="grid md:grid-cols-2 gap-4">
             {plans
-              .filter(plan => plan.tier !== 'STARTER' && plan.tier !== currentTier)
+              .filter(plan => {
+                // Always hide Starter from upgrade options
+                if (plan.tier === 'STARTER') return false
+                // If subscription is cancelling, show all paid plans including current tier
+                if (subscription?.cancel_at_period_end) return true
+                // Otherwise hide current tier
+                return plan.tier !== currentTier
+              })
               .map(plan => (
                 <div
                   key={plan.id}
@@ -371,6 +382,8 @@ export default function SubscriptionSettingsPage() {
                   >
                     {checkoutMutation.isPending && selectedPlan === plan.id
                       ? 'Processing...'
+                      : subscription?.cancel_at_period_end && plan.tier === currentTier
+                      ? `Resubscribe to ${plan.name}`
                       : `Upgrade to ${plan.name}`}
                   </button>
                 </div>
