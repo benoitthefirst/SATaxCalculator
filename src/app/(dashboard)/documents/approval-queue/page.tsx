@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   Search,
   Calendar,
@@ -14,9 +14,7 @@ import {
   Plus,
   RefreshCw,
   ArrowUpDown,
-  CheckCircle,
-  XCircle,
-  Clock,
+  X,
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import DocumentApprovalModal from '@/components/documents/DocumentApprovalModal'
@@ -96,8 +94,16 @@ interface Stats {
   rejected: number
 }
 
+interface Pagination {
+  page: number
+  limit: number
+  total: number
+  totalPages: number
+}
+
 type FilterStatus = 'all' | 'PENDING' | 'APPROVED' | 'REJECTED'
-type SortField = 'name' | 'owner' | 'created_at' | 'updated_at' | 'status'
+type FileType = 'all' | 'INVOICE' | 'RECEIPT' | 'BANK_STATEMENT' | 'PAYSLIP' | 'OTHER'
+type SortField = 'original_filename' | 'created_at' | 'approved_at' | 'status'
 type SortOrder = 'asc' | 'desc'
 
 const FILE_TYPE_ICONS: Record<string, { bg: string; text: string; label: string }> = {
@@ -122,16 +128,33 @@ export default function ApprovalQueuePage() {
     approved: 0,
     rejected: 0,
   })
+  const [pagination, setPagination] = useState<Pagination>({
+    page: 1,
+    limit: 20,
+    total: 0,
+    totalPages: 0,
+  })
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
-  const [filter, setFilter] = useState<FilterStatus>('all')
+
+  // Filter states
+  const [statusFilter, setStatusFilter] = useState<FilterStatus>('all')
+  const [fileTypeFilter, setFileTypeFilter] = useState<FileType>('all')
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedDocument, setSelectedDocument] = useState<PendingDocument | null>(null)
-  const [modalMode, setModalMode] = useState<'view' | 'edit'>('view')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+  const [showDatePicker, setShowDatePicker] = useState(false)
+  const [showFileTypeDropdown, setShowFileTypeDropdown] = useState(false)
+
+  // Sort states
   const [sortField, setSortField] = useState<SortField>('created_at')
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
+
+  // Selection and modal states
+  const [selectedDocument, setSelectedDocument] = useState<PendingDocument | null>(null)
+  const [modalMode, setModalMode] = useState<'view' | 'edit'>('view')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
-  const [showFilters, setShowFilters] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; docId: string | null; docName: string }>({
     isOpen: false,
@@ -139,15 +162,53 @@ export default function ApprovalQueuePage() {
     docName: '',
   })
 
-  const fetchDocuments = useCallback(async (isRefresh = false) => {
+  // Refs for dropdown click-outside handling
+  const fileTypeRef = useRef<HTMLDivElement>(null)
+  const datePickerRef = useRef<HTMLDivElement>(null)
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
+
+  // Close dropdowns on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (fileTypeRef.current && !fileTypeRef.current.contains(event.target as Node)) {
+        setShowFileTypeDropdown(false)
+      }
+      if (datePickerRef.current && !datePickerRef.current.contains(event.target as Node)) {
+        setShowDatePicker(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const fetchDocuments = useCallback(async (isRefresh = false, page = 1) => {
     if (isRefresh) setRefreshing(true)
     else setLoading(true)
 
     try {
       const url = new URL('/api/documents/pending', window.location.origin)
-      if (filter !== 'all') {
-        url.searchParams.set('status', filter)
-      }
+
+      // Add filters
+      if (statusFilter !== 'all') url.searchParams.set('status', statusFilter)
+      if (fileTypeFilter !== 'all') url.searchParams.set('fileType', fileTypeFilter)
+      if (debouncedSearch) url.searchParams.set('search', debouncedSearch)
+      if (dateFrom) url.searchParams.set('dateFrom', dateFrom)
+      if (dateTo) url.searchParams.set('dateTo', dateTo)
+
+      // Add sorting
+      url.searchParams.set('sortField', sortField)
+      url.searchParams.set('sortOrder', sortOrder)
+
+      // Add pagination
+      url.searchParams.set('page', page.toString())
+      url.searchParams.set('limit', pagination.limit.toString())
 
       const response = await fetch(url.toString())
       const data = await response.json()
@@ -155,6 +216,7 @@ export default function ApprovalQueuePage() {
       if (data.success) {
         setDocuments(data.documents)
         setStats(data.stats)
+        setPagination(data.pagination)
       }
     } catch (error) {
       console.error('Error fetching documents:', error)
@@ -162,11 +224,17 @@ export default function ApprovalQueuePage() {
       setLoading(false)
       setRefreshing(false)
     }
-  }, [filter])
+  }, [statusFilter, fileTypeFilter, debouncedSearch, dateFrom, dateTo, sortField, sortOrder, pagination.limit])
 
   useEffect(() => {
+    fetchDocuments(false, 1)
+  }, [statusFilter, fileTypeFilter, debouncedSearch, dateFrom, dateTo, sortField, sortOrder])
+
+  // Initial load
+  useEffect(() => {
     fetchDocuments()
-  }, [fetchDocuments])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleApprove = async (id: string, notes?: string, editedData?: ExtractedData) => {
     const response = await fetch(`/api/documents/${id}`, {
@@ -253,11 +321,27 @@ export default function ApprovalQueuePage() {
     }
   }
 
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= pagination.totalPages) {
+      fetchDocuments(true, newPage)
+    }
+  }
+
+  const clearFilters = () => {
+    setStatusFilter('all')
+    setFileTypeFilter('all')
+    setSearchQuery('')
+    setDateFrom('')
+    setDateTo('')
+  }
+
+  const hasActiveFilters = statusFilter !== 'all' || fileTypeFilter !== 'all' || debouncedSearch || dateFrom || dateTo
+
   const toggleSelectAll = () => {
-    if (selectedIds.size === filteredDocuments.length) {
+    if (selectedIds.size === documents.length) {
       setSelectedIds(new Set())
     } else {
-      setSelectedIds(new Set(filteredDocuments.map(d => d.id)))
+      setSelectedIds(new Set(documents.map(d => d.id)))
     }
   }
 
@@ -270,44 +354,6 @@ export default function ApprovalQueuePage() {
     }
     setSelectedIds(newSet)
   }
-
-  // Filter and sort documents
-  const filteredDocuments = documents
-    .filter(doc => {
-      if (!searchQuery) return true
-      const query = searchQuery.toLowerCase()
-      return (
-        doc.original_filename.toLowerCase().includes(query) ||
-        doc.document_type.toLowerCase().includes(query) ||
-        doc.extracted_data.vendor?.toLowerCase().includes(query) ||
-        `${doc.uploader?.first_name} ${doc.uploader?.last_name}`.toLowerCase().includes(query)
-      )
-    })
-    .sort((a, b) => {
-      let comparison = 0
-      switch (sortField) {
-        case 'name':
-          comparison = a.original_filename.localeCompare(b.original_filename)
-          break
-        case 'owner':
-          const ownerA = `${a.uploader?.first_name || ''} ${a.uploader?.last_name || ''}`
-          const ownerB = `${b.uploader?.first_name || ''} ${b.uploader?.last_name || ''}`
-          comparison = ownerA.localeCompare(ownerB)
-          break
-        case 'created_at':
-          comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-          break
-        case 'updated_at':
-          const dateA = a.approved_at || a.created_at
-          const dateB = b.approved_at || b.created_at
-          comparison = new Date(dateA).getTime() - new Date(dateB).getTime()
-          break
-        case 'status':
-          comparison = a.status.localeCompare(b.status)
-          break
-      }
-      return sortOrder === 'asc' ? comparison : -comparison
-    })
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-ZA', {
@@ -393,33 +439,122 @@ export default function ApprovalQueuePage() {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007AFF]/20 focus:border-[#007AFF]"
           />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
 
         <div className="flex items-center gap-2 ml-auto">
           {/* File Type Filter */}
-          <div className="relative">
+          <div className="relative" ref={fileTypeRef}>
             <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+              onClick={() => setShowFileTypeDropdown(!showFileTypeDropdown)}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2.5 bg-white border rounded-xl text-sm font-medium transition-colors",
+                fileTypeFilter !== 'all'
+                  ? "border-[#007AFF] text-[#007AFF] bg-blue-50"
+                  : "border-gray-200 text-gray-700 hover:bg-gray-50"
+              )}
             >
               <Filter className="w-4 h-4" />
-              File type
+              {fileTypeFilter === 'all' ? 'File type' : fileTypeFilter.replace('_', ' ')}
               <ChevronDown className="w-4 h-4" />
             </button>
+            {showFileTypeDropdown && (
+              <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-lg z-10 py-1">
+                {['all', 'INVOICE', 'RECEIPT', 'BANK_STATEMENT', 'PAYSLIP', 'OTHER'].map((type) => (
+                  <button
+                    key={type}
+                    onClick={() => {
+                      setFileTypeFilter(type as FileType)
+                      setShowFileTypeDropdown(false)
+                    }}
+                    className={cn(
+                      "w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors",
+                      fileTypeFilter === type ? "text-[#007AFF] font-medium" : "text-gray-700"
+                    )}
+                  >
+                    {type === 'all' ? 'All Types' : type.replace('_', ' ')}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Date Filter */}
-          <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-            <Calendar className="w-4 h-4" />
-            Date
-          </button>
+          <div className="relative" ref={datePickerRef}>
+            <button
+              onClick={() => setShowDatePicker(!showDatePicker)}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2.5 bg-white border rounded-xl text-sm font-medium transition-colors",
+                (dateFrom || dateTo)
+                  ? "border-[#007AFF] text-[#007AFF] bg-blue-50"
+                  : "border-gray-200 text-gray-700 hover:bg-gray-50"
+              )}
+            >
+              <Calendar className="w-4 h-4" />
+              {dateFrom || dateTo ? 'Date filtered' : 'Date'}
+              <ChevronDown className="w-4 h-4" />
+            </button>
+            {showDatePicker && (
+              <div className="absolute right-0 mt-2 w-72 bg-white border border-gray-200 rounded-xl shadow-lg z-10 p-4">
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">From</label>
+                    <input
+                      type="date"
+                      value={dateFrom}
+                      onChange={(e) => setDateFrom(e.target.value)}
+                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#007AFF]/20 focus:border-[#007AFF]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">To</label>
+                    <input
+                      type="date"
+                      value={dateTo}
+                      onChange={(e) => setDateTo(e.target.value)}
+                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#007AFF]/20 focus:border-[#007AFF]"
+                    />
+                  </div>
+                  <div className="flex gap-2 pt-2">
+                    <button
+                      onClick={() => {
+                        setDateFrom('')
+                        setDateTo('')
+                      }}
+                      className="flex-1 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                      Clear
+                    </button>
+                    <button
+                      onClick={() => setShowDatePicker(false)}
+                      className="flex-1 px-3 py-2 text-sm text-white bg-[#007AFF] rounded-lg hover:bg-[#0066DD] transition-colors"
+                    >
+                      Apply
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Status Filter */}
           <div className="relative">
             <select
-              value={filter}
-              onChange={(e) => setFilter(e.target.value as FilterStatus)}
-              className="appearance-none flex items-center gap-2 px-4 py-2.5 pr-10 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-[#007AFF]/20 focus:border-[#007AFF] cursor-pointer"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as FilterStatus)}
+              className={cn(
+                "appearance-none flex items-center gap-2 px-4 py-2.5 pr-10 bg-white border rounded-xl text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-[#007AFF]/20 focus:border-[#007AFF] cursor-pointer",
+                statusFilter !== 'all'
+                  ? "border-[#007AFF] text-[#007AFF] bg-blue-50"
+                  : "border-gray-200 text-gray-700 hover:bg-gray-50"
+              )}
             >
               <option value="all">All Status</option>
               <option value="PENDING">Pending</option>
@@ -429,18 +564,26 @@ export default function ApprovalQueuePage() {
             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
           </div>
 
-          {/* Add Filter Button */}
-          <button className="flex items-center gap-2 px-4 py-2.5 text-[#007AFF] text-sm font-medium hover:bg-blue-50 rounded-xl transition-colors">
-            <Plus className="w-4 h-4" />
-            Add filter
-          </button>
+          {/* Clear Filters Button */}
+          {hasActiveFilters && (
+            <button
+              onClick={clearFilters}
+              className="flex items-center gap-2 px-4 py-2.5 text-red-600 text-sm font-medium hover:bg-red-50 rounded-xl transition-colors"
+            >
+              <X className="w-4 h-4" />
+              Clear filters
+            </button>
+          )}
         </div>
       </div>
 
       {/* Stats Row */}
       <div className="flex items-center gap-6 text-sm">
         <span className="text-gray-500">
-          Showing <span className="font-semibold text-gray-900">{filteredDocuments.length}</span> of {stats.total} documents
+          Showing <span className="font-semibold text-gray-900">{documents.length}</span> of {pagination.total} documents
+          {pagination.totalPages > 1 && (
+            <span className="text-gray-400"> (page {pagination.page} of {pagination.totalPages})</span>
+          )}
         </span>
         <div className="flex items-center gap-4">
           <span className="flex items-center gap-1.5">
@@ -467,16 +610,23 @@ export default function ApprovalQueuePage() {
               <p className="text-sm text-gray-500">Loading documents...</p>
             </div>
           </div>
-        ) : filteredDocuments.length === 0 ? (
+        ) : documents.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16">
             <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
               <FileText className="w-8 h-8 text-gray-400" />
             </div>
             <p className="text-base font-medium text-gray-900">No documents found</p>
             <p className="text-sm text-gray-500 mt-1">
-              {searchQuery ? 'Try adjusting your search or filters' : 'Upload documents to get started'}
+              {hasActiveFilters ? 'Try adjusting your search or filters' : 'Upload documents to get started'}
             </p>
-            {!searchQuery && (
+            {hasActiveFilters ? (
+              <button
+                onClick={clearFilters}
+                className="mt-4 px-4 py-2 text-sm text-[#007AFF] font-medium hover:bg-blue-50 rounded-lg transition-colors"
+              >
+                Clear all filters
+              </button>
+            ) : (
               <Link href="/documents/analyze" className="mt-4">
                 <Button>
                   <Upload className="w-4 h-4 mr-2" />
@@ -492,22 +642,22 @@ export default function ApprovalQueuePage() {
                 <th className="w-12 px-4 py-3">
                   <input
                     type="checkbox"
-                    checked={selectedIds.size === filteredDocuments.length && filteredDocuments.length > 0}
+                    checked={selectedIds.size === documents.length && documents.length > 0}
                     onChange={toggleSelectAll}
                     className="w-4 h-4 rounded border-gray-300 text-[#007AFF] focus:ring-[#007AFF]/20"
                   />
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                  <SortHeader field="name">Name</SortHeader>
+                  <SortHeader field="original_filename">Name</SortHeader>
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                  <SortHeader field="owner">Owner</SortHeader>
+                  Owner
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
                   <SortHeader field="created_at">Date Created</SortHeader>
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                  <SortHeader field="updated_at">Last Updated</SortHeader>
+                  <SortHeader field="approved_at">Last Updated</SortHeader>
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
                   <SortHeader field="status">Status</SortHeader>
@@ -518,7 +668,7 @@ export default function ApprovalQueuePage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {filteredDocuments.map((doc) => {
+              {documents.map((doc) => {
                 const fileType = FILE_TYPE_ICONS[doc.document_type] || FILE_TYPE_ICONS.OTHER
                 const statusStyle = STATUS_STYLES[doc.status]
                 const lastUpdated = doc.approved_at || doc.created_at
@@ -666,7 +816,7 @@ export default function ApprovalQueuePage() {
       </div>
 
       {/* Quick Stats Footer */}
-      {filteredDocuments.length > 0 && (
+      {documents.length > 0 && (
         <div className="flex items-center justify-between text-sm text-gray-500">
           <div>
             {selectedIds.size > 0 && (
@@ -675,17 +825,62 @@ export default function ApprovalQueuePage() {
               </span>
             )}
           </div>
-          <div className="flex items-center gap-4">
-            <button className="hover:text-gray-700 transition-colors">
-              Previous
-            </button>
-            <span className="px-3 py-1 bg-[#007AFF] text-white rounded-lg text-xs font-medium">
-              1
-            </span>
-            <button className="hover:text-gray-700 transition-colors">
-              Next
-            </button>
-          </div>
+          {pagination.totalPages > 1 && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handlePageChange(pagination.page - 1)}
+                disabled={pagination.page === 1}
+                className={cn(
+                  "px-3 py-1 rounded-lg transition-colors",
+                  pagination.page === 1
+                    ? "text-gray-300 cursor-not-allowed"
+                    : "hover:text-gray-700 hover:bg-gray-100"
+                )}
+              >
+                Previous
+              </button>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                  let pageNum: number
+                  if (pagination.totalPages <= 5) {
+                    pageNum = i + 1
+                  } else if (pagination.page <= 3) {
+                    pageNum = i + 1
+                  } else if (pagination.page >= pagination.totalPages - 2) {
+                    pageNum = pagination.totalPages - 4 + i
+                  } else {
+                    pageNum = pagination.page - 2 + i
+                  }
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => handlePageChange(pageNum)}
+                      className={cn(
+                        "w-8 h-8 rounded-lg text-sm font-medium transition-colors",
+                        pagination.page === pageNum
+                          ? "bg-[#007AFF] text-white"
+                          : "text-gray-600 hover:bg-gray-100"
+                      )}
+                    >
+                      {pageNum}
+                    </button>
+                  )
+                })}
+              </div>
+              <button
+                onClick={() => handlePageChange(pagination.page + 1)}
+                disabled={pagination.page === pagination.totalPages}
+                className={cn(
+                  "px-3 py-1 rounded-lg transition-colors",
+                  pagination.page === pagination.totalPages
+                    ? "text-gray-300 cursor-not-allowed"
+                    : "hover:text-gray-700 hover:bg-gray-100"
+                )}
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
       )}
 
