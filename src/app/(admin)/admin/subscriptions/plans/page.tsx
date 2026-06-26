@@ -300,32 +300,38 @@ export default function AdminPlansPage() {
 
               <div className="mt-4 pt-4 border-t border-gray-100">
                 <p className="text-sm font-medium text-gray-700 mb-2">Limits</p>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-sm">
-                  <div className="bg-gray-50 rounded px-2 py-1">
+                <div className="grid grid-cols-2 md:grid-cols-6 gap-2 text-sm">
+                  <div className="bg-gray-50 rounded px-3 py-2">
                     <span className="text-gray-500">Transactions: </span>
-                    <span className="font-medium">
+                    <span className="font-semibold text-gray-900">
                       {formatLimit(plan.limits.transactions_per_month)}/mo
                     </span>
                   </div>
-                  <div className="bg-gray-50 rounded px-2 py-1">
+                  <div className="bg-gray-50 rounded px-3 py-2">
                     <span className="text-gray-500">Team: </span>
-                    <span className="font-medium">{formatLimit(plan.limits.team_members)}</span>
+                    <span className="font-semibold text-gray-900">{formatLimit(plan.limits.team_members)}</span>
                   </div>
-                  <div className="bg-gray-50 rounded px-2 py-1">
+                  <div className="bg-gray-50 rounded px-3 py-2">
                     <span className="text-gray-500">Companies: </span>
-                    <span className="font-medium">{formatLimit(plan.limits.companies)}</span>
+                    <span className="font-semibold text-gray-900">{formatLimit(plan.limits.companies)}</span>
                   </div>
-                  <div className="bg-gray-50 rounded px-2 py-1">
+                  <div className="bg-gray-50 rounded px-3 py-2">
                     <span className="text-gray-500">API: </span>
-                    <span className="font-medium">{plan.limits.api_access ? 'Yes' : 'No'}</span>
+                    <span className={`font-semibold ${plan.limits.api_access ? 'text-green-600' : 'text-gray-400'}`}>
+                      {plan.limits.api_access ? 'Yes' : 'No'}
+                    </span>
                   </div>
-                  <div className="bg-gray-50 rounded px-2 py-1">
+                  <div className="bg-gray-50 rounded px-3 py-2">
                     <span className="text-gray-500">Multi-company: </span>
-                    <span className="font-medium">{plan.limits.multi_company ? 'Yes' : 'No'}</span>
+                    <span className={`font-semibold ${plan.limits.multi_company ? 'text-green-600' : 'text-gray-400'}`}>
+                      {plan.limits.multi_company ? 'Yes' : 'No'}
+                    </span>
                   </div>
-                  <div className="bg-gray-50 rounded px-2 py-1">
+                  <div className="bg-gray-50 rounded px-3 py-2">
                     <span className="text-gray-500">Document Analyzer: </span>
-                    <span className="font-medium">{plan.limits.document_analyzer ? 'Yes' : 'No'}</span>
+                    <span className={`font-semibold ${plan.limits.document_analyzer ? 'text-green-600' : 'text-gray-400'}`}>
+                      {plan.limits.document_analyzer ? 'Yes' : 'No'}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -538,7 +544,7 @@ function EditPlanModal({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 mt-3">
+            <div className="grid grid-cols-2 gap-3 mt-3">
               {[
                 { key: 'api_access', label: 'API Access' },
                 { key: 'vehicle_logbook', label: 'Vehicle Logbook' },
@@ -549,7 +555,7 @@ function EditPlanModal({
                 { key: 'multi_company', label: 'Multi-company' },
                 { key: 'priority_support', label: 'Priority Support' },
               ].map(({ key, label }) => (
-                <label key={key} className="flex items-center gap-2 text-sm">
+                <label key={key} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={formData.limits[key as keyof FeatureLimits] as boolean}
@@ -559,9 +565,9 @@ function EditPlanModal({
                         limits: { ...d.limits, [key]: e.target.checked },
                       }))
                     }
-                    className="rounded border-gray-300"
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
-                  {label}
+                  <span className="font-medium">{label}</span>
                 </label>
               ))}
             </div>
