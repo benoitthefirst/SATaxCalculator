@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { getActiveCompanyForUser } from '@/lib/company-context'
 import {
   getCompanySubscription,
   getMonthlyTransactionCount,
@@ -17,22 +18,21 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // Get user's company
-  const membership = await prisma.companyMember.findFirst({
-    where: {
-      user_id: session.user.id,
-      is_active: true,
-    },
-    include: {
-      company: true,
-    },
-  })
+  // Get active company
+  const companyId = await getActiveCompanyForUser(session.user.id)
 
-  if (!membership) {
+  if (!companyId) {
     return NextResponse.json({ error: 'No company found' }, { status: 404 })
   }
 
-  const companyId = membership.company.id
+  // Get company details
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+  })
+
+  if (!company) {
+    return NextResponse.json({ error: 'Company not found' }, { status: 404 })
+  }
   const subscriptionInfo = await getCompanySubscription(companyId)
 
   // Get usage stats
@@ -59,8 +59,8 @@ export async function GET() {
         }
       : null,
     company: {
-      id: membership.company.id,
-      name: membership.company.name,
+      id: company.id,
+      name: company.name,
     },
     tier: subscriptionInfo.tier,
     limits: subscriptionInfo.limits,
@@ -126,17 +126,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get user's company
-    const membership = await prisma.companyMember.findFirst({
-      where: {
-        user_id: session.user.id,
-        is_active: true,
-      },
-      include: { company: true },
+    // Get active company
+    const activeCompanyId = await getActiveCompanyForUser(session.user.id)
+
+    if (!activeCompanyId) {
+      return NextResponse.json({ error: 'No company found' }, { status: 404 })
+    }
+
+    // Get company details
+    const activeCompany = await prisma.company.findUnique({
+      where: { id: activeCompanyId },
     })
 
-    if (!membership) {
-      return NextResponse.json({ error: 'No company found' }, { status: 404 })
+    if (!activeCompany) {
+      return NextResponse.json({ error: 'Company not found' }, { status: 404 })
     }
 
     // Get user details
@@ -157,7 +160,7 @@ export async function POST(request: NextRequest) {
     // Build PayFast form data
     const formData = buildSubscriptionForm({
       planId: plan.id,
-      companyId: membership.company.id,
+      companyId: activeCompanyId,
       billingCycle: billingCycle as BillingCycle,
       amount,
       itemName: `ProcessX ${plan.name} Plan`,
@@ -177,7 +180,7 @@ export async function POST(request: NextRequest) {
           plan_name: plan.name,
           billing_cycle: billingCycle,
           amount,
-          company_id: membership.company.id,
+          company_id: activeCompanyId,
         },
       },
     })
