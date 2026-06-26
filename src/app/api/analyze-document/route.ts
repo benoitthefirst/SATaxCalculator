@@ -1,15 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
+import { prisma } from '@/lib/db'
+import { getActiveCompanyForUser } from '@/lib/company-context'
+import { FileService } from '@/lib/fileService'
 import Anthropic from '@anthropic-ai/sdk'
 
 const client = new Anthropic({
   apiKey: process.env.CLAUDE_API_KEY,
 })
 
+const fileService = new FileService()
+
 type ImageMediaType = 'image/png' | 'image/jpeg' | 'image/gif' | 'image/webp'
-type DocumentMediaType = 'application/pdf'
 
 export async function POST(request: NextRequest) {
+  const startTime = Date.now()
+
   try {
     const session = await auth()
 
@@ -17,7 +23,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { fileName, fileType, base64Content } = await request.json()
+    const companyId = await getActiveCompanyForUser(session.user.id)
+
+    if (!companyId) {
+      return NextResponse.json(
+        { error: 'No active company found' },
+        { status: 400 }
+      )
+    }
+
+    const { fileName, fileType, base64Content, saveToDatabase = true } = await request.json()
 
     if (!fileName || !fileType || !base64Content) {
       return NextResponse.json(
@@ -30,9 +45,49 @@ export async function POST(request: NextRequest) {
 
 Analyze this financial document and extract information.
 
-Return ONLY valid JSON with no other text:
+For BANK STATEMENTS, extract ALL individual transactions in a transactions array.
+For other documents (INVOICE, RECEIPT, etc.), use the extractedInfo format.
+
+Return ONLY valid JSON with no other text.
+
+For BANK STATEMENTS:
 {
-  "documentType": "INVOICE|RECEIPT|BANK_STATEMENT|PAYSLIP|EXPENSE_REPORT|OTHER",
+  "documentType": "BANK_STATEMENT",
+  "confidence": 0.95,
+  "bankInfo": {
+    "bankName": "Bank Name",
+    "accountNumber": "****1234",
+    "accountHolder": "Account Holder Name",
+    "statementPeriod": {
+      "from": "YYYY-MM-DD",
+      "to": "YYYY-MM-DD"
+    },
+    "openingBalance": 50000.00,
+    "closingBalance": 75000.00
+  },
+  "transactions": [
+    {
+      "date": "YYYY-MM-DD",
+      "description": "Transaction description",
+      "reference": "REF123",
+      "debit": 0,
+      "credit": 15000.00,
+      "balance": 65000.00,
+      "type": "INCOME|EXPENSE",
+      "category": "Service Revenue|Salary|Office|Travel|Utilities|Marketing|Equipment|Bank Charges|Other"
+    }
+  ],
+  "summary": {
+    "totalDebits": 25000.00,
+    "totalCredits": 50000.00,
+    "transactionCount": 15
+  },
+  "notes": "any relevant notes"
+}
+
+For OTHER DOCUMENTS (INVOICE, RECEIPT, PAYSLIP, EXPENSE_REPORT):
+{
+  "documentType": "INVOICE|RECEIPT|PAYSLIP|EXPENSE_REPORT|OTHER",
   "confidence": 0.95,
   "extractedInfo": {
     "date": "YYYY-MM-DD",
@@ -53,17 +108,15 @@ Return ONLY valid JSON with no other text:
     ]
 
     if (isPdf) {
-      // For PDFs, use document type
       contentBlocks.push({
         type: 'document',
         source: {
           type: 'base64',
-          media_type: 'application/pdf' as DocumentMediaType,
+          media_type: 'application/pdf',
           data: base64Content,
         },
       })
     } else {
-      // For images, use image type
       const imageMediaType: ImageMediaType = fileType.includes('png')
         ? 'image/png'
         : 'image/jpeg'
@@ -80,7 +133,7 @@ Return ONLY valid JSON with no other text:
 
     const response = await client.messages.create({
       model: 'claude-sonnet-4-5',
-      max_tokens: 1000,
+      max_tokens: 4096,
       messages: [
         {
           role: 'user',
@@ -101,10 +154,81 @@ Return ONLY valid JSON with no other text:
     }
 
     const analysisResult = JSON.parse(jsonMatch[0])
+    const processingTime = Date.now() - startTime
+    const tokensUsed = (response.usage?.input_tokens || 0) + (response.usage?.output_tokens || 0)
+
+    // If saveToDatabase is true, upload file and save to pending_documents
+    let pendingDocumentId: string | null = null
+    let fileUrl: string | null = null
+
+    if (saveToDatabase) {
+      // Upload file to MinIO
+      const buffer = Buffer.from(base64Content, 'base64')
+      const generatedFileName = fileService.generateFileName(fileName, 'document')
+
+      const uploadResult = await fileService.uploadFile(
+        buffer,
+        generatedFileName,
+        fileType,
+        {
+          'original-filename': fileName,
+          'company-id': companyId,
+          'uploaded-by': session.user.id,
+        }
+      )
+
+      if (!uploadResult.isSuccess) {
+        return NextResponse.json(
+          { error: 'Failed to upload file' },
+          { status: 500 }
+        )
+      }
+
+      fileUrl = uploadResult.url!
+
+      // Build extracted_data based on document type
+      const extractedData = analysisResult.documentType === 'BANK_STATEMENT'
+        ? {
+            bankInfo: analysisResult.bankInfo,
+            transactions: analysisResult.transactions,
+            summary: analysisResult.summary,
+          }
+        : analysisResult.extractedInfo || {}
+
+      // Create pending document record
+      const pendingDocument = await prisma.pendingDocument.create({
+        data: {
+          company_id: companyId,
+          document_type: analysisResult.documentType,
+          confidence: analysisResult.confidence,
+          extracted_data: extractedData,
+          original_filename: fileName,
+          file_url: fileUrl,
+          file_size: buffer.length,
+          uploaded_by: session.user.id,
+        },
+      })
+
+      pendingDocumentId = pendingDocument.id
+
+      // Create analysis log
+      await prisma.documentAnalysisLog.create({
+        data: {
+          pending_document_id: pendingDocument.id,
+          analysis_result: analysisResult,
+          confidence: analysisResult.confidence,
+          tokens_used: tokensUsed,
+          model_used: 'claude-sonnet-4-5',
+          processing_time_ms: processingTime,
+        },
+      })
+    }
 
     return NextResponse.json({
       success: true,
       fileName,
+      pendingDocumentId,
+      fileUrl,
       ...analysisResult,
     })
   } catch (error) {
