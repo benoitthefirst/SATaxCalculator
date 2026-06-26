@@ -153,7 +153,7 @@ async function main() {
       features: [
         'Everything in Professional',
         'Unlimited team members',
-        'Multi-company management',
+        'Create unlimited companies',
         'Advanced reporting',
         'API access',
         'Custom integrations',

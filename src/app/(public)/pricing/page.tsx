@@ -55,7 +55,7 @@ const staticPlans = [
     features: [
       'Everything in Professional',
       'Unlimited team members',
-      'Multi-company management',
+      'Create unlimited companies',
       'Advanced reporting',
       'API access',
       'Custom integrations',
@@ -69,6 +69,10 @@ const faqs = [
   {
     question: 'Is there really a free plan?',
     answer: 'Yes! Our Starter plan is completely free with no credit card required. It includes all the basics you need to manage your finances as a solo entrepreneur.',
+  },
+  {
+    question: 'How do subscriptions work with multiple companies?',
+    answer: 'Each company requires its own subscription. With the Business plan, you can create unlimited companies under your account. Each company you create starts on the Starter plan and can be upgraded individually to access premium features.',
   },
   {
     question: 'Can I change plans at any time?',

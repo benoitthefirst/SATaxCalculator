@@ -319,7 +319,7 @@ export default function AdminPlansPage() {
                     <span className="font-medium">{plan.limits.api_access ? 'Yes' : 'No'}</span>
                   </div>
                   <div className="bg-gray-50 rounded px-2 py-1">
-                    <span className="text-gray-500">Multi-company: </span>
+                    <span className="text-gray-500">Unlimited companies: </span>
                     <span className="font-medium">{plan.limits.multi_company ? 'Yes' : 'No'}</span>
                   </div>
                 </div>
@@ -540,7 +540,7 @@ function EditPlanModal({
                 { key: 'asset_management', label: 'Asset Management' },
                 { key: 'advanced_reports', label: 'Advanced Reports' },
                 { key: 'csv_exports', label: 'CSV Exports' },
-                { key: 'multi_company', label: 'Multi-company' },
+                { key: 'multi_company', label: 'Unlimited Companies' },
                 { key: 'priority_support', label: 'Priority Support' },
               ].map(({ key, label }) => (
                 <label key={key} className="flex items-center gap-2 text-sm">

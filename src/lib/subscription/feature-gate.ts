@@ -65,7 +65,7 @@ export const FEATURE_NAMES: Record<keyof FeatureLimits, string> = {
   asset_management: 'Asset management',
   advanced_reports: 'Advanced reports & analytics',
   csv_exports: 'CSV exports',
-  multi_company: 'Multi-company support',
+  multi_company: 'Create unlimited companies',
   priority_support: 'Priority support',
 }
 
