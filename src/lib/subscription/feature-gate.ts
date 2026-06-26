@@ -6,6 +6,7 @@ export interface FeatureLimits {
   transactions_per_month: number // -1 = unlimited
   team_members: number // -1 = unlimited
   companies: number // -1 = unlimited
+  documents_per_month: number // -1 = unlimited, 0 = disabled
   api_access: boolean
   vehicle_logbook: boolean
   asset_management: boolean
@@ -22,6 +23,7 @@ export const TIER_LIMITS: Record<SubscriptionTier, FeatureLimits> = {
     transactions_per_month: 50,
     team_members: 1,
     companies: 1,
+    documents_per_month: 0, // No document analyzer access
     api_access: false,
     vehicle_logbook: false,
     asset_management: false,
@@ -35,6 +37,7 @@ export const TIER_LIMITS: Record<SubscriptionTier, FeatureLimits> = {
     transactions_per_month: -1, // Unlimited
     team_members: 5,
     companies: -1, // Unlimited - subscription covers all companies
+    documents_per_month: 100, // 100 documents/month
     api_access: false,
     vehicle_logbook: true,
     asset_management: true,
@@ -48,6 +51,7 @@ export const TIER_LIMITS: Record<SubscriptionTier, FeatureLimits> = {
     transactions_per_month: -1, // Unlimited
     team_members: -1, // Unlimited
     companies: -1, // Unlimited
+    documents_per_month: -1, // Unlimited
     api_access: true,
     vehicle_logbook: true,
     asset_management: true,
@@ -64,6 +68,7 @@ export const FEATURE_NAMES: Record<keyof FeatureLimits, string> = {
   transactions_per_month: 'Transactions per month',
   team_members: 'Team members',
   companies: 'Companies',
+  documents_per_month: 'Document analyses per month',
   api_access: 'API access',
   vehicle_logbook: 'Vehicle logbook',
   asset_management: 'Asset management',
@@ -557,6 +562,195 @@ export async function getEffectiveTier(userId: string): Promise<SubscriptionTier
 export async function getEffectiveTierForCompany(companyId: string): Promise<SubscriptionTier> {
   const { tier, isActive } = await getSubscriptionForCompany(companyId)
   return isActive ? tier : 'STARTER'
+}
+
+// ============================================================
+// DOCUMENT ANALYZER USAGE TRACKING
+// ============================================================
+
+export interface DocumentQuotaResult {
+  allowed: boolean
+  limit: number
+  used: number
+  remaining: number
+  isUnlimited: boolean
+  warningThreshold: boolean // True if >80% used
+  percentUsed: number
+}
+
+/**
+ * Get document analysis usage for current billing period
+ */
+export async function getDocumentAnalysisUsage(userId: string): Promise<number> {
+  const subscription = await prisma.subscription.findUnique({
+    where: { user_id: userId },
+    include: { usage_records: true },
+  })
+
+  if (!subscription) return 0
+
+  const now = new Date()
+  const periodStart = subscription.current_period_start
+
+  // Find usage record for current period
+  const currentUsage = subscription.usage_records.find(
+    u => u.period_start.getTime() === periodStart.getTime()
+  )
+
+  return currentUsage?.documents_analyzed_count ?? 0
+}
+
+/**
+ * Check if user can analyze more documents
+ */
+export async function checkDocumentQuota(userId: string): Promise<DocumentQuotaResult> {
+  // If subscriptions are disabled, unlimited access
+  const subscriptionsEnabled = await isSubscriptionsEnabled()
+  if (!subscriptionsEnabled) {
+    return {
+      allowed: true,
+      limit: -1,
+      used: 0,
+      remaining: -1,
+      isUnlimited: true,
+      warningThreshold: false,
+      percentUsed: 0,
+    }
+  }
+
+  const { limits, isActive } = await getUserSubscription(userId)
+  const used = await getDocumentAnalysisUsage(userId)
+
+  // If no subscription or not active, no access
+  if (!isActive) {
+    return {
+      allowed: false,
+      limit: 0,
+      used,
+      remaining: 0,
+      isUnlimited: false,
+      warningThreshold: false,
+      percentUsed: 100,
+    }
+  }
+
+  const limit = limits.documents_per_month
+
+  // 0 means no access (STARTER)
+  if (limit === 0) {
+    return {
+      allowed: false,
+      limit: 0,
+      used,
+      remaining: 0,
+      isUnlimited: false,
+      warningThreshold: false,
+      percentUsed: 100,
+    }
+  }
+
+  // -1 means unlimited
+  if (limit === -1) {
+    return {
+      allowed: true,
+      limit: -1,
+      used,
+      remaining: -1,
+      isUnlimited: true,
+      warningThreshold: false,
+      percentUsed: 0,
+    }
+  }
+
+  const remaining = Math.max(0, limit - used)
+  const percentUsed = (used / limit) * 100
+  const warningThreshold = percentUsed >= 80
+
+  return {
+    allowed: used < limit,
+    limit,
+    used,
+    remaining,
+    isUnlimited: false,
+    warningThreshold,
+    percentUsed,
+  }
+}
+
+/**
+ * Increment document usage count after successful analysis
+ */
+export async function incrementDocumentUsage(
+  userId: string,
+  tokensUsed: number = 0
+): Promise<void> {
+  const subscription = await prisma.subscription.findUnique({
+    where: { user_id: userId },
+  })
+
+  if (!subscription) return
+
+  const periodStart = subscription.current_period_start
+  const periodEnd = subscription.current_period_end
+
+  // Upsert usage record for current period
+  await prisma.subscriptionUsage.upsert({
+    where: {
+      subscription_id_period_start: {
+        subscription_id: subscription.id,
+        period_start: periodStart,
+      },
+    },
+    create: {
+      subscription_id: subscription.id,
+      period_start: periodStart,
+      period_end: periodEnd,
+      documents_analyzed_count: 1,
+      ai_tokens_used: tokensUsed,
+    },
+    update: {
+      documents_analyzed_count: { increment: 1 },
+      ai_tokens_used: { increment: tokensUsed },
+    },
+  })
+}
+
+/**
+ * Get comprehensive usage stats for user dashboard
+ */
+export async function getUserUsageStats(userId: string) {
+  const subscriptionsEnabled = await isSubscriptionsEnabled()
+  const subscriptionInfo = await getUserSubscription(userId)
+  const documentQuota = await checkDocumentQuota(userId)
+  const transactionCount = await getUserMonthlyTransactionCount(userId)
+  const teamMemberCount = await getUserTeamMemberCount(userId)
+  const companyCount = await getUserCompanyCount(userId)
+
+  return {
+    subscriptionsEnabled,
+    subscription: subscriptionInfo,
+    usage: {
+      documents: documentQuota,
+      transactions: {
+        used: transactionCount,
+        limit: subscriptionInfo.limits.transactions_per_month,
+        isUnlimited: subscriptionInfo.limits.transactions_per_month === -1,
+        remaining: subscriptionInfo.limits.transactions_per_month === -1
+          ? -1
+          : Math.max(0, subscriptionInfo.limits.transactions_per_month - transactionCount),
+      },
+      teamMembers: {
+        used: teamMemberCount,
+        limit: subscriptionInfo.limits.team_members,
+        isUnlimited: subscriptionInfo.limits.team_members === -1,
+      },
+      companies: {
+        used: companyCount,
+        limit: subscriptionInfo.limits.companies,
+        isUnlimited: subscriptionInfo.limits.companies === -1,
+      },
+    },
+  }
 }
 
 // ============================================================

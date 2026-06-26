@@ -8,6 +8,7 @@ interface FeatureLimits {
   transactions_per_month: number
   team_members: number
   companies: number
+  documents_per_month: number
   api_access: boolean
   vehicle_logbook: boolean
   asset_management: boolean
@@ -300,7 +301,7 @@ export default function AdminPlansPage() {
 
               <div className="mt-4 pt-4 border-t border-gray-100">
                 <p className="text-sm font-medium text-gray-700 mb-2">Limits</p>
-                <div className="grid grid-cols-2 md:grid-cols-6 gap-2 text-sm">
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2 text-sm">
                   <div className="bg-gray-50 rounded px-3 py-2">
                     <span className="text-gray-500">Transactions: </span>
                     <span className="font-semibold text-gray-900">
@@ -316,6 +317,12 @@ export default function AdminPlansPage() {
                     <span className="font-semibold text-gray-900">{formatLimit(plan.limits.companies)}</span>
                   </div>
                   <div className="bg-gray-50 rounded px-3 py-2">
+                    <span className="text-gray-500">Documents: </span>
+                    <span className="font-semibold text-gray-900">
+                      {formatLimit(plan.limits.documents_per_month)}/mo
+                    </span>
+                  </div>
+                  <div className="bg-gray-50 rounded px-3 py-2">
                     <span className="text-gray-500">API: </span>
                     <span className={`font-semibold ${plan.limits.api_access ? 'text-green-600' : 'text-gray-400'}`}>
                       {plan.limits.api_access ? 'Yes' : 'No'}
@@ -328,7 +335,7 @@ export default function AdminPlansPage() {
                     </span>
                   </div>
                   <div className="bg-gray-50 rounded px-3 py-2">
-                    <span className="text-gray-500">Document Analyzer: </span>
+                    <span className="text-gray-500">Doc Analyzer: </span>
                     <span className={`font-semibold ${plan.limits.document_analyzer ? 'text-green-600' : 'text-gray-400'}`}>
                       {plan.limits.document_analyzer ? 'Yes' : 'No'}
                     </span>
@@ -496,7 +503,7 @@ function EditPlanModal({
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Limits (-1 = unlimited)
             </label>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-4 gap-3">
               <div>
                 <label className="text-xs text-gray-500">Transactions/mo</label>
                 <input
@@ -537,6 +544,20 @@ function EditPlanModal({
                     setFormData(d => ({
                       ...d,
                       limits: { ...d.limits, companies: parseInt(e.target.value) || 0 },
+                    }))
+                  }
+                  className="w-full px-2 py-1 border border-gray-200 rounded text-sm"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500">Documents/mo</label>
+                <input
+                  type="number"
+                  value={formData.limits.documents_per_month}
+                  onChange={e =>
+                    setFormData(d => ({
+                      ...d,
+                      limits: { ...d.limits, documents_per_month: parseInt(e.target.value) || 0 },
                     }))
                   }
                   className="w-full px-2 py-1 border border-gray-200 rounded text-sm"

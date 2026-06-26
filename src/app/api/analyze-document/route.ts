@@ -3,7 +3,11 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { getActiveCompanyForUser } from '@/lib/company-context'
 import { FileService } from '@/lib/fileService'
-import { checkUserFeatureAccess } from '@/lib/subscription/feature-gate'
+import {
+  checkUserFeatureAccess,
+  checkDocumentQuota,
+  incrementDocumentUsage
+} from '@/lib/subscription/feature-gate'
 import Anthropic from '@anthropic-ai/sdk'
 
 const client = new Anthropic({
@@ -33,6 +37,22 @@ export async function POST(request: NextRequest) {
         feature: 'document_analyzer',
         upgradeRequired: true,
       }, { status: 403 })
+    }
+
+    // Check document analysis quota
+    const quota = await checkDocumentQuota(session.user.id)
+    if (!quota.allowed) {
+      return NextResponse.json({
+        error: 'Quota exceeded',
+        message: `You have reached your monthly limit of ${quota.limit} document analyses. Upgrade to Business plan for unlimited analyses, or wait until your billing period resets.`,
+        feature: 'document_analyzer',
+        quota: {
+          used: quota.used,
+          limit: quota.limit,
+          remaining: 0,
+        },
+        upgradeRequired: true,
+      }, { status: 429 })
     }
 
     const companyId = await getActiveCompanyForUser(session.user.id)
@@ -234,13 +254,28 @@ For OTHER DOCUMENTS (INVOICE, RECEIPT, PAYSLIP, EXPENSE_REPORT):
           processing_time_ms: processingTime,
         },
       })
+
+      // Increment usage counter for quota tracking
+      await incrementDocumentUsage(session.user.id, tokensUsed)
     }
+
+    // Get updated quota info to return with response
+    const updatedQuota = await checkDocumentQuota(session.user.id)
 
     return NextResponse.json({
       success: true,
       fileName,
       pendingDocumentId,
       fileUrl,
+      quota: {
+        used: updatedQuota.used,
+        limit: updatedQuota.limit,
+        remaining: updatedQuota.remaining,
+        isUnlimited: updatedQuota.isUnlimited,
+        warning: updatedQuota.warningThreshold
+          ? `You've used ${updatedQuota.percentUsed.toFixed(0)}% of your monthly document analysis quota.`
+          : null,
+      },
       ...analysisResult,
     })
   } catch (error) {

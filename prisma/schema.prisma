@@ -555,15 +555,17 @@ model Payment {
 }
 
 model SubscriptionUsage {
-  id                 String       @id @default(cuid())
-  subscription_id    String
-  period_start       DateTime
-  period_end         DateTime
-  transactions_count Int          @default(0)
-  api_calls_count    Int          @default(0)
-  created_at         DateTime     @default(now())
-  updated_at         DateTime     @updatedAt
-  subscription       Subscription @relation(fields: [subscription_id], references: [id], onDelete: Cascade)
+  id                       String       @id @default(cuid())
+  subscription_id          String
+  period_start             DateTime
+  period_end               DateTime
+  transactions_count       Int          @default(0)
+  api_calls_count          Int          @default(0)
+  documents_analyzed_count Int          @default(0)
+  ai_tokens_used           Int          @default(0)
+  created_at               DateTime     @default(now())
+  updated_at               DateTime     @updatedAt
+  subscription             Subscription @relation(fields: [subscription_id], references: [id], onDelete: Cascade)
 
   @@unique([subscription_id, period_start])
   @@index([subscription_id])

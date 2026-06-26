@@ -105,11 +105,15 @@ async function main() {
         transactions_per_month: 50,
         team_members: 1,
         companies: 1,
+        documents_per_month: 0, // No document analyzer access
         vehicle_logbook: false,
         asset_management: false,
         advanced_reports: false,
-        csv_export: false,
+        csv_exports: false,
+        multi_company: false,
+        document_analyzer: false,
         api_access: false,
+        priority_support: false,
       },
       display_order: 1,
     },
@@ -126,7 +130,7 @@ async function main() {
         'Income & invoicing',
         'Vehicle logbook',
         'Asset management',
-        'AI Document Analyzer',
+        'AI Document Analyzer (100 docs/month)',
         'Financial reports & analytics',
         'CSV exports',
         'Up to 5 team members',
@@ -136,12 +140,15 @@ async function main() {
         transactions_per_month: -1, // unlimited
         team_members: 5,
         companies: -1, // unlimited - user-level subscription
+        documents_per_month: 100, // 100 documents per month
         vehicle_logbook: true,
         asset_management: true,
         advanced_reports: true,
-        csv_export: true,
+        csv_exports: true,
+        multi_company: true,
         document_analyzer: true,
         api_access: false,
+        priority_support: true,
       },
       display_order: 2,
     },
@@ -156,7 +163,7 @@ async function main() {
         'Everything in Professional',
         'Unlimited team members',
         'Multi-company management',
-        'AI Document Analyzer',
+        'Unlimited AI Document Analyzer',
         'Advanced reporting',
         'API access',
         'Custom integrations',
@@ -167,12 +174,15 @@ async function main() {
         transactions_per_month: -1, // unlimited
         team_members: -1, // unlimited
         companies: -1, // unlimited
+        documents_per_month: -1, // unlimited
         vehicle_logbook: true,
         asset_management: true,
         advanced_reports: true,
-        csv_export: true,
+        csv_exports: true,
+        multi_company: true,
         document_analyzer: true,
         api_access: true,
+        priority_support: true,
       },
       display_order: 3,
     },

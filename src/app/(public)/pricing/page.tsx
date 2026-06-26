@@ -39,7 +39,7 @@ const staticPlans = [
       'Income & invoicing',
       'Vehicle logbook',
       'Asset management',
-      'AI Document Analyzer',
+      'AI Document Analyzer (100 docs/month)',
       'Financial reports & analytics',
       'CSV exports',
       'Up to 5 team members',
@@ -57,7 +57,7 @@ const staticPlans = [
       'Everything in Professional',
       'Unlimited team members',
       'Multi-company management',
-      'AI Document Analyzer',
+      'Unlimited AI Document Analyzer',
       'Advanced reporting',
       'API access',
       'Custom integrations',
@@ -75,6 +75,10 @@ const faqs = [
   {
     question: 'How do subscriptions work with multiple companies?',
     answer: 'Your subscription covers all companies under your account. You pay once and get access to all features across all your companies. This is the industry standard model - no need to pay separately for each company.',
+  },
+  {
+    question: 'What is the AI Document Analyzer?',
+    answer: 'The AI Document Analyzer automatically extracts data from invoices, receipts, bank statements, and payslips. It uses advanced AI to identify and categorize transactions, saving you hours of manual data entry. Professional plans get 100 document analyses per month, while Business plans get unlimited.',
   },
   {
     question: 'Can I change plans at any time?',
