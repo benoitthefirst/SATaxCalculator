@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { getActiveCompanyForUser } from '@/lib/company-context'
 
 // SARS Tax Rates 2025/2026
 const CIT_RATE = 0.27 // Corporate Income Tax rate
@@ -32,20 +33,23 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user's active company membership
-    const membership = await prisma.companyMember.findFirst({
-      where: {
-        user_id: session.user.id,
-        is_active: true,
-      },
-      include: {
-        company: true,
-      },
-    })
+    const companyId = await getActiveCompanyForUser(session.user.id)
 
-    if (!membership) {
+    if (!companyId) {
       return NextResponse.json(
         { error: 'No active company found' },
+        { status: 404 }
+      )
+    }
+
+    // Get company details
+    const company = await prisma.company.findUnique({
+      where: { id: companyId },
+    })
+
+    if (!company) {
+      return NextResponse.json(
+        { error: 'Company not found' },
         { status: 404 }
       )
     }
@@ -60,7 +64,7 @@ export async function GET(request: NextRequest) {
     // Get all income for the period
     const incomeRecords = await prisma.income.findMany({
       where: {
-        company_id: membership.company.id,
+        company_id: companyId,
         is_deleted: false,
         income_date: {
           gte: startDate,
@@ -75,7 +79,7 @@ export async function GET(request: NextRequest) {
     // Get all expenses for the period
     const expenses = await prisma.expense.findMany({
       where: {
-        company_id: membership.company.id,
+        company_id: companyId,
         is_deleted: false,
         expense_date: {
           gte: startDate,
@@ -90,7 +94,7 @@ export async function GET(request: NextRequest) {
     // Get assets for depreciation calculation
     const assets = await prisma.asset.findMany({
       where: {
-        company_id: membership.company.id,
+        company_id: companyId,
         is_deleted: false,
         purchase_date: {
           lte: endDate,
@@ -103,7 +107,7 @@ export async function GET(request: NextRequest) {
     })
 
     // Check if company is VAT registered
-    const isVatRegistered = Boolean(membership.company.vat_number)
+    const isVatRegistered = Boolean(company.vat_number)
 
     // Calculate income (for VAT-registered businesses, extract VAT from amounts)
     // We assume all income amounts include VAT if the company is VAT registered
@@ -190,7 +194,7 @@ export async function GET(request: NextRequest) {
     const taxableIncome = grossIncome - totalDeductible - totalDepreciation
 
     // Calculate tax
-    const businessType = membership.company.business_type
+    const businessType = company.business_type
     const isSBC = businessType === 'small_business_corporation'
 
     const citTax = Math.max(0, taxableIncome * CIT_RATE)
@@ -205,9 +209,9 @@ export async function GET(request: NextRequest) {
         end: endDate.toISOString(),
       },
       company: {
-        name: membership.company.name,
-        taxNumber: membership.company.tax_number,
-        vatNumber: membership.company.vat_number,
+        name: company.name,
+        taxNumber: company.tax_number,
+        vatNumber: company.vat_number,
         businessType: businessType,
         isSBC,
         isVatRegistered,

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { checkFeatureAccess } from '@/lib/subscription/feature-gate'
+import { getActiveCompanyForUser } from '@/lib/company-context'
 import { Prisma } from '@prisma/client'
 
 type VehicleLogEntryWithAsset = Prisma.VehicleLogEntryGetPayload<{ include: { asset: true } }>
@@ -14,14 +15,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const membership = await prisma.companyMember.findFirst({
-      where: {
-        user_id: session.user.id,
-        is_active: true,
-      },
-    })
+    const companyId = await getActiveCompanyForUser(session.user.id)
 
-    if (!membership) {
+    if (!companyId) {
       return NextResponse.json(
         { error: 'No active company found' },
         { status: 404 }
@@ -30,8 +26,8 @@ export async function GET(request: NextRequest) {
 
     // Check feature access - vehicle logbook AND CSV exports require Professional plan
     const [hasLogbookAccess, hasExportAccess] = await Promise.all([
-      checkFeatureAccess(membership.company_id, 'vehicle_logbook'),
-      checkFeatureAccess(membership.company_id, 'csv_exports'),
+      checkFeatureAccess(companyId, 'vehicle_logbook'),
+      checkFeatureAccess(companyId, 'csv_exports'),
     ])
 
     if (!hasLogbookAccess || !hasExportAccess) {
@@ -53,7 +49,7 @@ export async function GET(request: NextRequest) {
     const tripType = searchParams.get('tripType') || '' // 'business' | 'personal' | ''
 
     const where: any = {
-      company_id: membership.company_id,
+      company_id: companyId,
     }
 
     if (assetId) {

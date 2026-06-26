@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { getActiveCompanyForUser } from '@/lib/company-context'
 import type { Expense, ExpenseCategory } from '@prisma/client'
 
 type ExpenseWithCategory = Expense & {
@@ -15,20 +16,23 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user's active company membership
-    const membership = await prisma.companyMember.findFirst({
-      where: {
-        user_id: session.user.id,
-        is_active: true,
-      },
-      include: {
-        company: true,
-      },
-    })
+    const companyId = await getActiveCompanyForUser(session.user.id)
 
-    if (!membership) {
+    if (!companyId) {
       return NextResponse.json(
         { error: 'No active company found' },
+        { status: 404 }
+      )
+    }
+
+    // Get company details
+    const company = await prisma.company.findUnique({
+      where: { id: companyId },
+    })
+
+    if (!company) {
+      return NextResponse.json(
+        { error: 'Company not found' },
         { status: 404 }
       )
     }
@@ -43,7 +47,7 @@ export async function GET(request: NextRequest) {
     // Get all expenses for the period grouped by category
     const expensesData = await prisma.expense.findMany({
       where: {
-        company_id: membership.company.id,
+        company_id: companyId,
         is_deleted: false,
         expense_date: {
           gte: startDate,
@@ -130,9 +134,9 @@ export async function GET(request: NextRequest) {
         expenseCount: expenses.length,
       },
       company: {
-        name: membership.company.name,
-        taxNumber: membership.company.tax_number,
-        businessType: membership.company.business_type,
+        name: company.name,
+        taxNumber: company.tax_number,
+        businessType: company.business_type,
       },
     })
   } catch (error) {
