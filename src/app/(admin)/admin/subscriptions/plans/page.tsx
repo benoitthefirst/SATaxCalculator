@@ -197,11 +197,11 @@ export default function AdminPlansPage() {
           <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
             <div>
               <p className="text-sm text-gray-500">Free Trial Days</p>
-              <p className="font-medium">{settingsData?.settings.free_trial_days || 14} days</p>
+              <p className="font-medium text-gray-900">{settingsData?.settings.free_trial_days || 14} days</p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Grace Period Days</p>
-              <p className="font-medium">{settingsData?.settings.grace_period_days || 7} days</p>
+              <p className="font-medium text-gray-900">{settingsData?.settings.grace_period_days || 7} days</p>
             </div>
           </div>
         </div>
@@ -253,7 +253,7 @@ export default function AdminPlansPage() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setEditingPlan(plan)}
-                    className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg hover:bg-gray-50"
+                    className="px-3 py-1.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50"
                   >
                     Edit
                   </button>
@@ -425,7 +425,7 @@ function EditPlanModal({
                 type="text"
                 value={formData.name}
                 onChange={e => setFormData(d => ({ ...d, name: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-gray-900"
                 required
               />
             </div>
@@ -437,7 +437,7 @@ function EditPlanModal({
                 type="text"
                 value={plan.tier}
                 disabled
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-600"
               />
             </div>
           </div>
@@ -450,7 +450,7 @@ function EditPlanModal({
               type="text"
               value={formData.description}
               onChange={e => setFormData(d => ({ ...d, description: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-gray-900"
             />
           </div>
 
@@ -467,7 +467,7 @@ function EditPlanModal({
                 onChange={e =>
                   setFormData(d => ({ ...d, price_monthly: parseFloat(e.target.value) || 0 }))
                 }
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-gray-900"
               />
             </div>
             <div>
@@ -482,7 +482,7 @@ function EditPlanModal({
                 onChange={e =>
                   setFormData(d => ({ ...d, price_yearly: parseFloat(e.target.value) || 0 }))
                 }
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-gray-900"
               />
             </div>
           </div>
@@ -495,7 +495,7 @@ function EditPlanModal({
               value={formData.features}
               onChange={e => setFormData(d => ({ ...d, features: e.target.value }))}
               rows={4}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-gray-900"
             />
           </div>
 
@@ -518,7 +518,7 @@ function EditPlanModal({
                       },
                     }))
                   }
-                  className="w-full px-2 py-1 border border-gray-200 rounded text-sm"
+                  className="w-full px-2 py-1 border border-gray-200 rounded text-sm text-gray-900"
                 />
               </div>
               <div>
@@ -532,7 +532,7 @@ function EditPlanModal({
                       limits: { ...d.limits, team_members: parseInt(e.target.value) || 0 },
                     }))
                   }
-                  className="w-full px-2 py-1 border border-gray-200 rounded text-sm"
+                  className="w-full px-2 py-1 border border-gray-200 rounded text-sm text-gray-900"
                 />
               </div>
               <div>
@@ -546,7 +546,7 @@ function EditPlanModal({
                       limits: { ...d.limits, companies: parseInt(e.target.value) || 0 },
                     }))
                   }
-                  className="w-full px-2 py-1 border border-gray-200 rounded text-sm"
+                  className="w-full px-2 py-1 border border-gray-200 rounded text-sm text-gray-900"
                 />
               </div>
               <div>
@@ -560,7 +560,7 @@ function EditPlanModal({
                       limits: { ...d.limits, documents_per_month: parseInt(e.target.value) || 0 },
                     }))
                   }
-                  className="w-full px-2 py-1 border border-gray-200 rounded text-sm"
+                  className="w-full px-2 py-1 border border-gray-200 rounded text-sm text-gray-900"
                 />
               </div>
             </div>
