@@ -114,10 +114,10 @@ const FILE_TYPE_ICONS: Record<string, { bg: string; text: string; label: string 
   OTHER: { bg: 'bg-gray-100', text: 'text-gray-600', label: 'DOC' },
 }
 
-const STATUS_STYLES: Record<string, { bg: string; text: string; dot: string }> = {
-  PENDING: { bg: 'bg-amber-100', text: 'text-amber-700', dot: 'bg-amber-500' },
-  APPROVED: { bg: 'bg-green-100', text: 'text-green-700', dot: 'bg-green-500' },
-  REJECTED: { bg: 'bg-red-100', text: 'text-red-700', dot: 'bg-red-500' },
+const STATUS_STYLES: Record<string, { bg: string; text: string; dot: string; label: string }> = {
+  PENDING: { bg: 'bg-amber-100', text: 'text-amber-700', dot: 'bg-amber-500', label: 'In Progress' },
+  APPROVED: { bg: 'bg-green-100', text: 'text-green-700', dot: 'bg-green-500', label: 'Approved' },
+  REJECTED: { bg: 'bg-red-100', text: 'text-red-700', dot: 'bg-red-500', label: 'Rejected' },
 }
 
 export default function ApprovalQueuePage() {
@@ -557,7 +557,7 @@ export default function ApprovalQueuePage() {
               )}
             >
               <option value="all">All Status</option>
-              <option value="PENDING">Pending</option>
+              <option value="PENDING">In Progress</option>
               <option value="APPROVED">Approved</option>
               <option value="REJECTED">Rejected</option>
             </select>
@@ -588,7 +588,7 @@ export default function ApprovalQueuePage() {
         <div className="flex items-center gap-4">
           <span className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-            <span className="text-gray-600">{stats.pending} Pending</span>
+            <span className="text-gray-600">{stats.pending} In Progress</span>
           </span>
           <span className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-green-500"></span>
@@ -756,7 +756,7 @@ export default function ApprovalQueuePage() {
                         statusStyle.text
                       )}>
                         <span className={cn("w-1.5 h-1.5 rounded-full", statusStyle.dot)}></span>
-                        {doc.status === 'PENDING' ? 'Pending' : doc.status === 'APPROVED' ? 'Approved' : 'Rejected'}
+                        {statusStyle.label}
                       </span>
                     </td>
 
