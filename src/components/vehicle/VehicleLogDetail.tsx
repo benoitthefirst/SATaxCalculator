@@ -66,7 +66,7 @@ export default function VehicleLogDetail({
         throw new Error(data.error || 'Failed to delete entry')
       }
 
-      router.push('/vehicle-logbook')
+      router.push('/dashboard/vehicle-logbook')
       router.refresh()
     } catch (err: any) {
       setError(err.message || 'An error occurred')
@@ -123,7 +123,7 @@ export default function VehicleLogDetail({
       <div className="flex items-center justify-between">
         <div>
           <Link
-            href="/vehicle-logbook"
+            href="/dashboard/vehicle-logbook"
             className="text-[#FF9500] hover:text-[#FF6B00] text-sm font-medium mb-2 inline-block"
           >
             ← Back to Logbook
@@ -267,7 +267,7 @@ export default function VehicleLogDetail({
       {/* Link to Vehicle */}
       <div className="flex justify-end">
         <Link
-          href={`/assets/${entry.asset_id}`}
+          href={`/dashboard/assets/${entry.asset_id}`}
           className="text-[#FF9500] hover:text-[#FF6B00] text-sm font-medium"
         >
           View Vehicle Details →

@@ -98,7 +98,7 @@ export default function QuotaDisplay({ variant = 'compact', showUpgrade = true }
           </div>
           {showUpgrade && !documents.isUnlimited && (
             <Link
-              href="/settings/subscription"
+              href="/dashboard/settings/subscription"
               className={`text-xs font-medium underline ${
                 isExceeded ? 'text-red-600 hover:text-red-800' :
                 isWarning ? 'text-amber-600 hover:text-amber-800' :
@@ -219,7 +219,7 @@ export default function QuotaDisplay({ variant = 'compact', showUpgrade = true }
 
           {showUpgrade && (
             <Link
-              href="/settings/subscription"
+              href="/dashboard/settings/subscription"
               className={`block w-full text-center py-2 px-4 rounded-lg font-medium text-sm transition ${
                 isExceeded
                   ? 'bg-red-600 text-white hover:bg-red-700'

@@ -156,7 +156,7 @@ export default function CompanySwitcher({
             <>
               <div className="border-t border-gray-100 mt-2 pt-2">
                 <Link
-                  href="/companies/new"
+                  href="/dashboard/companies/new"
                   onClick={() => setIsOpen(false)}
                   className="flex items-center gap-3 px-3 py-2.5 text-gray-700 hover:bg-gray-50"
                 >

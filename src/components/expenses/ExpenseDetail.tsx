@@ -42,7 +42,7 @@ export default function ExpenseDetail({
         throw new Error('Failed to delete expense')
       }
 
-      router.push('/expenses')
+      router.push('/dashboard/expenses')
       router.refresh()
     } catch (error) {
       alert('Failed to delete expense. Please try again.')
@@ -99,7 +99,7 @@ export default function ExpenseDetail({
         <div>
           <div className="flex items-center gap-2 mb-2">
             <Link
-              href="/expenses"
+              href="/dashboard/expenses"
               className="text-[#007AFF] hover:text-[#0051D5] text-sm font-medium"
             >
               ← Back to Expenses

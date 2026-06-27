@@ -20,7 +20,7 @@ export default function LogbookFilters({ year, assetId, vehicles }: LogbookFilte
   const handleYearChange = (newYear: string) => {
     const params = new URLSearchParams(searchParams.toString())
     params.set('year', newYear)
-    router.push(`/vehicle-logbook?${params.toString()}`)
+    router.push(`/dashboard/vehicle-logbook?${params.toString()}`)
   }
 
   const handleAssetChange = (newAssetId: string) => {
@@ -30,7 +30,7 @@ export default function LogbookFilters({ year, assetId, vehicles }: LogbookFilte
     } else {
       params.delete('asset')
     }
-    router.push(`/vehicle-logbook?${params.toString()}`)
+    router.push(`/dashboard/vehicle-logbook?${params.toString()}`)
   }
 
   return (

@@ -72,7 +72,7 @@ export default function ChangePasswordForm() {
 
       // Redirect to settings after a short delay
       setTimeout(() => {
-        router.push('/settings')
+        router.push('/dashboard/settings')
       }, 2000)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
@@ -153,7 +153,7 @@ export default function ChangePasswordForm() {
         <Button
           type="button"
           variant="secondary"
-          onClick={() => router.push('/settings')}
+          onClick={() => router.push('/dashboard/settings')}
           disabled={loading}
         >
           Cancel

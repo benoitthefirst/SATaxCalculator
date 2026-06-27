@@ -117,7 +117,7 @@ export default function AssetForm({
         throw new Error(responseData.error || 'Failed to save asset')
       }
 
-      router.push('/assets')
+      router.push('/dashboard/assets')
       router.refresh()
     } catch (err: any) {
       setError(err.message || 'An error occurred. Please try again.')
@@ -297,7 +297,7 @@ export default function AssetForm({
 
       <div className="flex items-center justify-end gap-4 pt-4 border-t border-gray-100">
         <Link
-          href="/assets"
+          href="/dashboard/assets"
           className="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all"
         >
           Cancel

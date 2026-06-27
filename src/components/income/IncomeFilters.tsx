@@ -41,7 +41,7 @@ export default function IncomeFilters({
       }
     })
 
-    router.push(`/income?${params.toString()}`)
+    router.push(`/dashboard/income?${params.toString()}`)
   }
 
   const handleSearch = (e: React.FormEvent) => {
@@ -188,7 +188,7 @@ export default function IncomeFilters({
           <button
             onClick={() => {
               setSearchValue('')
-              router.push(`/income?year=${year}`)
+              router.push(`/dashboard/income?year=${year}`)
             }}
             className="text-sm text-gray-500 hover:text-gray-700"
           >

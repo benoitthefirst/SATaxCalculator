@@ -41,7 +41,7 @@ export default function ExpenseFilters({
       }
     })
 
-    router.push(`/expenses?${params.toString()}`)
+    router.push(`/dashboard/expenses?${params.toString()}`)
   }
 
   const handleSearch = (e: React.FormEvent) => {
@@ -188,7 +188,7 @@ export default function ExpenseFilters({
           <button
             onClick={() => {
               setSearchValue('')
-              router.push(`/expenses?year=${year}`)
+              router.push(`/dashboard/expenses?year=${year}`)
             }}
             className="text-sm text-gray-500 hover:text-gray-700"
           >

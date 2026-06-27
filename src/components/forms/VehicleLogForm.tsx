@@ -129,7 +129,7 @@ export default function VehicleLogForm({
         throw new Error(responseData.error || 'Failed to save log entry')
       }
 
-      router.push('/vehicle-logbook')
+      router.push('/dashboard/vehicle-logbook')
       router.refresh()
     } catch (err: any) {
       setError(err.message || 'An error occurred. Please try again.')
@@ -190,7 +190,7 @@ export default function VehicleLogForm({
         {vehicles.length === 0 && (
           <p className="text-sm text-amber-600">
             No vehicles registered.{' '}
-            <Link href="/assets/new" className="text-[#FF9500] hover:underline">
+            <Link href="/dashboard/assets/new" className="text-[#FF9500] hover:underline">
               Add a vehicle first
             </Link>
           </p>
@@ -330,7 +330,7 @@ export default function VehicleLogForm({
       {/* Submit */}
       <div className="flex items-center justify-end gap-4 pt-4 border-t border-gray-100">
         <Link
-          href="/vehicle-logbook"
+          href="/dashboard/vehicle-logbook"
           className="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all"
         >
           Cancel
