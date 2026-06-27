@@ -20,7 +20,7 @@ const mainFeatures = [
       'AI extracts transactions automatically',
       'Review and approve in seconds',
       'Free your team for advisory work',
-      'Save 10+ hours per month',
+      'Save 15+ hours per month',
     ],
     color: 'purple',
   },

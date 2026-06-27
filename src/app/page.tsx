@@ -89,9 +89,9 @@ const testimonials = [
 ]
 
 const stats = [
-  { value: '10+', label: 'Hours Saved Monthly' },
+  { value: '2x', label: 'More Productive' },
+  { value: '15 - 40hrs', label: 'Saved Monthly' },
   { value: '100%', label: 'SARS Compliant' },
-  { value: '99.9%', label: 'Uptime' },
   { value: 'Free', label: 'To Get Started' },
 ]
 
