@@ -133,7 +133,12 @@ export default function SubscriptionSettingsPage() {
               >
                 {subscription?.plan?.name || 'Starter'}
               </span>
-              {subscription?.cancel_at_period_end && (
+              {subscription?.status === 'CANCELLED' && (
+                <span className="px-2 py-0.5 bg-red-100 text-red-800 text-xs font-medium rounded">
+                  Cancelled
+                </span>
+              )}
+              {subscription?.cancel_at_period_end && subscription?.status !== 'CANCELLED' && (
                 <span className="px-2 py-0.5 bg-amber-100 text-amber-800 text-xs font-medium rounded">
                   Cancelling
                 </span>
@@ -148,7 +153,10 @@ export default function SubscriptionSettingsPage() {
             </p>
           </div>
 
-          {subscription && !subscription.cancel_at_period_end && currentTier !== 'STARTER' && (
+          {subscription &&
+            !subscription.cancel_at_period_end &&
+            subscription.status !== 'CANCELLED' &&
+            currentTier !== 'STARTER' && (
             <button
               onClick={() => setShowCancelModal(true)}
               className="text-sm text-red-600 hover:text-red-800"
@@ -162,35 +170,59 @@ export default function SubscriptionSettingsPage() {
           <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
               <p className="text-sm text-gray-500">Status</p>
-              <p className={`font-medium ${subscription.cancel_at_period_end ? 'text-amber-700' : 'text-gray-900'}`}>
-                {subscription.cancel_at_period_end ? 'Cancelling' : subscription.status}
+              <p className={`font-medium ${
+                subscription.status === 'CANCELLED'
+                  ? 'text-red-600'
+                  : subscription.cancel_at_period_end
+                  ? 'text-amber-700'
+                  : 'text-gray-900'
+              }`}>
+                {subscription.status === 'CANCELLED'
+                  ? 'Cancelled'
+                  : subscription.cancel_at_period_end
+                  ? 'Cancelling'
+                  : subscription.status}
               </p>
             </div>
-            <div>
-              <p className="text-sm text-gray-500">
-                {subscription.cancel_at_period_end ? 'Access Until' : 'Next Billing'}
-              </p>
-              <p className="font-medium text-gray-900">{formatDate(subscription.current_period_end)}</p>
-            </div>
-            {!subscription.cancel_at_period_end && (
+            {subscription.status !== 'CANCELLED' && (
+              <div>
+                <p className="text-sm text-gray-500">
+                  {subscription.cancel_at_period_end ? 'Access Until' : 'Next Billing'}
+                </p>
+                <p className="font-medium text-gray-900">{formatDate(subscription.current_period_end)}</p>
+              </div>
+            )}
+            {!subscription.cancel_at_period_end && subscription.status !== 'CANCELLED' && (
               <div>
                 <p className="text-sm text-gray-500">Amount</p>
                 <p className="font-medium">
-                  {formatCurrency(subscription.amount || 0)}/
-                  {subscription.billing_cycle === 'YEARLY' ? 'year' : 'month'}
+                  {subscription.plan?.tier === 'ENTERPRISE'
+                    ? 'Custom'
+                    : `${formatCurrency(subscription.amount || 0)}/${
+                        subscription.billing_cycle === 'YEARLY' ? 'year' : 'month'
+                      }`}
                 </p>
               </div>
             )}
           </div>
         )}
 
-        {subscription?.cancel_at_period_end && (
+        {subscription?.cancel_at_period_end && subscription.status !== 'CANCELLED' && (
           <div className="mt-4 p-4 bg-amber-50 rounded-lg border border-amber-200">
             <p className="text-sm text-amber-800">
               Your subscription has been cancelled. You will continue to have access to{' '}
               {subscription.plan?.name} features until{' '}
               {formatDate(subscription.current_period_end)}. After that, you will be
               downgraded to the Starter plan.
+            </p>
+          </div>
+        )}
+
+        {subscription?.status === 'CANCELLED' && (
+          <div className="mt-4 p-4 bg-red-50 rounded-lg border border-red-200">
+            <p className="text-sm text-red-800">
+              Your subscription has been cancelled. You are now on the Starter plan with
+              limited features. Subscribe to a plan below to unlock more features.
             </p>
           </div>
         )}
@@ -269,10 +301,10 @@ export default function SubscriptionSettingsPage() {
       )}
 
       {/* Upgrade Plans */}
-      {plans && plans.length > 0 && (currentTier !== 'BUSINESS' || subscription?.cancel_at_period_end) && (
+      {plans && plans.length > 0 && (currentTier !== 'BUSINESS' || subscription?.cancel_at_period_end || subscription?.status === 'CANCELLED') && (
         <div className="bg-white rounded-xl border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            {subscription?.cancel_at_period_end
+            {subscription?.status === 'CANCELLED' || subscription?.cancel_at_period_end
               ? 'Resubscribe or Change Plan'
               : currentTier === 'STARTER'
               ? 'Upgrade Your Plan'
@@ -309,8 +341,8 @@ export default function SubscriptionSettingsPage() {
               .filter(plan => {
                 // Always hide Starter from upgrade options
                 if (plan.tier === 'STARTER') return false
-                // If subscription is cancelling, show all paid plans including current tier
-                if (subscription?.cancel_at_period_end) return true
+                // If subscription is cancelled or cancelling, show all paid plans including current tier
+                if (subscription?.status === 'CANCELLED' || subscription?.cancel_at_period_end) return true
                 // Otherwise hide current tier
                 return plan.tier !== currentTier
               })
@@ -414,8 +446,10 @@ export default function SubscriptionSettingsPage() {
                       >
                         {checkoutMutation.isPending && selectedPlan === plan.id
                           ? 'Processing...'
-                          : subscription?.cancel_at_period_end && plan.tier === currentTier
+                          : (subscription?.status === 'CANCELLED' || subscription?.cancel_at_period_end) && plan.tier === currentTier
                           ? `Resubscribe to ${plan.name}`
+                          : (subscription?.status === 'CANCELLED' || subscription?.cancel_at_period_end)
+                          ? `Subscribe to ${plan.name}`
                           : `Upgrade to ${plan.name}`}
                       </button>
                     )}
