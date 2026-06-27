@@ -111,7 +111,7 @@ const organizationSchema = {
   "contactPoint": {
     "@type": "ContactPoint",
     "contactType": "customer service",
-    "email": "support@processx.co.za",
+    "email": "inf@theprocesse.com",
     "availableLanguage": ["English"]
   }
 }
