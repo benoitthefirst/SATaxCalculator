@@ -1,0 +1,344 @@
+{
+  "siteInfo": {
+    "name": "ProcessX Help Centre",
+    "description": "Comprehensive guides and documentation for ProcessX - South Africa's leading business expense tracking and tax compliance software.",
+    "url": "https://processx.co.za/help",
+    "organization": {
+      "name": "ProcessX",
+      "url": "https://processx.co.za",
+      "email": "support@processx.co.za",
+      "country": "South Africa"
+    }
+  },
+  "categories": [
+    {
+      "id": "getting-started",
+      "title": "Getting Started",
+      "description": "Learn the basics of ProcessX and set up your account for success",
+      "icon": "zap",
+      "order": 1,
+      "articles": [
+        {
+          "id": "creating-your-account",
+          "title": "Creating your account",
+          "description": "Step-by-step guide to creating and verifying your ProcessX account",
+          "keywords": ["signup", "register", "account creation", "email verification"],
+          "order": 1
+        },
+        {
+          "id": "setting-up-your-business-profile",
+          "title": "Setting up your business profile",
+          "description": "Configure your company details, tax information, and preferences",
+          "keywords": ["company setup", "business profile", "tax number", "VAT registration"],
+          "order": 2
+        },
+        {
+          "id": "adding-your-first-expense",
+          "title": "Adding your first expense",
+          "description": "Learn how to record your first business expense in ProcessX",
+          "keywords": ["expense", "receipt", "deduction", "first expense"],
+          "order": 3
+        },
+        {
+          "id": "recording-income",
+          "title": "Recording income",
+          "description": "Track your business revenue and income sources",
+          "keywords": ["income", "revenue", "sales", "invoices"],
+          "order": 4
+        },
+        {
+          "id": "understanding-the-dashboard",
+          "title": "Understanding the dashboard",
+          "description": "Navigate your ProcessX dashboard and understand key metrics",
+          "keywords": ["dashboard", "overview", "metrics", "navigation"],
+          "order": 5
+        }
+      ]
+    },
+    {
+      "id": "expenses",
+      "title": "Expenses",
+      "description": "Track and manage business expenses for tax deductions",
+      "icon": "calculator",
+      "order": 2,
+      "articles": [
+        {
+          "id": "adding-expenses",
+          "title": "Adding expenses",
+          "description": "Different ways to add and categorize business expenses",
+          "keywords": ["add expense", "expense entry", "categorize", "business costs"],
+          "order": 1
+        },
+        {
+          "id": "uploading-receipts",
+          "title": "Uploading receipts",
+          "description": "Store and organize your receipts digitally for SARS compliance",
+          "keywords": ["receipts", "upload", "scan", "document storage", "proof of purchase"],
+          "order": 2
+        },
+        {
+          "id": "managing-expense-categories",
+          "title": "Managing expense categories",
+          "description": "Organize expenses using categories aligned with SARS requirements",
+          "keywords": ["categories", "expense types", "organize", "SARS categories"],
+          "order": 3
+        },
+        {
+          "id": "setting-up-recurring-expenses",
+          "title": "Setting up recurring expenses",
+          "description": "Automate tracking of regular monthly or weekly expenses",
+          "keywords": ["recurring", "automatic", "subscription", "monthly expenses"],
+          "order": 4
+        },
+        {
+          "id": "exporting-expenses-for-sars",
+          "title": "Exporting expenses for SARS",
+          "description": "Generate SARS-compliant expense reports and exports",
+          "keywords": ["export", "SARS", "tax return", "CSV", "report"],
+          "order": 5
+        }
+      ]
+    },
+    {
+      "id": "income",
+      "title": "Income",
+      "description": "Record and track your business revenue",
+      "icon": "dollar",
+      "order": 3,
+      "articles": [
+        {
+          "id": "recording-income",
+          "title": "Recording income",
+          "description": "Track all sources of business income accurately",
+          "keywords": ["income", "revenue", "earnings", "sales recording"],
+          "order": 1
+        },
+        {
+          "id": "income-categories",
+          "title": "Income categories",
+          "description": "Classify income by source and type for better reporting",
+          "keywords": ["income types", "categories", "revenue streams", "classification"],
+          "order": 2
+        },
+        {
+          "id": "adding-vat-to-income",
+          "title": "Adding VAT to income",
+          "description": "Handle VAT calculations and reporting for your income",
+          "keywords": ["VAT", "value added tax", "tax calculation", "VAT registered"],
+          "order": 3
+        },
+        {
+          "id": "income-analytics",
+          "title": "Income analytics",
+          "description": "Analyze your income trends and patterns over time",
+          "keywords": ["analytics", "trends", "charts", "income growth", "reporting"],
+          "order": 4
+        },
+        {
+          "id": "client-tracking",
+          "title": "Client tracking",
+          "description": "Manage clients and track income by customer",
+          "keywords": ["clients", "customers", "client management", "income by client"],
+          "order": 5
+        }
+      ]
+    },
+    {
+      "id": "reports-and-tax",
+      "title": "Reports & Tax",
+      "description": "Generate reports and stay compliant with SARS",
+      "icon": "chart",
+      "order": 4,
+      "articles": [
+        {
+          "id": "generating-profit-and-loss-reports",
+          "title": "Generating profit & loss reports",
+          "description": "Create comprehensive profit and loss statements for your business",
+          "keywords": ["profit loss", "P&L", "income statement", "financial report"],
+          "order": 1
+        },
+        {
+          "id": "understanding-tax-computation",
+          "title": "Understanding tax computation",
+          "description": "How ProcessX calculates your estimated tax liability",
+          "keywords": ["tax calculation", "tax estimate", "SARS tax", "income tax"],
+          "order": 2
+        },
+        {
+          "id": "deduction-summary-reports",
+          "title": "Deduction summary reports",
+          "description": "View all your tax-deductible expenses in one report",
+          "keywords": ["deductions", "tax deductions", "summary", "allowable expenses"],
+          "order": 3
+        },
+        {
+          "id": "exporting-for-your-accountant",
+          "title": "Exporting for your accountant",
+          "description": "Share your financial data with your accountant or tax practitioner",
+          "keywords": ["accountant", "export", "share", "tax practitioner", "professional"],
+          "order": 4
+        },
+        {
+          "id": "tax-year-settings",
+          "title": "Tax year settings",
+          "description": "Configure your tax year and understand South African tax periods",
+          "keywords": ["tax year", "financial year", "SARS periods", "year end"],
+          "order": 5
+        }
+      ]
+    },
+    {
+      "id": "vehicle-logbook",
+      "title": "Vehicle Logbook",
+      "description": "Track business travel for SARS travel allowance claims",
+      "icon": "car",
+      "order": 5,
+      "articles": [
+        {
+          "id": "setting-up-your-vehicle",
+          "title": "Setting up your vehicle",
+          "description": "Add your vehicle details and configure tracking settings",
+          "keywords": ["vehicle setup", "car registration", "add vehicle", "vehicle details"],
+          "order": 1
+        },
+        {
+          "id": "recording-trips",
+          "title": "Recording trips",
+          "description": "Log business trips with start and end odometer readings",
+          "keywords": ["trips", "travel log", "odometer", "mileage", "journey"],
+          "order": 2
+        },
+        {
+          "id": "business-vs-personal-travel",
+          "title": "Business vs personal travel",
+          "description": "Correctly classify trips for accurate SARS deduction claims",
+          "keywords": ["business travel", "personal travel", "classification", "mixed use"],
+          "order": 3
+        },
+        {
+          "id": "calculating-deductions",
+          "title": "Calculating deductions",
+          "description": "How vehicle logbook deductions are calculated for SARS",
+          "keywords": ["deduction calculation", "SARS rates", "travel allowance", "deemed cost"],
+          "order": 4
+        },
+        {
+          "id": "exporting-logbook-data",
+          "title": "Exporting logbook data",
+          "description": "Export your vehicle logbook for SARS submission",
+          "keywords": ["export logbook", "SARS submission", "travel records", "logbook export"],
+          "order": 5
+        }
+      ]
+    },
+    {
+      "id": "account-and-billing",
+      "title": "Account & Billing",
+      "description": "Manage your account settings and subscription",
+      "icon": "settings",
+      "order": 6,
+      "articles": [
+        {
+          "id": "updating-your-profile",
+          "title": "Updating your profile",
+          "description": "Edit your personal details and account information",
+          "keywords": ["profile", "personal details", "update account", "edit profile"],
+          "order": 1
+        },
+        {
+          "id": "changing-your-password",
+          "title": "Changing your password",
+          "description": "Update your password and manage account security",
+          "keywords": ["password", "security", "change password", "account security"],
+          "order": 2
+        },
+        {
+          "id": "managing-company-settings",
+          "title": "Managing company settings",
+          "description": "Configure your company details and business preferences",
+          "keywords": ["company settings", "business details", "company profile", "preferences"],
+          "order": 3
+        },
+        {
+          "id": "understanding-your-plan",
+          "title": "Understanding your plan",
+          "description": "Learn about ProcessX subscription tiers and features",
+          "keywords": ["subscription", "plans", "pricing", "features", "tiers"],
+          "order": 4
+        },
+        {
+          "id": "upgrading-your-subscription",
+          "title": "Upgrading your subscription",
+          "description": "How to upgrade or change your ProcessX subscription plan",
+          "keywords": ["upgrade", "change plan", "subscription", "premium features"],
+          "order": 5
+        }
+      ]
+    }
+  ],
+  "popularArticles": [
+    {
+      "id": "adding-your-first-expense",
+      "categoryId": "getting-started",
+      "title": "How do I add my first expense?"
+    },
+    {
+      "id": "exporting-for-your-accountant",
+      "categoryId": "reports-and-tax",
+      "title": "What documents do I need for SARS?"
+    },
+    {
+      "id": "calculating-deductions",
+      "categoryId": "vehicle-logbook",
+      "title": "How to calculate vehicle deductions"
+    },
+    {
+      "id": "generating-profit-and-loss-reports",
+      "categoryId": "reports-and-tax",
+      "title": "Understanding profit & loss reports"
+    },
+    {
+      "id": "setting-up-recurring-expenses",
+      "categoryId": "expenses",
+      "title": "Setting up recurring expenses"
+    }
+  ],
+  "faqs": [
+    {
+      "id": "is-processx-free",
+      "question": "Is ProcessX free to use?",
+      "answer": "Yes! Our Starter plan is completely free with no credit card required. It includes essential features for freelancers and solo entrepreneurs. You can upgrade to Professional or Business plans as your needs grow.",
+      "relatedArticles": ["understanding-your-plan", "upgrading-your-subscription"]
+    },
+    {
+      "id": "sars-compliant",
+      "question": "Is ProcessX SARS compliant?",
+      "answer": "Yes. ProcessX is built specifically for South African businesses with SARS compliance in mind. Our exports, reports, and record-keeping features are designed to meet SARS requirements for income tax, VAT, and travel allowances.",
+      "relatedArticles": ["exporting-expenses-for-sars", "exporting-for-your-accountant", "exporting-logbook-data"]
+    },
+    {
+      "id": "data-security",
+      "question": "How secure is my data?",
+      "answer": "We take security seriously. All data is encrypted in transit and at rest using industry-standard encryption. Your financial data is stored securely in the cloud with regular backups. We never share your data with third parties.",
+      "relatedArticles": ["changing-your-password"]
+    },
+    {
+      "id": "mobile-usage",
+      "question": "Can I use ProcessX on my phone?",
+      "answer": "Yes! ProcessX is fully responsive and works great on mobile browsers. You can add expenses, upload receipts, and check your dashboard from anywhere.",
+      "relatedArticles": ["uploading-receipts", "adding-expenses"]
+    },
+    {
+      "id": "export-for-accountant",
+      "question": "How do I export my data for my accountant?",
+      "answer": "Navigate to Reports and select the report you need (Expenses, Income, Profit & Loss, etc.). Click the Export button to download a CSV file that's ready to share with your accountant.",
+      "relatedArticles": ["exporting-for-your-accountant", "generating-profit-and-loss-reports"]
+    },
+    {
+      "id": "multiple-businesses",
+      "question": "Can I manage multiple businesses?",
+      "answer": "Yes, with our Business plan you can manage multiple companies from a single account. Switch between businesses easily and keep all your records organized.",
+      "relatedArticles": ["managing-company-settings", "understanding-your-plan"]
+    }
+  ]
+}
