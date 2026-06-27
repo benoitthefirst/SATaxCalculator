@@ -390,7 +390,7 @@ function InviteModal({
               onChange={(e) => setEmail(e.target.value)}
               placeholder="colleague@example.com"
               required
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
             />
           </div>
 
@@ -401,7 +401,7 @@ function InviteModal({
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-orange-500 focus:border-transparent"
             >
               <option value="admin">Admin</option>
               <option value="accountant">Accountant</option>
