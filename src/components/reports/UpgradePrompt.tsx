@@ -22,7 +22,7 @@ const FEATURES = [
 export default function UpgradePrompt({
   title,
   message,
-  backLink = '/reports',
+  backLink = '/dashboard/reports',
   backLabel = 'Back to Reports',
 }: UpgradePromptProps) {
   return (
@@ -63,7 +63,7 @@ export default function UpgradePrompt({
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link href="/settings/subscription">
+            <Link href="/dashboard/settings/subscription">
               <Button className="w-full sm:w-auto">
                 Upgrade Now
                 <ArrowRight className="w-4 h-4 ml-2" />

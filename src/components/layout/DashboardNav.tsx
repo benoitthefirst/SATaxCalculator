@@ -55,13 +55,13 @@ export default function DashboardNav({ user, companies, currentCompanyId, canCre
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard' },
-    { name: 'Income', href: '/income' },
-    { name: 'Expenses', href: '/expenses' },
-    { name: 'Documents', href: '/documents/approval-queue' },
-    { name: 'Assets', href: '/assets' },
-    { name: 'Logbook', href: '/vehicle-logbook' },
-    { name: 'Reports', href: '/reports' },
-    { name: 'Settings', href: '/settings' },
+    { name: 'Income', href: '/dashboard/income' },
+    { name: 'Expenses', href: '/dashboard/expenses' },
+    { name: 'Documents', href: '/dashboard/documents/approval-queue' },
+    { name: 'Assets', href: '/dashboard/assets' },
+    { name: 'Logbook', href: '/dashboard/vehicle-logbook' },
+    { name: 'Reports', href: '/dashboard/reports' },
+    { name: 'Settings', href: '/dashboard/settings' },
   ]
 
   return (
@@ -159,7 +159,7 @@ export default function DashboardNav({ user, companies, currentCompanyId, canCre
                   </div>
                   <div className="py-1">
                     <Link
-                      href="/settings"
+                      href="/dashboard/settings"
                       onClick={() => setIsProfileOpen(false)}
                       className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                     >
@@ -364,7 +364,7 @@ function MobileDrawer({
                   <>
                     <div className="border-t border-gray-100 my-1" />
                     <Link
-                      href="/companies/new"
+                      href="/dashboard/companies/new"
                       onClick={() => {
                         setIsBusinessDropdownOpen(false)
                         onClose()

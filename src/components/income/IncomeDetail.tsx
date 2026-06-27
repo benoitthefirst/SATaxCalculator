@@ -40,7 +40,7 @@ export default function IncomeDetail({
         throw new Error('Failed to delete income')
       }
 
-      router.push('/income')
+      router.push('/dashboard/income')
       router.refresh()
     } catch (error) {
       alert('Failed to delete income. Please try again.')
@@ -95,7 +95,7 @@ export default function IncomeDetail({
         <div>
           <div className="flex items-center gap-2 mb-2">
             <Link
-              href="/income"
+              href="/dashboard/income"
               className="text-[#34C759] hover:text-[#248A3D] transition-colors text-sm font-medium"
             >
               ← Back to Income
