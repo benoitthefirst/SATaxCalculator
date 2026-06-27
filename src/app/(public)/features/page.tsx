@@ -8,6 +8,23 @@ export const metadata: Metadata = {
 
 const mainFeatures = [
   {
+    title: 'AI Document Analyzer',
+    description: 'Stop typing invoices manually. Our AI extracts transactions from bank statements, invoices, and receipts automatically. Spend more time advising clients, less time on data entry.',
+    icon: (
+      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+      </svg>
+    ),
+    features: [
+      'Upload bank statements & invoices',
+      'AI extracts transactions automatically',
+      'Review and approve in seconds',
+      'Free your team for advisory work',
+      'Save 10+ hours per month',
+    ],
+    color: 'purple',
+  },
+  {
     title: 'Smart Dashboard',
     description: 'Get a bird\'s eye view of your entire business. Real-time metrics, beautiful charts, and actionable insights all in one place.',
     icon: (
@@ -98,6 +115,15 @@ const additionalFeatures = [
     ),
   },
   {
+    title: 'Team Collaboration',
+    description: 'Invite team members with role-based access. Collaborate on finances with your accountant or staff.',
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+      </svg>
+    ),
+  },
+  {
     title: 'CSV Exports',
     description: 'Export all your data in SARS-compatible formats. Ready for your accountant.',
     icon: (
@@ -112,6 +138,15 @@ const additionalFeatures = [
     icon: (
       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+      </svg>
+    ),
+  },
+  {
+    title: 'API Access',
+    description: 'Integrate ProcessX with your existing tools. Build custom workflows with our developer API.',
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
       </svg>
     ),
   },
@@ -180,6 +215,7 @@ export default function FeaturesPage() {
                   <div className={`inline-flex h-16 w-16 items-center justify-center rounded-2xl mb-6 ${
                     feature.color === 'blue' ? 'bg-blue-100 text-blue-600' :
                     feature.color === 'green' ? 'bg-green-100 text-green-600' :
+                    feature.color === 'purple' ? 'bg-purple-100 text-purple-600' :
                     'bg-orange-100 text-orange-600'
                   }`}>
                     {feature.icon}
@@ -207,6 +243,7 @@ export default function FeaturesPage() {
                       <div className={`h-20 w-20 rounded-2xl flex items-center justify-center ${
                         feature.color === 'blue' ? 'bg-blue-100 text-blue-600' :
                         feature.color === 'green' ? 'bg-green-100 text-green-600' :
+                        feature.color === 'purple' ? 'bg-purple-100 text-purple-600' :
                         'bg-orange-100 text-orange-600'
                       }`}>
                         {feature.icon}

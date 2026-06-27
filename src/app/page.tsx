@@ -89,10 +89,10 @@ const testimonials = [
 ]
 
 const stats = [
-  { value: '10,000+', label: 'Active Users' },
-  { value: 'R500M+', label: 'Tracked' },
+  { value: '10+', label: 'Hours Saved Monthly' },
+  { value: '100%', label: 'SARS Compliant' },
   { value: '99.9%', label: 'Uptime' },
-  { value: '4.9/5', label: 'Rating' },
+  { value: 'Free', label: 'To Get Started' },
 ]
 
 const steps = [
