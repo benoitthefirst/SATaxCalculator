@@ -11,10 +11,11 @@ interface Subscription {
   amount: number
   current_period_end: string
   cancel_at_period_end: boolean
-  company: {
+  user: {
     id: string
-    name: string
-    email: string | null
+    first_name: string
+    last_name: string
+    email: string
   }
   plan: {
     id: string
@@ -174,7 +175,7 @@ export default function AdminSubscriptionsPage() {
           <div className="flex-1">
             <input
               type="text"
-              placeholder="Search by company name or email..."
+              placeholder="Search by user name or email..."
               value={search}
               onChange={e => {
                 setSearch(e.target.value)
@@ -216,7 +217,7 @@ export default function AdminSubscriptionsPage() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Company
+                      User
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Plan
@@ -243,14 +244,12 @@ export default function AdminSubscriptionsPage() {
                     <tr key={sub.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <Link
-                          href={`/admin/companies/${sub.company.id}`}
+                          href={`/admin/users/${sub.user.id}`}
                           className="text-sm font-medium text-blue-600 hover:text-blue-800"
                         >
-                          {sub.company.name}
+                          {sub.user.first_name} {sub.user.last_name}
                         </Link>
-                        {sub.company.email && (
-                          <p className="text-xs text-gray-500">{sub.company.email}</p>
-                        )}
+                        <p className="text-xs text-gray-500">{sub.user.email}</p>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm font-medium text-gray-900">

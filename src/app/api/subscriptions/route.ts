@@ -1,45 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { getActiveCompanyForUser } from '@/lib/company-context'
 import {
-  getCompanySubscription,
-  getMonthlyTransactionCount,
-  getTeamMemberCount,
+  getUserSubscription,
+  getUserMonthlyTransactionCount,
+  getUserTeamMemberCount,
+  getUserCompanyCount,
 } from '@/lib/subscription/feature-gate'
 import { buildSubscriptionForm, getCheckoutUrl } from '@/lib/payfast/subscription'
 
 type BillingCycle = 'MONTHLY' | 'YEARLY'
 
-// GET /api/subscriptions - Get current subscription for user's company
+// GET /api/subscriptions - Get current subscription for user (USER-LEVEL)
 export async function GET() {
   const session = await auth()
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // Get user's company
-  const membership = await prisma.companyMember.findFirst({
-    where: {
-      user_id: session.user.id,
-      is_active: true,
-    },
-    include: {
-      company: true,
-    },
-  })
+  // Get user's subscription (user-level, not company-level)
+  const subscriptionInfo = await getUserSubscription(session.user.id)
 
-  if (!membership) {
-    return NextResponse.json({ error: 'No company found' }, { status: 404 })
-  }
-
-  const companyId = membership.company.id
-  const subscriptionInfo = await getCompanySubscription(companyId)
-
-  // Get usage stats
-  const [transactionsCount, teamMembersCount] = await Promise.all([
-    getMonthlyTransactionCount(companyId),
-    getTeamMemberCount(companyId),
+  // Get usage stats across all user's companies
+  const [transactionsCount, teamMembersCount, companyCount] = await Promise.all([
+    getUserMonthlyTransactionCount(session.user.id),
+    getUserTeamMemberCount(session.user.id),
+    getUserCompanyCount(session.user.id),
   ])
+
+  // Get active company for context (optional)
+  const activeCompanyId = await getActiveCompanyForUser(session.user.id)
+  let activeCompany = null
+  if (activeCompanyId) {
+    activeCompany = await prisma.company.findUnique({
+      where: { id: activeCompanyId },
+      select: { id: true, name: true },
+    })
+  }
 
   return NextResponse.json({
     subscription: subscriptionInfo.subscription
@@ -58,10 +56,7 @@ export async function GET() {
           plan: subscriptionInfo.subscription.plan,
         }
       : null,
-    company: {
-      id: membership.company.id,
-      name: membership.company.name,
-    },
+    company: activeCompany, // Current active company context (for display)
     tier: subscriptionInfo.tier,
     limits: subscriptionInfo.limits,
     isActive: subscriptionInfo.isActive,
@@ -69,11 +64,12 @@ export async function GET() {
     usage: {
       transactions_this_month: transactionsCount,
       team_members: teamMembersCount,
+      companies: companyCount,
     },
   })
 }
 
-// POST /api/subscriptions - Create checkout session for subscription
+// POST /api/subscriptions - Create checkout session for user subscription
 export async function POST(request: NextRequest) {
   const session = await auth()
   if (!session?.user?.id) {
@@ -126,17 +122,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get user's company
-    const membership = await prisma.companyMember.findFirst({
-      where: {
-        user_id: session.user.id,
-        is_active: true,
-      },
-      include: { company: true },
+    // Check if user already has an active subscription
+    const existingSubscription = await prisma.subscription.findUnique({
+      where: { user_id: session.user.id },
     })
 
-    if (!membership) {
-      return NextResponse.json({ error: 'No company found' }, { status: 404 })
+    if (existingSubscription && existingSubscription.status === 'ACTIVE') {
+      return NextResponse.json(
+        { error: 'You already have an active subscription. Please cancel or manage your existing subscription first.' },
+        { status: 400 }
+      )
     }
 
     // Get user details
@@ -154,10 +149,10 @@ export async function POST(request: NextRequest) {
         ? Number(plan.price_yearly)
         : Number(plan.price_monthly)
 
-    // Build PayFast form data
+    // Build PayFast form data - now using userId instead of companyId
     const formData = buildSubscriptionForm({
       planId: plan.id,
-      companyId: membership.company.id,
+      userId: session.user.id, // Changed from companyId to userId
       billingCycle: billingCycle as BillingCycle,
       amount,
       itemName: `ProcessX ${plan.name} Plan`,
@@ -177,7 +172,7 @@ export async function POST(request: NextRequest) {
           plan_name: plan.name,
           billing_cycle: billingCycle,
           amount,
-          company_id: membership.company.id,
+          user_id: session.user.id,
         },
       },
     })

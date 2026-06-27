@@ -14,7 +14,7 @@ const staticPlans = [
     id: 'starter',
     name: 'Starter',
     tier: 'STARTER',
-    description: 'Perfect for freelancers and solo entrepreneurs just getting started.',
+    description: 'Perfect for freelancers just getting started.',
     price_monthly: 0,
     price_yearly: 0,
     features: [
@@ -27,10 +27,28 @@ const staticPlans = [
     ],
   },
   {
+    id: 'basic',
+    name: 'Basic',
+    tier: 'BASIC',
+    description: 'For solo entrepreneurs ready to grow.',
+    price_monthly: 99,
+    price_yearly: 990,
+    features: [
+      'Up to 200 transactions/month',
+      'Advanced expense tracking',
+      'Income management',
+      'Vehicle logbook',
+      'AI Document Analyzer (25 docs/month)',
+      'CSV exports',
+      'Up to 2 team members',
+      'Email support',
+    ],
+  },
+  {
     id: 'professional',
     name: 'Professional',
     tier: 'PROFESSIONAL',
-    description: 'For growing businesses that need more power and flexibility.',
+    description: 'For growing businesses that need more power.',
     price_monthly: 299,
     price_yearly: 2990,
     features: [
@@ -39,9 +57,11 @@ const staticPlans = [
       'Income & invoicing',
       'Vehicle logbook',
       'Asset management',
+      'AI Document Analyzer (100 docs/month)',
       'Financial reports & analytics',
       'CSV exports',
       'Up to 5 team members',
+      'Multi-company management',
       'Priority email support',
     ],
   },
@@ -55,12 +75,31 @@ const staticPlans = [
     features: [
       'Everything in Professional',
       'Unlimited team members',
-      'Multi-company management',
+      'AI Document Analyzer (500 docs/month)',
       'Advanced reporting',
       'API access',
       'Custom integrations',
       'Dedicated account manager',
       'Phone support',
+    ],
+  },
+  {
+    id: 'enterprise',
+    name: 'Enterprise',
+    tier: 'ENTERPRISE',
+    description: 'Custom solutions for large organizations.',
+    price_monthly: 0, // Custom pricing
+    price_yearly: 0,
+    features: [
+      'Everything in Business',
+      'Unlimited AI Document Analyzer',
+      'Custom AI training',
+      'On-premise deployment option',
+      'SSO & advanced security',
+      'Custom integrations',
+      'SLA guarantee (99.9% uptime)',
+      'Dedicated success manager',
+      '24/7 phone & email support',
     ],
   },
 ]
@@ -69,6 +108,14 @@ const faqs = [
   {
     question: 'Is there really a free plan?',
     answer: 'Yes! Our Starter plan is completely free with no credit card required. It includes all the basics you need to manage your finances as a solo entrepreneur.',
+  },
+  {
+    question: 'How do subscriptions work with multiple companies?',
+    answer: 'Your subscription covers all companies under your account. You pay once and get access to all features across all your companies. This is the industry standard model - no need to pay separately for each company.',
+  },
+  {
+    question: 'What is the AI Document Analyzer?',
+    answer: 'The AI Document Analyzer automatically extracts data from invoices, receipts, bank statements, and payslips. It uses advanced AI to identify and categorize transactions, saving you hours of manual data entry. Professional plans get 100 document analyses per month, while Business plans get unlimited.',
   },
   {
     question: 'Can I change plans at any time?',

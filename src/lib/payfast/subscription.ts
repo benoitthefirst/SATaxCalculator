@@ -6,7 +6,7 @@ type BillingCycle = 'MONTHLY' | 'YEARLY'
 
 export interface SubscriptionFormData {
   planId: string
-  companyId: string
+  userId: string // Changed from companyId - now user-level subscriptions
   billingCycle: BillingCycle
   amount: number
   itemName: string
@@ -27,7 +27,7 @@ export interface PayFastFormData {
  * specified by PayFast's official documentation
  */
 export function buildSubscriptionForm(data: SubscriptionFormData): PayFastFormData {
-  const merchantPaymentId = `SUB-${data.companyId}-${Date.now()}`
+  const merchantPaymentId = `SUB-${data.userId}-${Date.now()}`
   const today = new Date().toISOString().split('T')[0]
 
   // Build params object with all the fields we'll send
@@ -44,7 +44,7 @@ export function buildSubscriptionForm(data: SubscriptionFormData): PayFastFormDa
     amount: data.amount.toFixed(2),
     item_name: data.itemName,
     item_description: `ProcessX ${data.billingCycle === 'YEARLY' ? 'Annual' : 'Monthly'} Subscription`,
-    custom_str1: data.companyId,
+    custom_str1: data.userId, // Changed from companyId - now user-level subscriptions
     custom_str2: data.planId,
     custom_str3: data.billingCycle,
     subscription_type: 1,

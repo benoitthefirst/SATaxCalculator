@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { checkFeatureAccess } from '@/lib/subscription/feature-gate'
+import { getActiveCompanyForUser } from '@/lib/company-context'
 import { Prisma } from '@prisma/client'
 
 type IncomeWithCategory = Prisma.IncomeGetPayload<{ include: { category: true } }>
@@ -15,24 +16,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const membership = await prisma.companyMember.findFirst({
-      where: {
-        user_id: session.user.id,
-        is_active: true,
-      },
-      include: {
-        company: true,
-      },
-    })
+    const companyId = await getActiveCompanyForUser(session.user.id)
 
-    if (!membership) {
+    if (!companyId) {
       return NextResponse.json(
         { error: 'No active company found' },
         { status: 403 }
       )
     }
-
-    const companyId = membership.company_id
 
     // Check feature access - advanced reports requires Professional plan or higher
     const hasAccess = await checkFeatureAccess(companyId, 'advanced_reports')

@@ -45,6 +45,14 @@ export default async function ExpenseDetailPage({
           email: true,
         },
       },
+      source_document: {
+        select: {
+          id: true,
+          original_filename: true,
+          document_type: true,
+          file_url: true,
+        },
+      },
     },
   })
 
@@ -56,10 +64,19 @@ export default async function ExpenseDetailPage({
     orderBy: { name: 'asc' },
   })
 
+  // Convert Decimal fields to numbers for client component
+  const serializedExpense = {
+    ...expense,
+    amount: Number(expense.amount),
+    charges: Number(expense.charges),
+    amount_excl_vat: expense.amount_excl_vat ? Number(expense.amount_excl_vat) : null,
+    vat_amount: expense.vat_amount ? Number(expense.vat_amount) : null,
+  }
+
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <ExpenseDetail
-        expense={expense}
+        expense={serializedExpense}
         categories={categories}
         companyId={companyId}
         userId={session.user.id}

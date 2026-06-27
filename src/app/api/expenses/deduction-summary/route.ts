@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { getActiveCompanyForUser } from '@/lib/company-context'
+import { checkFeatureAccess } from '@/lib/subscription/feature-gate'
 import type { Expense, ExpenseCategory } from '@prisma/client'
 
 type ExpenseWithCategory = Expense & {
@@ -15,21 +17,38 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user's active company membership
-    const membership = await prisma.companyMember.findFirst({
-      where: {
-        user_id: session.user.id,
-        is_active: true,
-      },
-      include: {
-        company: true,
-      },
-    })
+    const companyId = await getActiveCompanyForUser(session.user.id)
 
-    if (!membership) {
+    if (!companyId) {
       return NextResponse.json(
         { error: 'No active company found' },
         { status: 404 }
+      )
+    }
+
+    // Get company details
+    const company = await prisma.company.findUnique({
+      where: { id: companyId },
+    })
+
+    if (!company) {
+      return NextResponse.json(
+        { error: 'Company not found' },
+        { status: 404 }
+      )
+    }
+
+    // Check feature access - advanced reports requires Professional plan or higher
+    const hasAccess = await checkFeatureAccess(companyId, 'advanced_reports')
+    if (!hasAccess) {
+      return NextResponse.json(
+        {
+          error: 'Feature not available',
+          message: 'Deduction Summary reports are available on Professional and Business plans. Upgrade to view your tax-deductible expenses by category.',
+          feature: 'advanced_reports',
+          upgradeRequired: true,
+        },
+        { status: 403 }
       )
     }
 
@@ -43,7 +62,7 @@ export async function GET(request: NextRequest) {
     // Get all expenses for the period grouped by category
     const expensesData = await prisma.expense.findMany({
       where: {
-        company_id: membership.company.id,
+        company_id: companyId,
         is_deleted: false,
         expense_date: {
           gte: startDate,
@@ -130,9 +149,9 @@ export async function GET(request: NextRequest) {
         expenseCount: expenses.length,
       },
       company: {
-        name: membership.company.name,
-        taxNumber: membership.company.tax_number,
-        businessType: membership.company.business_type,
+        name: company.name,
+        taxNumber: company.tax_number,
+        businessType: company.business_type,
       },
     })
   } catch (error) {

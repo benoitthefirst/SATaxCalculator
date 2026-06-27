@@ -86,14 +86,14 @@ async function main() {
     const periodEnd = addMonths(now, 1)
 
     await prisma.subscription.upsert({
-      where: { company_id: demoCompany.id },
+      where: { user_id: demoUser.id },
       update: {
         plan_id: businessPlan.id,
         status: 'ACTIVE',
         current_period_end: periodEnd,
       },
       create: {
-        company_id: demoCompany.id,
+        user_id: demoUser.id,
         plan_id: businessPlan.id,
         status: 'ACTIVE',
         billing_cycle: 'MONTHLY',

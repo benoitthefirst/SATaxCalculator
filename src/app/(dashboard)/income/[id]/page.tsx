@@ -45,12 +45,26 @@ export default async function IncomeDetailPage({
           email: true,
         },
       },
+      source_document: {
+        select: {
+          id: true,
+          original_filename: true,
+          document_type: true,
+          file_url: true,
+        },
+      },
     },
   })
 
   // Security check: income must belong to user's company
   if (!income || income.company_id !== companyId || income.is_deleted) {
     notFound()
+  }
+
+  // Convert Decimal fields to numbers for client component
+  const serializedIncome = {
+    ...income,
+    amount: Number(income.amount),
   }
 
   const categories = await prisma.incomeCategory.findMany({
@@ -67,7 +81,7 @@ export default async function IncomeDetailPage({
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <IncomeDetail
-        income={income}
+        income={serializedIncome}
         categories={categories}
         companyId={companyId}
         userId={session.user.id}

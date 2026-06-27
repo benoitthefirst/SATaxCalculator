@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { getActiveCompanyForUser } from '@/lib/company-context'
+import { checkFeatureAccess } from '@/lib/subscription/feature-gate'
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,25 +12,28 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user's company
-    const membership = await prisma.companyMember.findFirst({
-      where: {
-        user_id: session.user.id,
-        is_active: true,
-      },
-      include: {
-        company: true,
-      },
-    })
+    const companyId = await getActiveCompanyForUser(session.user.id)
 
-    if (!membership) {
+    if (!companyId) {
       return NextResponse.json(
         { error: 'No active company found' },
         { status: 403 }
       )
     }
 
-    const companyId = membership.company_id
+    // Check feature access - advanced reports requires Professional plan or higher
+    const hasAccess = await checkFeatureAccess(companyId, 'advanced_reports')
+    if (!hasAccess) {
+      return NextResponse.json(
+        {
+          error: 'Feature not available',
+          message: 'Expense Analytics is available on Professional and Business plans. Upgrade to access detailed expense trends and insights.',
+          feature: 'advanced_reports',
+          upgradeRequired: true,
+        },
+        { status: 403 }
+      )
+    }
 
     // Get date range from query params (default to current year)
     const { searchParams } = new URL(request.url)

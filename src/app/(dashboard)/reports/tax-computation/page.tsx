@@ -3,6 +3,14 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { getCurrentFiscalYear } from '@/lib/utils/fiscal-year'
+import UpgradePrompt from '@/components/reports/UpgradePrompt'
+
+interface UpgradeRequired {
+  error: string
+  message: string
+  feature: string
+  upgradeRequired: true
+}
 
 interface TaxData {
   fiscalYear: string
@@ -59,6 +67,7 @@ export default function TaxComputationPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [year, setYear] = useState(() => getCurrentFiscalYear())
+  const [upgradeRequired, setUpgradeRequired] = useState<UpgradeRequired | null>(null)
 
   useEffect(() => {
     fetchData()
@@ -67,10 +76,19 @@ export default function TaxComputationPage() {
   const fetchData = async () => {
     try {
       setLoading(true)
+      setUpgradeRequired(null)
+      setError('')
       const res = await fetch(`/api/tax-computation?year=${year}`)
-      if (!res.ok) throw new Error('Failed to fetch tax computation')
       const json = await res.json()
-      setData(json)
+
+      if (res.status === 403 && json.upgradeRequired) {
+        setUpgradeRequired(json)
+        setData(null)
+      } else if (!res.ok) {
+        throw new Error('Failed to fetch tax computation')
+      } else {
+        setData(json)
+      }
     } catch (err) {
       setError('Failed to load tax computation')
     } finally {
@@ -86,6 +104,17 @@ export default function TaxComputationPage() {
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007AFF]"></div>
       </div>
+    )
+  }
+
+  if (upgradeRequired) {
+    return (
+      <UpgradePrompt
+        title="Unlock Tax Computation"
+        message={upgradeRequired.message}
+        backLink="/reports"
+        backLabel="Back to Reports"
+      />
     )
   }
 

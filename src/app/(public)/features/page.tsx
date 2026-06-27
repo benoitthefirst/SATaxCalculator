@@ -8,6 +8,23 @@ export const metadata: Metadata = {
 
 const mainFeatures = [
   {
+    title: 'AI Document Analyzer',
+    description: 'Stop typing invoices manually. Our AI extracts transactions from bank statements, invoices, and receipts automatically. Spend more time advising clients, less time on data entry.',
+    icon: (
+      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+      </svg>
+    ),
+    features: [
+      'Upload bank statements & invoices',
+      'AI extracts transactions automatically',
+      'Review and approve in seconds',
+      'Free your team for advisory work',
+      'Save 15+ hours per month',
+    ],
+    color: 'purple',
+  },
+  {
     title: 'Smart Dashboard',
     description: 'Get a bird\'s eye view of your entire business. Real-time metrics, beautiful charts, and actionable insights all in one place.',
     icon: (
@@ -98,6 +115,15 @@ const additionalFeatures = [
     ),
   },
   {
+    title: 'Team Collaboration',
+    description: 'Invite team members with role-based access. Collaborate on finances with your accountant or staff.',
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+      </svg>
+    ),
+  },
+  {
     title: 'CSV Exports',
     description: 'Export all your data in SARS-compatible formats. Ready for your accountant.',
     icon: (
@@ -115,21 +141,32 @@ const additionalFeatures = [
       </svg>
     ),
   },
+  {
+    title: 'API Access',
+    description: 'Integrate ProcessX with your existing tools. Build custom workflows with our developer API.',
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+      </svg>
+    ),
+  },
 ]
 
 const comparisonTable = [
-  { feature: 'Expense Tracking', starter: true, professional: true, business: true },
-  { feature: 'Income Management', starter: true, professional: true, business: true },
-  { feature: 'Tax Calculator', starter: true, professional: true, business: true },
-  { feature: 'Monthly Transactions', starter: '50', professional: 'Unlimited', business: 'Unlimited' },
-  { feature: 'Vehicle Logbook', starter: false, professional: true, business: true },
-  { feature: 'Asset Management', starter: false, professional: true, business: true },
-  { feature: 'Financial Reports', starter: 'Basic', professional: 'Full', business: 'Advanced' },
-  { feature: 'CSV Exports', starter: false, professional: true, business: true },
-  { feature: 'Team Members', starter: '1', professional: '5', business: 'Unlimited' },
-  { feature: 'Multi-Company', starter: false, professional: false, business: true },
-  { feature: 'API Access', starter: false, professional: false, business: true },
-  { feature: 'Priority Support', starter: false, professional: true, business: true },
+  { feature: 'Expense Tracking', starter: true, basic: true, professional: true, business: true, enterprise: true },
+  { feature: 'Income Management', starter: true, basic: true, professional: true, business: true, enterprise: true },
+  { feature: 'Tax Calculator', starter: true, basic: true, professional: true, business: true, enterprise: true },
+  { feature: 'Monthly Transactions', starter: '50', basic: '200', professional: 'Unlimited', business: 'Unlimited', enterprise: 'Unlimited' },
+  { feature: 'Vehicle Logbook', starter: false, basic: true, professional: true, business: true, enterprise: true },
+  { feature: 'Asset Management', starter: false, basic: false, professional: true, business: true, enterprise: true },
+  { feature: 'AI Document Analyzer', starter: false, basic: '25/mo', professional: '100/mo', business: '500/mo', enterprise: 'Unlimited' },
+  { feature: 'Financial Reports', starter: 'Basic', basic: 'Basic', professional: 'Full', business: 'Advanced', enterprise: 'Advanced' },
+  { feature: 'CSV Exports', starter: false, basic: true, professional: true, business: true, enterprise: true },
+  { feature: 'Team Members', starter: '1', basic: '2', professional: '5', business: 'Unlimited', enterprise: 'Unlimited' },
+  { feature: 'Multi-Company', starter: false, basic: false, professional: false, business: true, enterprise: true },
+  { feature: 'API Access', starter: false, basic: false, professional: false, business: true, enterprise: true },
+  { feature: 'Priority Support', starter: false, basic: false, professional: true, business: true, enterprise: true },
+  { feature: 'Dedicated Account Manager', starter: false, basic: false, professional: false, business: false, enterprise: true },
 ]
 
 export default function FeaturesPage() {
@@ -178,6 +215,7 @@ export default function FeaturesPage() {
                   <div className={`inline-flex h-16 w-16 items-center justify-center rounded-2xl mb-6 ${
                     feature.color === 'blue' ? 'bg-blue-100 text-blue-600' :
                     feature.color === 'green' ? 'bg-green-100 text-green-600' :
+                    feature.color === 'purple' ? 'bg-purple-100 text-purple-600' :
                     'bg-orange-100 text-orange-600'
                   }`}>
                     {feature.icon}
@@ -205,6 +243,7 @@ export default function FeaturesPage() {
                       <div className={`h-20 w-20 rounded-2xl flex items-center justify-center ${
                         feature.color === 'blue' ? 'bg-blue-100 text-blue-600' :
                         feature.color === 'green' ? 'bg-green-100 text-green-600' :
+                        feature.color === 'purple' ? 'bg-purple-100 text-purple-600' :
                         'bg-orange-100 text-orange-600'
                       }`}>
                         {feature.icon}
@@ -253,7 +292,7 @@ export default function FeaturesPage() {
 
       {/* Feature Comparison Table */}
       <section className="py-24">
-        <div className="mx-auto max-w-5xl px-6">
+        <div className="mx-auto max-w-7xl px-6">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-semibold text-gray-900">
               Compare plans
@@ -267,10 +306,12 @@ export default function FeaturesPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="py-4 text-left text-sm font-semibold text-gray-900">Feature</th>
-                  <th className="py-4 text-center text-sm font-semibold text-gray-900">Starter</th>
-                  <th className="py-4 text-center text-sm font-semibold text-blue-600">Professional</th>
-                  <th className="py-4 text-center text-sm font-semibold text-gray-900">Business</th>
+                  <th className="py-4 text-left text-sm font-semibold text-gray-900 min-w-[180px]">Feature</th>
+                  <th className="py-4 text-center text-sm font-semibold text-gray-900 min-w-[100px]">Starter</th>
+                  <th className="py-4 text-center text-sm font-semibold text-gray-900 min-w-[100px]">Basic</th>
+                  <th className="py-4 text-center text-sm font-semibold text-blue-600 min-w-[100px]">Professional</th>
+                  <th className="py-4 text-center text-sm font-semibold text-gray-900 min-w-[100px]">Business</th>
+                  <th className="py-4 text-center text-sm font-semibold text-gray-900 min-w-[100px]">Enterprise</th>
                 </tr>
               </thead>
               <tbody>
@@ -290,6 +331,21 @@ export default function FeaturesPage() {
                         )
                       ) : (
                         <span className="text-sm text-gray-600">{row.starter}</span>
+                      )}
+                    </td>
+                    <td className="py-4 text-center">
+                      {typeof row.basic === 'boolean' ? (
+                        row.basic ? (
+                          <svg className="w-5 h-5 text-green-600 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        ) : (
+                          <svg className="w-5 h-5 text-gray-300 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                          </svg>
+                        )
+                      ) : (
+                        <span className="text-sm text-gray-600">{row.basic}</span>
                       )}
                     </td>
                     <td className="py-4 text-center bg-blue-50/50">
@@ -320,6 +376,21 @@ export default function FeaturesPage() {
                         )
                       ) : (
                         <span className="text-sm text-gray-600">{row.business}</span>
+                      )}
+                    </td>
+                    <td className="py-4 text-center bg-gray-900/5">
+                      {typeof row.enterprise === 'boolean' ? (
+                        row.enterprise ? (
+                          <svg className="w-5 h-5 text-green-600 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        ) : (
+                          <svg className="w-5 h-5 text-gray-300 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                          </svg>
+                        )
+                      ) : (
+                        <span className="text-sm font-medium text-gray-900">{row.enterprise}</span>
                       )}
                     </td>
                   </tr>

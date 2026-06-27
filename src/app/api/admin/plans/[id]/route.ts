@@ -7,12 +7,14 @@ const limitsSchema = z.object({
   transactions_per_month: z.number(),
   team_members: z.number(),
   companies: z.number(),
+  documents_per_month: z.number(),
   api_access: z.boolean(),
   vehicle_logbook: z.boolean(),
   asset_management: z.boolean(),
   advanced_reports: z.boolean(),
   csv_exports: z.boolean(),
   multi_company: z.boolean(),
+  document_analyzer: z.boolean(),
   priority_support: z.boolean(),
 })
 

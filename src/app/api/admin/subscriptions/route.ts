@@ -12,7 +12,7 @@ async function checkAdminAccess() {
   return session
 }
 
-// GET /api/admin/subscriptions - List all subscriptions with filters
+// GET /api/admin/subscriptions - List all subscriptions with filters (USER-LEVEL)
 export async function GET(request: NextRequest) {
   const session = await checkAdminAccess()
   if (!session) {
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
 
   const skip = (page - 1) * limit
 
-  // Build where clause
+  // Build where clause - now searching by user, not company
   const where: Prisma.SubscriptionWhereInput = {}
 
   if (status) {
@@ -40,9 +40,10 @@ export async function GET(request: NextRequest) {
   }
 
   if (search) {
-    where.company = {
+    where.user = {
       OR: [
-        { name: { contains: search, mode: 'insensitive' } },
+        { first_name: { contains: search, mode: 'insensitive' } },
+        { last_name: { contains: search, mode: 'insensitive' } },
         { email: { contains: search, mode: 'insensitive' } },
       ],
     }
@@ -55,10 +56,11 @@ export async function GET(request: NextRequest) {
       take: limit,
       orderBy: { created_at: 'desc' },
       include: {
-        company: {
+        user: {
           select: {
             id: true,
-            name: true,
+            first_name: true,
+            last_name: true,
             email: true,
           },
         },

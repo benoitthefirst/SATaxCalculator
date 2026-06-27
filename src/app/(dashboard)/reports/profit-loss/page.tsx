@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { getCurrentFiscalYear } from '@/lib/utils/fiscal-year'
+import { Lock, TrendingUp, ArrowRight } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
 import {
   BarChart,
   Bar,
@@ -17,6 +19,13 @@ import {
   ComposedChart,
   Area,
 } from 'recharts'
+
+interface UpgradeRequired {
+  error: string
+  message: string
+  feature: string
+  upgradeRequired: true
+}
 
 interface ReportData {
   summary: {
@@ -46,6 +55,8 @@ export default function ProfitLossPage() {
   const [data, setData] = useState<ReportData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [selectedYear, setSelectedYear] = useState(() => getCurrentFiscalYear())
+  const [upgradeRequired, setUpgradeRequired] = useState<UpgradeRequired | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     fetchReport()
@@ -54,13 +65,24 @@ export default function ProfitLossPage() {
   const fetchReport = async () => {
     try {
       setIsLoading(true)
+      setUpgradeRequired(null)
+      setError(null)
       const res = await fetch(`/api/reports/profit-loss?year=${selectedYear}`)
+      const responseData = await res.json()
+
       if (res.ok) {
-        const reportData = await res.json()
-        setData(reportData)
+        setData(responseData)
+      } else if (res.status === 403 && responseData.upgradeRequired) {
+        setUpgradeRequired(responseData)
+        setData(null)
+      } else {
+        setError(responseData.error || 'Failed to load report')
+        setData(null)
       }
-    } catch (error) {
-      console.error('Failed to fetch report:', error)
+    } catch (err) {
+      console.error('Failed to fetch report:', err)
+      setError('Failed to load report data')
+      setData(null)
     } finally {
       setIsLoading(false)
     }
@@ -85,11 +107,100 @@ export default function ProfitLossPage() {
     )
   }
 
-  if (!data) {
+  if (upgradeRequired) {
     return (
-      <div className="p-8">
-        <div className="text-center py-12">
-          <p className="text-gray-600">Failed to load report data</p>
+      <div className="p-4 sm:p-8">
+        <Link
+          href="/reports"
+          className="text-gray-500 hover:text-gray-700 transition-colors text-sm"
+        >
+          ← Back to Reports
+        </Link>
+
+        <div className="mt-8 max-w-2xl mx-auto">
+          <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl border border-amber-200 p-8 text-center">
+            <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Lock className="w-8 h-8 text-amber-600" />
+            </div>
+
+            <h2 className="text-2xl font-bold text-gray-900 mb-3">
+              Upgrade to Access Profit & Loss Reports
+            </h2>
+
+            <p className="text-gray-600 mb-6 max-w-md mx-auto">
+              {upgradeRequired.message}
+            </p>
+
+            <div className="bg-white rounded-xl p-6 mb-6 text-left">
+              <h3 className="font-semibold text-gray-900 mb-4">
+                What you get with Professional & Business plans:
+              </h3>
+              <ul className="space-y-3">
+                <li className="flex items-start gap-3">
+                  <TrendingUp className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700">Detailed Profit & Loss statements with monthly breakdowns</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <TrendingUp className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700">Income & Expense analytics with category insights</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <TrendingUp className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700">Tax computation reports for SARS filing</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <TrendingUp className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700">Deduction summaries by expense category</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <TrendingUp className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700">CSV exports for all your data</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link href="/settings/subscription">
+                <Button className="w-full sm:w-auto">
+                  Upgrade Now
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </Link>
+              <Link href="/pricing">
+                <Button variant="secondary" className="w-full sm:w-auto">
+                  View Plans
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !data) {
+    return (
+      <div className="p-4 sm:p-8">
+        <Link
+          href="/reports"
+          className="text-gray-500 hover:text-gray-700 transition-colors text-sm"
+        >
+          ← Back to Reports
+        </Link>
+
+        <div className="mt-8 max-w-md mx-auto text-center">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-2xl">!</span>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            Unable to Load Report
+          </h2>
+          <p className="text-gray-600 mb-6">
+            {error || 'Failed to load report data. Please try again.'}
+          </p>
+          <Button onClick={() => fetchReport()} variant="secondary">
+            Try Again
+          </Button>
         </div>
       </div>
     )

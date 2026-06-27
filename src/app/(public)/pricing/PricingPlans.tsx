@@ -35,9 +35,19 @@ export function PricingPlans({ plans, subscriptionsEnabled }: PricingPlansProps)
     return isYearly ? '/year' : '/month'
   }
 
+  const getCtaLabel = (plan: Plan) => {
+    if (plan.tier === 'STARTER') return 'Get Started Free'
+    if (plan.tier === 'ENTERPRISE') return 'Contact Sales'
+    if (!subscriptionsEnabled) return 'Get Started'
+    return 'Subscribe Now'
+  }
+
   const getCtaUrl = (plan: Plan) => {
     if (plan.tier === 'STARTER') {
       return '/register'
+    }
+    if (plan.tier === 'ENTERPRISE') {
+      return '/contact'
     }
     if (!subscriptionsEnabled) {
       return '/register'
@@ -45,17 +55,12 @@ export function PricingPlans({ plans, subscriptionsEnabled }: PricingPlansProps)
     return `/subscription/checkout?plan=${plan.id}&cycle=${isYearly ? 'yearly' : 'monthly'}`
   }
 
-  const getCtaLabel = (plan: Plan) => {
-    if (plan.tier === 'STARTER') return 'Get Started Free'
-    if (!subscriptionsEnabled) return 'Get Started'
-    return 'Subscribe Now'
-  }
-
   const isProfessional = (tier: string) => tier === 'PROFESSIONAL'
+  const isEnterprise = (tier: string) => tier === 'ENTERPRISE'
 
   return (
     <section className="py-16 -mt-12">
-      <div className="mx-auto max-w-7xl px-6">
+      <div className="mx-auto max-w-[1400px] px-6">
         {/* Billing Toggle */}
         <div className="flex justify-center mb-12">
           <div className="inline-flex items-center gap-3 rounded-full bg-gray-100 p-1">
@@ -84,13 +89,15 @@ export function PricingPlans({ plans, subscriptionsEnabled }: PricingPlansProps)
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {plans.map((plan) => (
             <div
               key={plan.id}
-              className={`relative rounded-3xl p-8 ${
+              className={`relative rounded-3xl p-6 flex flex-col ${
                 isProfessional(plan.tier)
                   ? 'bg-blue-600 text-white ring-4 ring-blue-600 ring-offset-2'
+                  : isEnterprise(plan.tier)
+                  ? 'bg-gradient-to-br from-gray-900 to-gray-800 text-white'
                   : 'bg-white border-2 border-gray-200'
               }`}
             >
@@ -104,15 +111,15 @@ export function PricingPlans({ plans, subscriptionsEnabled }: PricingPlansProps)
 
               <div className="mb-6">
                 <h3
-                  className={`text-xl font-semibold ${
-                    isProfessional(plan.tier) ? 'text-white' : 'text-gray-900'
+                  className={`text-lg font-semibold ${
+                    isProfessional(plan.tier) || isEnterprise(plan.tier) ? 'text-white' : 'text-gray-900'
                   }`}
                 >
                   {plan.name}
                 </h3>
                 <p
                   className={`mt-2 text-sm ${
-                    isProfessional(plan.tier) ? 'text-blue-100' : 'text-gray-600'
+                    isProfessional(plan.tier) ? 'text-blue-100' : isEnterprise(plan.tier) ? 'text-gray-300' : 'text-gray-600'
                   }`}
                 >
                   {plan.description}
@@ -120,29 +127,37 @@ export function PricingPlans({ plans, subscriptionsEnabled }: PricingPlansProps)
               </div>
 
               <div className="mb-6">
-                <span
-                  className={`text-4xl font-bold ${
-                    isProfessional(plan.tier) ? 'text-white' : 'text-gray-900'
-                  }`}
-                >
-                  {getPriceLabel(plan)}
-                </span>
-                {getPrice(plan) > 0 && (
-                  <span
-                    className={`text-sm ${
-                      isProfessional(plan.tier) ? 'text-blue-100' : 'text-gray-600'
-                    }`}
-                  >
-                    {getPeriodLabel()}
-                  </span>
+                {isEnterprise(plan.tier) ? (
+                  <span className="text-2xl font-bold text-white">Custom</span>
+                ) : (
+                  <>
+                    <span
+                      className={`text-3xl font-bold ${
+                        isProfessional(plan.tier) ? 'text-white' : 'text-gray-900'
+                      }`}
+                    >
+                      {getPriceLabel(plan)}
+                    </span>
+                    {getPrice(plan) > 0 && (
+                      <span
+                        className={`text-sm ${
+                          isProfessional(plan.tier) ? 'text-blue-100' : 'text-gray-600'
+                        }`}
+                      >
+                        {getPeriodLabel()}
+                      </span>
+                    )}
+                  </>
                 )}
               </div>
 
               <Link
                 href={getCtaUrl(plan)}
-                className={`block w-full rounded-2xl py-3 px-4 text-center font-semibold transition-all ${
+                className={`block w-full rounded-xl py-3 px-4 text-center font-semibold transition-all text-sm ${
                   isProfessional(plan.tier)
                     ? 'bg-white text-blue-600 hover:bg-blue-50'
+                    : isEnterprise(plan.tier)
+                    ? 'bg-white text-gray-900 hover:bg-gray-100'
                     : plan.tier === 'STARTER'
                     ? 'bg-gray-900 text-white hover:bg-gray-800'
                     : 'bg-blue-600 text-white hover:bg-blue-700'
@@ -151,12 +166,12 @@ export function PricingPlans({ plans, subscriptionsEnabled }: PricingPlansProps)
                 {getCtaLabel(plan)}
               </Link>
 
-              <ul className="mt-8 space-y-4">
+              <ul className="mt-6 space-y-3 flex-grow">
                 {plan.features.map((feature, index) => (
-                  <li key={index} className="flex items-start gap-3">
+                  <li key={index} className="flex items-start gap-2">
                     <svg
-                      className={`h-5 w-5 flex-shrink-0 ${
-                        isProfessional(plan.tier) ? 'text-blue-200' : 'text-blue-600'
+                      className={`h-4 w-4 flex-shrink-0 mt-0.5 ${
+                        isProfessional(plan.tier) ? 'text-blue-200' : isEnterprise(plan.tier) ? 'text-gray-400' : 'text-blue-600'
                       }`}
                       fill="none"
                       stroke="currentColor"
@@ -170,8 +185,8 @@ export function PricingPlans({ plans, subscriptionsEnabled }: PricingPlansProps)
                       />
                     </svg>
                     <span
-                      className={`text-sm ${
-                        isProfessional(plan.tier) ? 'text-blue-100' : 'text-gray-600'
+                      className={`text-xs ${
+                        isProfessional(plan.tier) ? 'text-blue-100' : isEnterprise(plan.tier) ? 'text-gray-300' : 'text-gray-600'
                       }`}
                     >
                       {feature}
@@ -183,12 +198,12 @@ export function PricingPlans({ plans, subscriptionsEnabled }: PricingPlansProps)
           ))}
         </div>
 
-        {/* Enterprise CTA */}
+        {/* Custom Solutions CTA */}
         <div className="mt-16 text-center">
           <p className="text-gray-600">
-            Need a custom solution for your enterprise?{' '}
+            Need help choosing the right plan?{' '}
             <Link href="/contact" className="text-blue-600 font-medium hover:underline">
-              Contact our sales team
+              Talk to our team
             </Link>
           </p>
         </div>

@@ -57,6 +57,7 @@ export default function DashboardNav({ user, companies, currentCompanyId, canCre
     { name: 'Dashboard', href: '/dashboard' },
     { name: 'Income', href: '/income' },
     { name: 'Expenses', href: '/expenses' },
+    { name: 'Documents', href: '/documents/approval-queue' },
     { name: 'Assets', href: '/assets' },
     { name: 'Logbook', href: '/vehicle-logbook' },
     { name: 'Reports', href: '/reports' },

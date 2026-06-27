@@ -159,12 +159,14 @@ export default function ExpenseDetail({
               <div className="text-base text-gray-900">{expense.category.name}</div>
             </div>
 
+            {expense.payment_method && (
             <div>
               <div className="text-sm font-medium text-gray-500 mb-2">Payment Method</div>
               <div className="text-base text-gray-900 capitalize">
                 {expense.payment_method.replace('_', ' ')}
               </div>
             </div>
+            )}
 
             {expense.vendor_name && (
               <div>
@@ -200,6 +202,36 @@ export default function ExpenseDetail({
             <div className="pt-6 border-t border-gray-100">
               <div className="text-sm font-medium text-gray-500 mb-2">Notes</div>
               <div className="text-base text-gray-700">{expense.notes}</div>
+            </div>
+          )}
+
+          {/* Source Document */}
+          {expense.source_document && (
+            <div className="pt-6 border-t border-gray-100">
+              <div className="text-sm font-medium text-gray-500 mb-2">Source Document</div>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 px-4 py-3 bg-blue-50 rounded-xl">
+                  <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <div>
+                    <div className="text-sm font-medium text-gray-900">
+                      {expense.source_document.original_filename}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {expense.source_document.document_type.replace('_', ' ')}
+                    </div>
+                  </div>
+                </div>
+                <a
+                  href={expense.source_document.file_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2.5 bg-[#007AFF] text-white text-sm font-medium rounded-xl hover:bg-[#0051D5] transition-all active:scale-[0.98]"
+                >
+                  View Document
+                </a>
+              </div>
             </div>
           )}
 
