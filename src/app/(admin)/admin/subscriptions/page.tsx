@@ -2,7 +2,22 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+
+interface User {
+  id: string
+  first_name: string
+  last_name: string
+  email: string
+}
+
+interface Plan {
+  id: string
+  name: string
+  tier: string
+  price_monthly: number
+  price_yearly: number
+}
 
 interface Subscription {
   id: string
@@ -47,9 +62,17 @@ interface SubscriptionsResponse {
 }
 
 export default function AdminSubscriptionsPage() {
+  const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
   const [statusFilter, setStatusFilter] = useState<string>('')
   const [search, setSearch] = useState('')
+  const [showAssignModal, setShowAssignModal] = useState(false)
+  const [userSearch, setUserSearch] = useState('')
+  const [selectedUser, setSelectedUser] = useState<User | null>(null)
+  const [selectedPlanId, setSelectedPlanId] = useState('')
+  const [billingCycle, setBillingCycle] = useState<'MONTHLY' | 'YEARLY'>('YEARLY')
+  const [durationMonths, setDurationMonths] = useState(12)
+  const [assignNotes, setAssignNotes] = useState('')
 
   const { data, isLoading, error } = useQuery<SubscriptionsResponse>({
     queryKey: ['admin-subscriptions', page, statusFilter, search],
@@ -66,6 +89,66 @@ export default function AdminSubscriptionsPage() {
       return response.json()
     },
   })
+
+  // Query for users (for assignment modal)
+  const { data: usersData } = useQuery<{ users: User[] }>({
+    queryKey: ['admin-users-search', userSearch],
+    queryFn: async () => {
+      const params = new URLSearchParams({ limit: '10' })
+      if (userSearch) params.set('search', userSearch)
+      const response = await fetch(`/api/admin/users?${params}`)
+      if (!response.ok) throw new Error('Failed to fetch users')
+      return response.json()
+    },
+    enabled: showAssignModal,
+  })
+
+  // Query for plans
+  const { data: plansData } = useQuery<{ plans: Plan[] }>({
+    queryKey: ['admin-plans'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/plans')
+      if (!response.ok) throw new Error('Failed to fetch plans')
+      return response.json()
+    },
+    enabled: showAssignModal,
+  })
+
+  // Mutation for assigning subscription
+  const assignMutation = useMutation({
+    mutationFn: async (data: {
+      userId: string
+      planId: string
+      billingCycle: 'MONTHLY' | 'YEARLY'
+      durationMonths: number
+      notes?: string
+    }) => {
+      const response = await fetch('/api/admin/subscriptions/assign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to assign subscription')
+      }
+      return response.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-subscriptions'] })
+      setShowAssignModal(false)
+      resetAssignForm()
+    },
+  })
+
+  const resetAssignForm = () => {
+    setSelectedUser(null)
+    setUserSearch('')
+    setSelectedPlanId('')
+    setBillingCycle('YEARLY')
+    setDurationMonths(12)
+    setAssignNotes('')
+  }
 
   const formatCurrency = (amount: number) =>
     `R ${amount.toLocaleString('en-ZA', { minimumFractionDigits: 2 })}`
@@ -125,12 +208,23 @@ export default function AdminSubscriptionsPage() {
             Manage customer subscriptions and billing
           </p>
         </div>
-        <Link
-          href="/admin/subscriptions/plans"
-          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          Manage Plans
-        </Link>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowAssignModal(true)}
+            className="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
+          >
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Assign Subscription
+          </button>
+          <Link
+            href="/admin/subscriptions/plans"
+            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Manage Plans
+          </Link>
+        </div>
       </div>
 
       {/* Stats */}
@@ -307,6 +401,195 @@ export default function AdminSubscriptionsPage() {
           </>
         )}
       </div>
+
+      {/* Assign Subscription Modal */}
+      {showAssignModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full m-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">
+                Assign Subscription
+              </h2>
+              <p className="text-sm text-gray-500 mt-1">
+                Manually assign a subscription plan to a user (e.g., Enterprise deals)
+              </p>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {/* User Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Select User
+                </label>
+                {selectedUser ? (
+                  <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <div>
+                      <p className="font-medium text-gray-900">
+                        {selectedUser.first_name} {selectedUser.last_name}
+                      </p>
+                      <p className="text-sm text-gray-500">{selectedUser.email}</p>
+                    </div>
+                    <button
+                      onClick={() => setSelectedUser(null)}
+                      className="text-red-600 hover:text-red-800"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    <input
+                      type="text"
+                      placeholder="Search by name or email..."
+                      value={userSearch}
+                      onChange={e => setUserSearch(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    {usersData?.users && usersData.users.length > 0 && (
+                      <div className="mt-2 border border-gray-200 rounded-lg max-h-40 overflow-y-auto">
+                        {usersData.users.map(user => (
+                          <button
+                            key={user.id}
+                            onClick={() => {
+                              setSelectedUser(user)
+                              setUserSearch('')
+                            }}
+                            className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                          >
+                            <p className="font-medium text-gray-900">
+                              {user.first_name} {user.last_name}
+                            </p>
+                            <p className="text-sm text-gray-500">{user.email}</p>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Plan Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Select Plan
+                </label>
+                <select
+                  value={selectedPlanId}
+                  onChange={e => setSelectedPlanId(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Choose a plan...</option>
+                  {plansData?.plans
+                    .filter(p => p.tier !== 'STARTER')
+                    .map(plan => (
+                      <option key={plan.id} value={plan.id}>
+                        {plan.name} ({plan.tier}) - R{plan.price_monthly}/mo or R{plan.price_yearly}/yr
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              {/* Billing Cycle */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Billing Cycle
+                </label>
+                <div className="flex gap-4">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="billingCycle"
+                      checked={billingCycle === 'MONTHLY'}
+                      onChange={() => setBillingCycle('MONTHLY')}
+                      className="mr-2"
+                    />
+                    <span className="text-gray-900">Monthly</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="billingCycle"
+                      checked={billingCycle === 'YEARLY'}
+                      onChange={() => setBillingCycle('YEARLY')}
+                      className="mr-2"
+                    />
+                    <span className="text-gray-900">Yearly</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Duration */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Duration (months)
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="36"
+                  value={durationMonths}
+                  onChange={e => setDurationMonths(parseInt(e.target.value) || 12)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Subscription will be active for this many months without payment
+                </p>
+              </div>
+
+              {/* Notes */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Notes (optional)
+                </label>
+                <textarea
+                  value={assignNotes}
+                  onChange={e => setAssignNotes(e.target.value)}
+                  placeholder="e.g., Enterprise deal, custom pricing agreement..."
+                  rows={2}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              {assignMutation.isError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+                  {assignMutation.error.message}
+                </div>
+              )}
+            </div>
+
+            <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setShowAssignModal(false)
+                  resetAssignForm()
+                }}
+                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (selectedUser && selectedPlanId) {
+                    assignMutation.mutate({
+                      userId: selectedUser.id,
+                      planId: selectedPlanId,
+                      billingCycle,
+                      durationMonths,
+                      notes: assignNotes || undefined,
+                    })
+                  }
+                }}
+                disabled={!selectedUser || !selectedPlanId || assignMutation.isPending}
+                className="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+              >
+                {assignMutation.isPending ? 'Assigning...' : 'Assign Subscription'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

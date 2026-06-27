@@ -314,80 +314,114 @@ export default function SubscriptionSettingsPage() {
                 // Otherwise hide current tier
                 return plan.tier !== currentTier
               })
-              .map(plan => (
-                <div
-                  key={plan.id}
-                  className={`border rounded-xl p-4 ${
-                    selectedPlan === plan.id
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200'
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold text-gray-900">{plan.name}</h3>
-                    <span
-                      className={`px-2 py-0.5 rounded text-xs font-medium ${
-                        plan.tier === 'PROFESSIONAL'
-                          ? 'bg-blue-100 text-blue-700'
-                          : 'bg-purple-100 text-purple-700'
-                      }`}
-                    >
-                      {plan.tier}
-                    </span>
-                  </div>
+              .map(plan => {
+                const isEnterprise = plan.tier === 'ENTERPRISE'
+                const tierColor = plan.tier === 'PROFESSIONAL'
+                  ? 'blue'
+                  : plan.tier === 'BUSINESS'
+                  ? 'purple'
+                  : plan.tier === 'ENTERPRISE'
+                  ? 'gray'
+                  : 'green'
 
-                  <div className="mb-3">
-                    <span className="text-2xl font-bold text-gray-900">
-                      {formatCurrency(
-                        billingCycle === 'YEARLY' ? plan.price_yearly : plan.price_monthly
-                      )}
-                    </span>
-                    <span className="text-gray-500">
-                      /{billingCycle === 'YEARLY' ? 'year' : 'month'}
-                    </span>
-                  </div>
-
-                  <ul className="space-y-1 mb-4 text-sm text-gray-600">
-                    {plan.features.slice(0, 4).map((feature, i) => (
-                      <li key={i} className="flex items-center gap-2">
-                        <svg
-                          className="w-4 h-4 text-green-500"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-
-                  <button
-                    onClick={() => {
-                      setSelectedPlan(plan.id)
-                      checkoutMutation.mutate({ planId: plan.id, billingCycle })
-                    }}
-                    disabled={checkoutMutation.isPending}
-                    className={`w-full py-2 rounded-lg text-sm font-medium ${
-                      plan.tier === 'PROFESSIONAL'
-                        ? 'bg-blue-600 text-white hover:bg-blue-700'
-                        : 'bg-purple-600 text-white hover:bg-purple-700'
-                    } disabled:opacity-50`}
+                return (
+                  <div
+                    key={plan.id}
+                    className={`border rounded-xl p-4 ${
+                      isEnterprise
+                        ? 'border-gray-300 bg-gradient-to-br from-gray-50 to-gray-100'
+                        : selectedPlan === plan.id
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200'
+                    }`}
                   >
-                    {checkoutMutation.isPending && selectedPlan === plan.id
-                      ? 'Processing...'
-                      : subscription?.cancel_at_period_end && plan.tier === currentTier
-                      ? `Resubscribe to ${plan.name}`
-                      : `Upgrade to ${plan.name}`}
-                  </button>
-                </div>
-              ))}
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-semibold text-gray-900">{plan.name}</h3>
+                      <span
+                        className={`px-2 py-0.5 rounded text-xs font-medium ${
+                          tierColor === 'blue'
+                            ? 'bg-blue-100 text-blue-700'
+                            : tierColor === 'purple'
+                            ? 'bg-purple-100 text-purple-700'
+                            : tierColor === 'gray'
+                            ? 'bg-gray-200 text-gray-700'
+                            : 'bg-green-100 text-green-700'
+                        }`}
+                      >
+                        {plan.tier}
+                      </span>
+                    </div>
+
+                    <div className="mb-3">
+                      {isEnterprise ? (
+                        <span className="text-2xl font-bold text-gray-900">Custom</span>
+                      ) : (
+                        <>
+                          <span className="text-2xl font-bold text-gray-900">
+                            {formatCurrency(
+                              billingCycle === 'YEARLY' ? plan.price_yearly : plan.price_monthly
+                            )}
+                          </span>
+                          <span className="text-gray-500">
+                            /{billingCycle === 'YEARLY' ? 'year' : 'month'}
+                          </span>
+                        </>
+                      )}
+                    </div>
+
+                    <ul className="space-y-1 mb-4 text-sm text-gray-600">
+                      {plan.features.slice(0, 4).map((feature, i) => (
+                        <li key={i} className="flex items-center gap-2">
+                          <svg
+                            className="w-4 h-4 text-green-500"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+
+                    {isEnterprise ? (
+                      <Link
+                        href="/contact"
+                        className="block w-full py-2 rounded-lg text-sm font-medium text-center bg-gray-900 text-white hover:bg-gray-800"
+                      >
+                        Contact Sales
+                      </Link>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          setSelectedPlan(plan.id)
+                          checkoutMutation.mutate({ planId: plan.id, billingCycle })
+                        }}
+                        disabled={checkoutMutation.isPending}
+                        className={`w-full py-2 rounded-lg text-sm font-medium ${
+                          tierColor === 'blue'
+                            ? 'bg-blue-600 text-white hover:bg-blue-700'
+                            : tierColor === 'purple'
+                            ? 'bg-purple-600 text-white hover:bg-purple-700'
+                            : 'bg-green-600 text-white hover:bg-green-700'
+                        } disabled:opacity-50`}
+                      >
+                        {checkoutMutation.isPending && selectedPlan === plan.id
+                          ? 'Processing...'
+                          : subscription?.cancel_at_period_end && plan.tier === currentTier
+                          ? `Resubscribe to ${plan.name}`
+                          : `Upgrade to ${plan.name}`}
+                      </button>
+                    )}
+                  </div>
+                )
+              })}
           </div>
 
           {checkoutMutation.isError && (
