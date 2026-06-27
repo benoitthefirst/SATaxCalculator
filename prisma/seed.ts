@@ -90,7 +90,7 @@ async function main() {
       id: 'plan-starter',
       name: 'Starter',
       tier: 'STARTER' as const,
-      description: 'Perfect for freelancers and solo entrepreneurs just getting started.',
+      description: 'Perfect for freelancers just getting started.',
       price_monthly: 0,
       price_yearly: 0,
       features: [
@@ -105,7 +105,7 @@ async function main() {
         transactions_per_month: 50,
         team_members: 1,
         companies: 1,
-        documents_per_month: 0, // No document analyzer access
+        documents_per_month: 0,
         vehicle_logbook: false,
         asset_management: false,
         advanced_reports: false,
@@ -118,10 +118,43 @@ async function main() {
       display_order: 1,
     },
     {
+      id: 'plan-basic',
+      name: 'Basic',
+      tier: 'BASIC' as const,
+      description: 'For solo entrepreneurs ready to grow.',
+      price_monthly: 99,
+      price_yearly: 990,
+      features: [
+        'Up to 200 transactions/month',
+        'Advanced expense tracking',
+        'Income management',
+        'Vehicle logbook',
+        'AI Document Analyzer (25 docs/month)',
+        'CSV exports',
+        'Up to 2 team members',
+        'Email support',
+      ],
+      limits: {
+        transactions_per_month: 200,
+        team_members: 2,
+        companies: 1,
+        documents_per_month: 25,
+        vehicle_logbook: true,
+        asset_management: false,
+        advanced_reports: false,
+        csv_exports: true,
+        multi_company: false,
+        document_analyzer: true,
+        api_access: false,
+        priority_support: false,
+      },
+      display_order: 2,
+    },
+    {
       id: 'plan-professional',
       name: 'Professional',
       tier: 'PROFESSIONAL' as const,
-      description: 'For growing businesses that need more power and flexibility.',
+      description: 'For growing businesses that need more power.',
       price_monthly: 299,
       price_yearly: 2990,
       features: [
@@ -134,13 +167,14 @@ async function main() {
         'Financial reports & analytics',
         'CSV exports',
         'Up to 5 team members',
+        'Multi-company management',
         'Priority email support',
       ],
       limits: {
-        transactions_per_month: -1, // unlimited
+        transactions_per_month: -1,
         team_members: 5,
-        companies: -1, // unlimited - user-level subscription
-        documents_per_month: 100, // 100 documents per month
+        companies: -1,
+        documents_per_month: 100,
         vehicle_logbook: true,
         asset_management: true,
         advanced_reports: true,
@@ -150,7 +184,7 @@ async function main() {
         api_access: false,
         priority_support: true,
       },
-      display_order: 2,
+      display_order: 3,
     },
     {
       id: 'plan-business',
@@ -162,8 +196,7 @@ async function main() {
       features: [
         'Everything in Professional',
         'Unlimited team members',
-        'Multi-company management',
-        'Unlimited AI Document Analyzer',
+        'AI Document Analyzer (500 docs/month)',
         'Advanced reporting',
         'API access',
         'Custom integrations',
@@ -171,10 +204,10 @@ async function main() {
         'Phone support',
       ],
       limits: {
-        transactions_per_month: -1, // unlimited
-        team_members: -1, // unlimited
-        companies: -1, // unlimited
-        documents_per_month: -1, // unlimited
+        transactions_per_month: -1,
+        team_members: -1,
+        companies: -1,
+        documents_per_month: 500,
         vehicle_logbook: true,
         asset_management: true,
         advanced_reports: true,
@@ -184,7 +217,41 @@ async function main() {
         api_access: true,
         priority_support: true,
       },
-      display_order: 3,
+      display_order: 4,
+    },
+    {
+      id: 'plan-enterprise',
+      name: 'Enterprise',
+      tier: 'ENTERPRISE' as const,
+      description: 'Custom solutions for large organizations.',
+      price_monthly: 0, // Custom pricing
+      price_yearly: 0,
+      features: [
+        'Everything in Business',
+        'Unlimited AI Document Analyzer',
+        'Custom AI training',
+        'On-premise deployment option',
+        'SSO & advanced security',
+        'Custom integrations',
+        'SLA guarantee (99.9% uptime)',
+        'Dedicated success manager',
+        '24/7 phone & email support',
+      ],
+      limits: {
+        transactions_per_month: -1,
+        team_members: -1,
+        companies: -1,
+        documents_per_month: -1,
+        vehicle_logbook: true,
+        asset_management: true,
+        advanced_reports: true,
+        csv_exports: true,
+        multi_company: true,
+        document_analyzer: true,
+        api_access: true,
+        priority_support: true,
+      },
+      display_order: 5,
     },
   ]
 

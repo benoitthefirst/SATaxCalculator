@@ -33,6 +33,20 @@ export const TIER_LIMITS: Record<SubscriptionTier, FeatureLimits> = {
     document_analyzer: false,
     priority_support: false,
   },
+  BASIC: {
+    transactions_per_month: 200,
+    team_members: 2,
+    companies: 1,
+    documents_per_month: 25, // 25 documents/month
+    api_access: false,
+    vehicle_logbook: true,
+    asset_management: false,
+    advanced_reports: false,
+    csv_exports: true,
+    multi_company: false,
+    document_analyzer: true,
+    priority_support: false,
+  },
   PROFESSIONAL: {
     transactions_per_month: -1, // Unlimited
     team_members: 5,
@@ -48,6 +62,20 @@ export const TIER_LIMITS: Record<SubscriptionTier, FeatureLimits> = {
     priority_support: true,
   },
   BUSINESS: {
+    transactions_per_month: -1, // Unlimited
+    team_members: -1, // Unlimited
+    companies: -1, // Unlimited
+    documents_per_month: 500, // 500 documents/month
+    api_access: true,
+    vehicle_logbook: true,
+    asset_management: true,
+    advanced_reports: true,
+    csv_exports: true,
+    multi_company: true,
+    document_analyzer: true,
+    priority_support: true,
+  },
+  ENTERPRISE: {
     transactions_per_month: -1, // Unlimited
     team_members: -1, // Unlimited
     companies: -1, // Unlimited

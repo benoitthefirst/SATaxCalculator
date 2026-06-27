@@ -8,18 +8,20 @@ const limitsSchema = z.object({
   transactions_per_month: z.number(),
   team_members: z.number(),
   companies: z.number(),
+  documents_per_month: z.number(),
   api_access: z.boolean(),
   vehicle_logbook: z.boolean(),
   asset_management: z.boolean(),
   advanced_reports: z.boolean(),
   csv_exports: z.boolean(),
   multi_company: z.boolean(),
+  document_analyzer: z.boolean(),
   priority_support: z.boolean(),
 })
 
 const createPlanSchema = z.object({
   name: z.string().min(1),
-  tier: z.enum(['STARTER', 'PROFESSIONAL', 'BUSINESS']),
+  tier: z.enum(['STARTER', 'BASIC', 'PROFESSIONAL', 'BUSINESS', 'ENTERPRISE']),
   description: z.string().optional(),
   price_monthly: z.number().min(0),
   price_yearly: z.number().min(0),

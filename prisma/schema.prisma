@@ -595,8 +595,10 @@ enum TicketPriority {
 
 enum SubscriptionTier {
   STARTER
+  BASIC
   PROFESSIONAL
   BUSINESS
+  ENTERPRISE
 }
 
 enum SubscriptionStatus {
