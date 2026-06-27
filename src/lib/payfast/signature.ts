@@ -6,10 +6,11 @@ interface PayFastParams {
 
 /**
  * PayFast parameter order for FORM submissions (Custom/Onsite integrations)
- * MUST be in this exact order per PayFast official PHP SDK
- * https://github.com/Payfast/payfast-php-sdk/blob/master/lib/Auth.php
+ * MUST be in this exact order per PayFast official documentation and omnipay-payfast
+ * https://github.com/thephpleague/omnipay-payfast/blob/master/src/Message/PurchaseRequest.php
  *
- * IMPORTANT: The passphrase is IN THE LIST, not appended at the end!
+ * IMPORTANT: The passphrase is at the END, not in the middle!
+ * Only non-empty fields should be included.
  */
 const PAYFAST_FORM_PARAM_ORDER = [
   'merchant_id',
@@ -41,7 +42,6 @@ const PAYFAST_FORM_PARAM_ORDER = [
   'currency',
   'payment_method',
   'subscription_type',
-  'passphrase', // IMPORTANT: passphrase is in the middle, not at the end!
   'billing_date',
   'recurring_amount',
   'frequency',
@@ -49,14 +49,15 @@ const PAYFAST_FORM_PARAM_ORDER = [
   'subscription_notify_email',
   'subscription_notify_webhook',
   'subscription_notify_buyer',
+  'passphrase', // IMPORTANT: passphrase must be LAST!
 ]
 
 /**
  * Generate a PayFast signature for FORM submissions (Custom/Onsite integrations)
  *
- * According to PayFast official PHP SDK:
+ * According to PayFast documentation and omnipay-payfast implementation:
  * 1. Create a parameter string in the EXACT order specified by PayFast
- * 2. Include the passphrase in its proper position (between subscription_type and billing_date)
+ * 2. Include the passphrase at the END of the parameter string
  * 3. URL encode all values
  * 4. MD5 hash the resulting string
  *
