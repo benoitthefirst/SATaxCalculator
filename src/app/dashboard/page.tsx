@@ -306,31 +306,43 @@ export default async function DashboardPage({
     .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
     .slice(0, 5)
 
+  // Get time-based greeting
+  const getGreeting = () => {
+    const hour = new Date().getHours()
+    if (hour < 12) return 'Good morning'
+    if (hour < 18) return 'Good afternoon'
+    return 'Good evening'
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-semibold text-[#111827]">
-            Welcome back, {session.user.name?.split(' ')[0]}
+            {getGreeting()}, {session.user.name?.split(' ')[0]} <span className="inline-block">👋</span>
           </h1>
-          <div className="mt-2 flex flex-wrap items-center gap-2 sm:gap-3">
-            <TaxYearSelector currentYear={selectedYear} />
-            <span className="hidden sm:inline text-sm text-[#4B5563]">•</span>
-            <span className="text-sm text-[#4B5563] truncate max-w-[150px] sm:max-w-none">{company.name}</span>
+          <p className="mt-1 text-sm text-[#4B5563]">
+            Here&apos;s what&apos;s happening with {company.name}
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <TaxYearSelector currentYear={selectedYear} />
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-[#111827] font-medium">{company.name}</span>
             {isVatRegistered && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-[#2563EB]/10 text-[#2563EB]">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-[#22C55E]/10 text-[#22C55E]">
                 VAT Registered
               </span>
             )}
           </div>
+          <Link
+            href={`/dashboard/reports/tax-computation?year=${selectedYear}`}
+            className="inline-flex items-center justify-center px-5 py-2.5 bg-[#062C2E] text-white text-sm font-semibold rounded-lg hover:bg-[#0a3d42] transition-colors"
+          >
+            View Tax Report →
+          </Link>
         </div>
-        <Link
-          href={`/dashboard/reports/tax-computation?year=${selectedYear}`}
-          className="inline-flex items-center justify-center w-full sm:w-auto px-5 py-2.5 bg-[#DFFB2D] text-[#062C2E] text-sm font-semibold rounded-full hover:bg-[#e8fc5a] transition-colors"
-        >
-          View Tax Report
-        </Link>
       </div>
 
       {/* Main Stats */}
