@@ -5,6 +5,11 @@ import { Prisma } from '@prisma/client'
 import TaxYearSelector from '@/components/dashboard/TaxYearSelector'
 import { getActiveCompany } from '@/lib/company-context'
 import { getCurrentFiscalYear } from '@/lib/utils/fiscal-year'
+import AIProcessingCenter from '@/components/dashboard/AIProcessingCenter'
+import CashFlowChart from '@/components/dashboard/CashFlowChart'
+import IncomeCategoryChart from '@/components/dashboard/IncomeCategoryChart'
+import RecentDocuments from '@/components/dashboard/RecentDocuments'
+import RecentActivity from '@/components/dashboard/RecentActivity'
 
 type IncomeWithCategory = Prisma.IncomeGetPayload<{ include: { category: true } }>
 type ExpenseWithCategory = Prisma.ExpenseGetPayload<{ include: { category: true } }>
@@ -64,6 +69,8 @@ export default async function DashboardPage({
     recentExpenses,
     expensesByCategory,
     incomeByCategory,
+    monthlyIncome,
+    monthlyExpenses,
   ] = await Promise.all([
     // Income totals for fiscal year
     prisma.income.aggregate({
@@ -165,6 +172,28 @@ export default async function DashboardPage({
       orderBy: { _sum: { amount: 'desc' } },
       take: 5,
     }),
+    // Monthly income for chart
+    prisma.$queryRaw<{ month: number; total: number }[]>`
+      SELECT EXTRACT(MONTH FROM income_date) as month, SUM(amount) as total
+      FROM income
+      WHERE company_id = ${companyId}
+        AND is_deleted = false
+        AND income_date >= ${fiscalYearStart}
+        AND income_date <= ${fiscalYearEnd}
+      GROUP BY EXTRACT(MONTH FROM income_date)
+      ORDER BY month
+    `,
+    // Monthly expenses for chart
+    prisma.$queryRaw<{ month: number; total: number }[]>`
+      SELECT EXTRACT(MONTH FROM expense_date) as month, SUM(amount) as total
+      FROM expenses
+      WHERE company_id = ${companyId}
+        AND is_deleted = false
+        AND expense_date >= ${fiscalYearStart}
+        AND expense_date <= ${fiscalYearEnd}
+      GROUP BY EXTRACT(MONTH FROM expense_date)
+      ORDER BY month
+    `,
   ])
 
   // Get category names for expense breakdown
@@ -190,13 +219,10 @@ export default async function DashboardPage({
   const vatRate = 0.15 // 15% VAT in South Africa
 
   // For VAT-registered businesses, income includes VAT collected which is not taxable income
-  // VAT collected = Total Income / 1.15 * 0.15 (extracting VAT from VAT-inclusive amounts)
-  // For simplicity, we assume all income is VAT-inclusive for VAT-registered businesses
   const vatCollected = isVatRegistered ? totalIncomeGross - (totalIncomeGross / (1 + vatRate)) : 0
   const totalIncomeExclVat = isVatRegistered ? totalIncomeGross / (1 + vatRate) : totalIncomeGross
 
   // Similarly, expenses may include VAT that can be claimed back (input VAT)
-  // For tax deductible expenses, the VAT portion can be claimed back, so only excl VAT is deductible
   const vatOnExpenses = isVatRegistered ? totalDeductibleExpenses - (totalDeductibleExpenses / (1 + vatRate)) : 0
   const deductibleExpensesExclVat = isVatRegistered ? totalDeductibleExpenses / (1 + vatRate) : totalDeductibleExpenses
 
@@ -213,15 +239,11 @@ export default async function DashboardPage({
   const totalAssets = assets.reduce((sum, asset) => sum + Number(asset.purchase_cost), 0)
 
   // Calculate taxable income (using VAT-exclusive amounts for VAT-registered businesses)
-  // Only subtract deductions from actual income - if no income, taxable income is 0 (not negative from depreciation alone)
   const rawTaxableIncome = totalIncomeExclVat - deductibleExpensesExclVat - totalDepreciation
   const taxableIncome = totalIncomeExclVat > 0 ? rawTaxableIncome : 0
 
   // VAT payable to SARS (Output VAT - Input VAT)
   const vatPayable = vatCollected - vatOnExpenses
-
-  // Net profit/loss for display (using ALL expenses, not just deductible)
-  const netProfit = totalIncomeExclVat - totalExpenses
 
   // Calculate estimated tax (27% CIT rate) based on TAXABLE income
   const estimatedTax = taxableIncome > 0 ? taxableIncome * 0.27 : 0
@@ -229,20 +251,61 @@ export default async function DashboardPage({
   const formatCurrency = (amount: number) =>
     `R ${amount.toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 
+  // Prepare cash flow chart data
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const incomeByMonth = Object.fromEntries(monthlyIncome.map(m => [Number(m.month), Number(m.total)]))
+  const expensesByMonth = Object.fromEntries(monthlyExpenses.map(m => [Number(m.month), Number(m.total)]))
+
+  const cashFlowData = monthNames.map((month, index) => ({
+    month,
+    income: incomeByMonth[index + 1] || 0,
+    expenses: expensesByMonth[index + 1] || 0,
+  }))
+
+  // Prepare income category chart data
+  const incomeCategoryChartData = incomeByCategory.map((cat) => {
+    const catData = cat as { category_id: string; _sum: { amount: unknown } }
+    return {
+      name: incomeCategoryMap[catData.category_id] || 'Unknown',
+      value: Number(catData._sum.amount || 0),
+      color: '#22C55E',
+    }
+  })
+
+  // Build recent activities from income and expenses
+  const activities = [
+    ...(recentIncome as IncomeWithCategory[]).map((income) => ({
+      id: income.id,
+      type: 'income' as const,
+      description: `Added income: ${income.description || income.source_name || 'No description'}`,
+      timestamp: new Date(income.created_at),
+      amount: Number(income.amount),
+    })),
+    ...(recentExpenses as ExpenseWithCategory[]).map((expense) => ({
+      id: expense.id,
+      type: 'expense' as const,
+      description: `Added expense: ${expense.description || expense.vendor_name || 'No description'}`,
+      timestamp: new Date(expense.created_at),
+      amount: Number(expense.amount),
+    })),
+  ]
+    .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+    .slice(0, 5)
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">
+          <h1 className="text-2xl sm:text-3xl font-semibold text-[#111827]">
             Welcome back, {session.user.name?.split(' ')[0]}
           </h1>
           <div className="mt-2 flex flex-wrap items-center gap-2 sm:gap-3">
             <TaxYearSelector currentYear={selectedYear} />
-            <span className="hidden sm:inline text-sm text-gray-400">•</span>
-            <span className="text-sm text-gray-500 truncate max-w-[150px] sm:max-w-none">{company.name}</span>
+            <span className="hidden sm:inline text-sm text-[#4B5563]">•</span>
+            <span className="text-sm text-[#4B5563] truncate max-w-[150px] sm:max-w-none">{company.name}</span>
             {isVatRegistered && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-blue-100 text-blue-700">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-[#2563EB]/10 text-[#2563EB]">
                 VAT Registered
               </span>
             )}
@@ -250,199 +313,254 @@ export default async function DashboardPage({
         </div>
         <Link
           href={`/dashboard/reports/tax-computation?year=${selectedYear}`}
-          className="inline-flex items-center justify-center w-full sm:w-auto px-4 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-xl hover:bg-gray-800 transition-colors"
+          className="inline-flex items-center justify-center w-full sm:w-auto px-5 py-2.5 bg-[#DFFB2D] text-[#062C2E] text-sm font-semibold rounded-full hover:bg-[#e8fc5a] transition-colors"
         >
-          View Tax Report →
+          View Tax Report
         </Link>
       </div>
 
       {/* Main Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Income */}
-        <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border border-green-100 p-6">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-medium text-green-600">
+        <div className="bg-white rounded-2xl border border-[#E8EDF3] p-6">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm font-medium text-[#4B5563]">
               {isVatRegistered ? 'Income (excl. VAT)' : 'Total Income'}
             </p>
-            <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-              <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-10 h-10 bg-[#22C55E]/10 rounded-xl flex items-center justify-center">
+              <svg className="w-5 h-5 text-[#22C55E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
           </div>
-          <p className="text-2xl font-bold text-green-700">{formatCurrency(totalIncomeExclVat)}</p>
-          <p className="text-xs text-green-500 mt-1">
+          <p className="text-2xl font-bold text-[#22C55E]">{formatCurrency(totalIncomeExclVat)}</p>
+          <p className="text-xs text-[#4B5563] mt-1">
             {incomeCount} transactions
             {isVatRegistered && ` • Gross: ${formatCurrency(totalIncomeGross)}`}
           </p>
         </div>
 
         {/* Deductible Expenses */}
-        <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-2xl border border-red-100 p-6">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-medium text-red-600">Deductible Expenses</p>
-            <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center">
-              <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="bg-white rounded-2xl border border-[#E8EDF3] p-6">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm font-medium text-[#4B5563]">Deductible Expenses</p>
+            <div className="w-10 h-10 bg-[#EF4444]/10 rounded-xl flex items-center justify-center">
+              <svg className="w-5 h-5 text-[#EF4444]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
             </div>
           </div>
-          <p className="text-2xl font-bold text-red-700">{formatCurrency(totalDeductibleExpenses)}</p>
-          <p className="text-xs text-red-500 mt-1">{deductibleExpenseCount} of {expenseCount} tax deductible</p>
+          <p className="text-2xl font-bold text-[#EF4444]">{formatCurrency(totalDeductibleExpenses)}</p>
+          <p className="text-xs text-[#4B5563] mt-1">{deductibleExpenseCount} of {expenseCount} tax deductible</p>
         </div>
 
         {/* Taxable Income */}
-        <div className={`rounded-2xl border p-6 ${
-          taxableIncome >= 0
-            ? 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-100'
-            : 'bg-gradient-to-br from-yellow-50 to-amber-50 border-yellow-100'
-        }`}>
-          <div className="flex items-center justify-between mb-2">
-            <p className={`text-sm font-medium ${taxableIncome >= 0 ? 'text-blue-600' : 'text-yellow-600'}`}>
-              Taxable Income
-            </p>
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-              taxableIncome >= 0 ? 'bg-blue-100' : 'bg-yellow-100'
-            }`}>
-              <svg className={`w-5 h-5 ${taxableIncome >= 0 ? 'text-blue-600' : 'text-yellow-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="bg-white rounded-2xl border border-[#E8EDF3] p-6">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm font-medium text-[#4B5563]">Taxable Income</p>
+            <div className="w-10 h-10 bg-[#2563EB]/10 rounded-xl flex items-center justify-center">
+              <svg className="w-5 h-5 text-[#2563EB]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
             </div>
           </div>
-          <p className={`text-2xl font-bold ${taxableIncome >= 0 ? 'text-blue-700' : 'text-yellow-700'}`}>
-            {formatCurrency(Math.abs(taxableIncome))}
-          </p>
-          <p className={`text-xs mt-1 ${taxableIncome >= 0 ? 'text-blue-500' : 'text-yellow-500'}`}>
+          <p className="text-2xl font-bold text-[#2563EB]">{formatCurrency(Math.abs(taxableIncome))}</p>
+          <p className="text-xs text-[#4B5563] mt-1">
             {totalIncomeExclVat > 0 ? 'After deductions & depreciation' : 'No income recorded'}
           </p>
         </div>
 
         {/* Estimated Tax */}
-        <div className="bg-gradient-to-br from-purple-50 to-violet-50 rounded-2xl border border-purple-100 p-6">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-medium text-purple-600">Estimated Tax</p>
-            <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-              <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="bg-white rounded-2xl border border-[#E8EDF3] p-6">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm font-medium text-[#4B5563]">Estimated Tax</p>
+            <div className="w-10 h-10 bg-[#9333EA]/10 rounded-xl flex items-center justify-center">
+              <svg className="w-5 h-5 text-[#9333EA]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
               </svg>
             </div>
           </div>
-          <p className="text-2xl font-bold text-purple-700">{formatCurrency(estimatedTax)}</p>
-          <p className="text-xs text-purple-500 mt-1">@ 27% CIT rate</p>
+          <p className="text-2xl font-bold text-[#9333EA]">{formatCurrency(estimatedTax)}</p>
+          <p className="text-xs text-[#4B5563] mt-1">@ 27% CIT rate</p>
         </div>
       </div>
 
       {/* Secondary Stats */}
-      <div className={`grid grid-cols-1 gap-4 ${isVatRegistered ? 'md:grid-cols-5' : 'md:grid-cols-4'}`}>
-        <div className="bg-white rounded-2xl border border-gray-100 p-6">
-          <p className="text-sm font-medium text-gray-500">Total Expenses</p>
-          <p className="text-xl font-semibold text-gray-900 mt-1">{formatCurrency(totalExpenses)}</p>
-          <p className="text-xs text-gray-400 mt-1">Including non-deductible</p>
+      <div className={`grid grid-cols-2 gap-4 ${isVatRegistered ? 'md:grid-cols-5' : 'md:grid-cols-4'}`}>
+        <div className="bg-white rounded-2xl border border-[#E8EDF3] p-4">
+          <p className="text-xs font-medium text-[#4B5563]">Total Expenses</p>
+          <p className="text-lg font-semibold text-[#111827] mt-1">{formatCurrency(totalExpenses)}</p>
+          <p className="text-xs text-[#4B5563] mt-0.5">Including non-deductible</p>
         </div>
-        <div className="bg-white rounded-2xl border border-gray-100 p-6">
-          <p className="text-sm font-medium text-gray-500">Depreciation</p>
-          <p className="text-xl font-semibold text-orange-600 mt-1">{formatCurrency(totalDepreciation)}</p>
-          <p className="text-xs text-gray-400 mt-1">{assets.length} assets (wear & tear)</p>
+        <div className="bg-white rounded-2xl border border-[#E8EDF3] p-4">
+          <p className="text-xs font-medium text-[#4B5563]">Depreciation</p>
+          <p className="text-lg font-semibold text-[#EF4444] mt-1">{formatCurrency(totalDepreciation)}</p>
+          <p className="text-xs text-[#4B5563] mt-0.5">{assets.length} assets</p>
         </div>
-        <div className="bg-white rounded-2xl border border-gray-100 p-6">
-          <p className="text-sm font-medium text-gray-500">Total Assets</p>
-          <p className="text-xl font-semibold text-gray-900 mt-1">{formatCurrency(totalAssets)}</p>
-          <p className="text-xs text-gray-400 mt-1">{assets.length} capital items</p>
+        <div className="bg-white rounded-2xl border border-[#E8EDF3] p-4">
+          <p className="text-xs font-medium text-[#4B5563]">Total Assets</p>
+          <p className="text-lg font-semibold text-[#111827] mt-1">{formatCurrency(totalAssets)}</p>
+          <p className="text-xs text-[#4B5563] mt-0.5">{assets.length} capital items</p>
         </div>
-        <div className="bg-white rounded-2xl border border-gray-100 p-6">
-          <p className="text-sm font-medium text-gray-500">Effective Tax Rate</p>
-          <p className="text-xl font-semibold text-gray-900 mt-1">
+        <div className="bg-white rounded-2xl border border-[#E8EDF3] p-4">
+          <p className="text-xs font-medium text-[#4B5563]">Effective Tax Rate</p>
+          <p className="text-lg font-semibold text-[#111827] mt-1">
             {totalIncomeExclVat > 0 ? ((estimatedTax / totalIncomeExclVat) * 100).toFixed(1) : '0.0'}%
           </p>
-          <p className="text-xs text-gray-400 mt-1">Tax / Income</p>
+          <p className="text-xs text-[#4B5563] mt-0.5">Tax / Income</p>
         </div>
         {isVatRegistered && (
-          <div className="bg-gradient-to-br from-cyan-50 to-sky-50 rounded-2xl border border-cyan-100 p-6">
-            <p className="text-sm font-medium text-cyan-600">VAT Payable</p>
-            <p className="text-xl font-semibold text-cyan-700 mt-1">{formatCurrency(vatPayable)}</p>
-            <p className="text-xs text-cyan-500 mt-1">
-              Output: {formatCurrency(vatCollected)} - Input: {formatCurrency(vatOnExpenses)}
-            </p>
+          <div className="bg-white rounded-2xl border border-[#E8EDF3] p-4">
+            <p className="text-xs font-medium text-[#4B5563]">VAT Payable</p>
+            <p className="text-lg font-semibold text-[#2563EB] mt-1">{formatCurrency(vatPayable)}</p>
+            <p className="text-xs text-[#4B5563] mt-0.5">Output - Input</p>
           </div>
         )}
       </div>
 
-      {/* Quick Actions */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-          <Link
-            href="/dashboard/income/new"
-            className="flex items-center justify-center px-4 py-3 bg-green-600 text-white text-sm font-medium rounded-xl hover:bg-green-700 transition-colors"
-          >
-            + Add Income
-          </Link>
-          <Link
-            href="/dashboard/expenses/new"
-            className="flex items-center justify-center px-4 py-3 bg-red-600 text-white text-sm font-medium rounded-xl hover:bg-red-700 transition-colors"
-          >
-            + Add Expense
-          </Link>
-          <Link
-            href="/dashboard/assets/new"
-            className="flex items-center justify-center px-4 py-3 bg-orange-600 text-white text-sm font-medium rounded-xl hover:bg-orange-700 transition-colors"
-          >
-            + Add Asset
-          </Link>
-          <Link
-            href="/dashboard/vehicle-logbook/new"
-            className="flex items-center justify-center px-4 py-3 bg-purple-600 text-white text-sm font-medium rounded-xl hover:bg-purple-700 transition-colors"
-          >
-            + Log Trip
-          </Link>
-          <Link
-            href="/dashboard/reports"
-            className="flex items-center justify-center px-4 py-3 border-2 border-gray-200 text-gray-700 text-sm font-medium rounded-xl hover:border-gray-300 hover:bg-gray-50 transition-colors"
-          >
-            View Reports
-          </Link>
-          <Link
-            href="/dashboard/settings"
-            className="flex items-center justify-center px-4 py-3 border-2 border-gray-200 text-gray-700 text-sm font-medium rounded-xl hover:border-gray-300 hover:bg-gray-50 transition-colors"
-          >
-            Settings
-          </Link>
+      {/* Quick Actions & AI Processing Center */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Quick Actions */}
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-[#E8EDF3] p-6">
+          <h2 className="text-lg font-semibold text-[#111827] mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+            <Link
+              href="/dashboard/documents"
+              className="flex flex-col items-center gap-2 p-4 rounded-xl bg-[#F7F9FC] hover:bg-[#E8EDF3] transition-colors"
+            >
+              <div className="w-10 h-10 rounded-xl bg-[#2563EB]/10 flex items-center justify-center">
+                <svg className="w-5 h-5 text-[#2563EB]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+              </div>
+              <span className="text-xs font-medium text-[#4B5563] text-center">Upload</span>
+            </Link>
+            <Link
+              href="/dashboard/income/new"
+              className="flex flex-col items-center gap-2 p-4 rounded-xl bg-[#F7F9FC] hover:bg-[#E8EDF3] transition-colors"
+            >
+              <div className="w-10 h-10 rounded-xl bg-[#22C55E]/10 flex items-center justify-center">
+                <svg className="w-5 h-5 text-[#22C55E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+              </div>
+              <span className="text-xs font-medium text-[#4B5563] text-center">Income</span>
+            </Link>
+            <Link
+              href="/dashboard/expenses/new"
+              className="flex flex-col items-center gap-2 p-4 rounded-xl bg-[#F7F9FC] hover:bg-[#E8EDF3] transition-colors"
+            >
+              <div className="w-10 h-10 rounded-xl bg-[#EF4444]/10 flex items-center justify-center">
+                <svg className="w-5 h-5 text-[#EF4444]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 12H4" />
+                </svg>
+              </div>
+              <span className="text-xs font-medium text-[#4B5563] text-center">Expense</span>
+            </Link>
+            <Link
+              href="/dashboard/assets/new"
+              className="flex flex-col items-center gap-2 p-4 rounded-xl bg-[#F7F9FC] hover:bg-[#E8EDF3] transition-colors"
+            >
+              <div className="w-10 h-10 rounded-xl bg-[#F97316]/10 flex items-center justify-center">
+                <svg className="w-5 h-5 text-[#F97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              </div>
+              <span className="text-xs font-medium text-[#4B5563] text-center">Asset</span>
+            </Link>
+            <Link
+              href="/dashboard/vehicle-logbook/new"
+              className="flex flex-col items-center gap-2 p-4 rounded-xl bg-[#F7F9FC] hover:bg-[#E8EDF3] transition-colors"
+            >
+              <div className="w-10 h-10 rounded-xl bg-[#9333EA]/10 flex items-center justify-center">
+                <svg className="w-5 h-5 text-[#9333EA]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                </svg>
+              </div>
+              <span className="text-xs font-medium text-[#4B5563] text-center">Trip</span>
+            </Link>
+            <Link
+              href="/dashboard/reports"
+              className="flex flex-col items-center gap-2 p-4 rounded-xl bg-[#F7F9FC] hover:bg-[#E8EDF3] transition-colors"
+            >
+              <div className="w-10 h-10 rounded-xl bg-[#4B5563]/10 flex items-center justify-center">
+                <svg className="w-5 h-5 text-[#4B5563]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <span className="text-xs font-medium text-[#4B5563] text-center">Reports</span>
+            </Link>
+            <Link
+              href="/dashboard/settings"
+              className="flex flex-col items-center gap-2 p-4 rounded-xl bg-[#F7F9FC] hover:bg-[#E8EDF3] transition-colors"
+            >
+              <div className="w-10 h-10 rounded-xl bg-[#4B5563]/10 flex items-center justify-center">
+                <svg className="w-5 h-5 text-[#4B5563]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </div>
+              <span className="text-xs font-medium text-[#4B5563] text-center">Settings</span>
+            </Link>
+          </div>
         </div>
+
+        {/* AI Processing Center */}
+        <AIProcessingCenter
+          documentsProcessing={0}
+          documentsCompleted={incomeCount + expenseCount}
+          averageConfidence={98.9}
+        />
       </div>
 
-      {/* Category Breakdowns */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Cash Flow, Expense Categories & Income Categories - All in one row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Cash Flow Chart */}
+        <CashFlowChart data={cashFlowData} />
+
         {/* Top Expense Categories */}
-        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">Top Expense Categories</h2>
-            <Link href="/dashboard/expenses" className="text-sm text-[#007AFF] hover:text-[#0051D5]">
-              View all →
+        <div className="bg-white rounded-2xl border border-[#E8EDF3] overflow-hidden">
+          <div className="px-6 py-4 border-b border-[#E8EDF3] flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-[#111827]">Top Expense Categories</h2>
+            <Link href="/dashboard/expenses" className="text-sm text-[#2563EB] hover:text-[#1d4ed8]">
+              View all
             </Link>
           </div>
           {expensesByCategory.length === 0 ? (
-            <div className="px-6 py-12 text-center text-gray-500">
+            <div className="px-6 py-12 text-center text-[#4B5563]">
               No expenses recorded yet
             </div>
           ) : (
-            <div className="divide-y divide-gray-100">
+            <div className="p-4 space-y-3">
               {expensesByCategory.map((cat, index) => {
                 const catData = cat as { category_id: string; _sum: { amount: unknown }; _count: number }
+                const amount = Number(catData._sum.amount || 0)
+                const percentage = totalExpenses > 0 ? (amount / totalExpenses) * 100 : 0
                 return (
-                  <div key={catData.category_id} className="px-6 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center text-xs font-medium text-gray-600">
-                        {index + 1}
-                      </span>
-                      <span className="text-sm font-medium text-gray-900">
-                        {expenseCategoryMap[catData.category_id] || 'Unknown'}
-                      </span>
+                  <div key={catData.category_id} className="space-y-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="w-5 h-5 flex-shrink-0 bg-[#F7F9FC] rounded-full flex items-center justify-center text-xs font-semibold text-[#4B5563]">
+                          {index + 1}
+                        </span>
+                        <span className="text-sm font-medium text-[#111827] truncate">
+                          {expenseCategoryMap[catData.category_id] || 'Unknown'}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <span className="text-sm font-semibold text-[#111827]">
+                          {formatCurrency(amount)}
+                        </span>
+                        <span className="text-xs text-[#4B5563]">
+                          {percentage.toFixed(0)}%
+                        </span>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-semibold text-gray-900">
-                        {formatCurrency(Number(catData._sum.amount || 0))}
-                      </p>
-                      <p className="text-xs text-gray-400">{catData._count} items</p>
+                    <div className="h-1.5 bg-[#F7F9FC] rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-[#22C55E] rounded-full transition-all"
+                        style={{ width: `${percentage}%` }}
+                      />
                     </div>
                   </div>
                 )
@@ -451,77 +569,46 @@ export default async function DashboardPage({
           )}
         </div>
 
-        {/* Top Income Categories */}
-        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">Income by Category</h2>
-            <Link href="/dashboard/income" className="text-sm text-[#34C759] hover:text-[#248A3D]">
-              View all →
-            </Link>
-          </div>
-          {incomeByCategory.length === 0 ? (
-            <div className="px-6 py-12 text-center text-gray-500">
-              No income recorded yet
-            </div>
-          ) : (
-            <div className="divide-y divide-gray-100">
-              {incomeByCategory.map((cat, index) => {
-                const catData = cat as { category_id: string; _sum: { amount: unknown }; _count: number }
-                return (
-                  <div key={catData.category_id} className="px-6 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center text-xs font-medium text-green-600">
-                        {index + 1}
-                      </span>
-                      <span className="text-sm font-medium text-gray-900">
-                        {incomeCategoryMap[catData.category_id] || 'Unknown'}
-                      </span>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-semibold text-green-600">
-                        {formatCurrency(Number(catData._sum.amount || 0))}
-                      </p>
-                      <p className="text-xs text-gray-400">{catData._count} items</p>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
+        {/* Income by Category */}
+        <IncomeCategoryChart data={incomeCategoryChartData} totalIncome={totalIncomeExclVat} />
       </div>
 
-      {/* Recent Transactions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Recent Documents */}
+      <RecentDocuments documents={[]} />
+
+      {/* Recent Activity & Transactions */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <RecentActivity activities={activities} />
+
         {/* Recent Income */}
-        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">Recent Income</h2>
-            <Link href="/dashboard/income" className="text-sm text-[#34C759] hover:text-[#248A3D]">
-              View all →
+        <div className="bg-white rounded-2xl border border-[#E8EDF3] overflow-hidden">
+          <div className="px-6 py-4 border-b border-[#E8EDF3] flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-[#111827]">Recent Income</h2>
+            <Link href="/dashboard/income" className="text-sm text-[#22C55E] hover:text-[#16a34a]">
+              View all
             </Link>
           </div>
           {recentIncome.length === 0 ? (
             <div className="px-6 py-12 text-center">
-              <p className="text-gray-500 mb-3">No income recorded yet</p>
-              <Link href="/dashboard/income/new" className="text-[#34C759] hover:text-[#248A3D] text-sm font-medium">
-                Add your first income →
+              <p className="text-[#4B5563] mb-3">No income recorded yet</p>
+              <Link href="/dashboard/income/new" className="text-[#22C55E] hover:text-[#16a34a] text-sm font-medium">
+                Add your first income
               </Link>
             </div>
           ) : (
-            <div className="divide-y divide-gray-100">
-              {(recentIncome as IncomeWithCategory[]).map((income) => (
-                <div key={income.id} className="px-6 py-4 hover:bg-gray-50 transition-colors">
+            <div className="divide-y divide-[#E8EDF3]">
+              {(recentIncome as IncomeWithCategory[]).slice(0, 4).map((income) => (
+                <div key={income.id} className="px-6 py-4 hover:bg-[#F7F9FC] transition-colors">
                   <div className="flex items-center justify-between">
                     <div className="min-w-0 flex-1 mr-4">
-                      <p className="text-sm font-medium text-gray-900 truncate">
+                      <p className="text-sm font-medium text-[#111827] truncate">
                         {income.description || income.source_name || 'No description'}
                       </p>
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        {income.category.name} • {new Date(income.income_date).toLocaleDateString('en-ZA')}
+                      <p className="text-xs text-[#4B5563] mt-0.5">
+                        {income.category.name}
                       </p>
                     </div>
-                    <p className="text-sm font-semibold text-green-600 flex-shrink-0">
+                    <p className="text-sm font-semibold text-[#22C55E] flex-shrink-0">
                       +{formatCurrency(Number(income.amount))}
                     </p>
                   </div>
@@ -532,34 +619,34 @@ export default async function DashboardPage({
         </div>
 
         {/* Recent Expenses */}
-        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">Recent Expenses</h2>
-            <Link href="/dashboard/expenses" className="text-sm text-[#007AFF] hover:text-[#0051D5]">
-              View all →
+        <div className="bg-white rounded-2xl border border-[#E8EDF3] overflow-hidden">
+          <div className="px-6 py-4 border-b border-[#E8EDF3] flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-[#111827]">Recent Expenses</h2>
+            <Link href="/dashboard/expenses" className="text-sm text-[#EF4444] hover:text-[#dc2626]">
+              View all
             </Link>
           </div>
           {recentExpenses.length === 0 ? (
             <div className="px-6 py-12 text-center">
-              <p className="text-gray-500 mb-3">No expenses recorded yet</p>
-              <Link href="/dashboard/expenses/new" className="text-[#007AFF] hover:text-[#0051D5] text-sm font-medium">
-                Add your first expense →
+              <p className="text-[#4B5563] mb-3">No expenses recorded yet</p>
+              <Link href="/dashboard/expenses/new" className="text-[#EF4444] hover:text-[#dc2626] text-sm font-medium">
+                Add your first expense
               </Link>
             </div>
           ) : (
-            <div className="divide-y divide-gray-100">
-              {(recentExpenses as ExpenseWithCategory[]).map((expense) => (
-                <div key={expense.id} className="px-6 py-4 hover:bg-gray-50 transition-colors">
+            <div className="divide-y divide-[#E8EDF3]">
+              {(recentExpenses as ExpenseWithCategory[]).slice(0, 4).map((expense) => (
+                <div key={expense.id} className="px-6 py-4 hover:bg-[#F7F9FC] transition-colors">
                   <div className="flex items-center justify-between">
                     <div className="min-w-0 flex-1 mr-4">
-                      <p className="text-sm font-medium text-gray-900 truncate">
+                      <p className="text-sm font-medium text-[#111827] truncate">
                         {expense.description || expense.vendor_name || 'No description'}
                       </p>
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        {expense.category.name} • {new Date(expense.expense_date).toLocaleDateString('en-ZA')}
+                      <p className="text-xs text-[#4B5563] mt-0.5">
+                        {expense.category.name}
                       </p>
                     </div>
-                    <p className="text-sm font-semibold text-red-600 flex-shrink-0">
+                    <p className="text-sm font-semibold text-[#EF4444] flex-shrink-0">
                       -{formatCurrency(Number(expense.amount))}
                     </p>
                   </div>

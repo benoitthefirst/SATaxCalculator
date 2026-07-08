@@ -45,7 +45,7 @@ export default async function DashboardLayout({
 
   return (
     <QueryProvider>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-[#F7F9FC]">
         <DashboardSidebar
           user={{
             name: session.user.name || '',

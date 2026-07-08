@@ -78,6 +78,15 @@ const navItems = [
     ),
   },
   {
+    href: '/dashboard/banking',
+    label: 'Banking',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+      </svg>
+    ),
+  },
+  {
     href: '/dashboard/vehicle-logbook',
     label: 'Logbook',
     icon: (
@@ -92,6 +101,15 @@ const navItems = [
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+      </svg>
+    ),
+  },
+  {
+    href: '/dashboard/sars',
+    label: 'SARS',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
       </svg>
     ),
   },
@@ -168,12 +186,12 @@ export default function DashboardSidebar({
   }
 
   const SidebarContent = () => (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col bg-[#081F22]">
       {/* Logo */}
-      <div className="flex h-16 items-center border-b border-gray-200 px-6">
+      <div className="flex h-16 items-center border-b border-[#062C2E] px-6">
         <Link href="/dashboard" className="flex items-center">
           <Image
-            src="/ProcessX_Logo_full.webp"
+            src="/Px_Logo_white.webp"
             alt="ProcessX"
             width={120}
             height={32}
@@ -185,22 +203,22 @@ export default function DashboardSidebar({
 
       {/* Company Switcher */}
       {currentCompany && (
-        <div className="relative px-3 py-3 border-b border-gray-200">
+        <div className="relative px-3 py-3 border-b border-[#062C2E]">
           <button
             onClick={() => setIsCompanyDropdownOpen(!isCompanyDropdownOpen)}
             className={cn(
               'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors',
-              isCompanyDropdownOpen ? 'bg-orange-50 ring-2 ring-orange-200' : 'hover:bg-gray-50'
+              isCompanyDropdownOpen ? 'bg-[#DFFB2D]/10 ring-2 ring-[#DFFB2D]/30' : 'hover:bg-white/5'
             )}
           >
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white font-medium text-sm flex-shrink-0">
+            <div className="w-9 h-9 rounded-lg bg-[#DFFB2D] flex items-center justify-center text-[#081F22] font-semibold text-sm flex-shrink-0">
               {currentCompany.name.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 text-left min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
+              <p className="text-sm font-medium text-white truncate">
                 {currentCompany.name}
               </p>
-              <p className="text-xs text-gray-500">{roleLabels[currentCompany.role]}</p>
+              <p className="text-xs text-gray-400">{roleLabels[currentCompany.role]}</p>
             </div>
             <svg
               className={cn(
@@ -216,7 +234,7 @@ export default function DashboardSidebar({
           </button>
 
           {isCompanyDropdownOpen && (
-            <div className="absolute left-3 right-3 top-full mt-1 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-10">
+            <div className="absolute left-3 right-3 top-full mt-1 bg-[#0a2528] rounded-xl shadow-lg border border-[#062C2E] py-2 z-10">
               {companies
                 .filter((company) => company.id !== currentCompanyId)
                 .map((company) => (
@@ -227,28 +245,28 @@ export default function DashboardSidebar({
                       setIsCompanyDropdownOpen(false)
                     }}
                     disabled={isSwitching}
-                    className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 transition-colors"
+                    className="w-full flex items-center gap-3 px-3 py-2 hover:bg-white/5 transition-colors"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white font-medium text-sm flex-shrink-0">
+                    <div className="w-8 h-8 rounded-lg bg-[#DFFB2D] flex items-center justify-center text-[#081F22] font-semibold text-sm flex-shrink-0">
                       {company.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex-1 text-left min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
+                      <p className="text-sm font-medium text-white truncate">
                         {company.name}
                       </p>
-                      <p className="text-xs text-gray-500">{roleLabels[company.role]}</p>
+                      <p className="text-xs text-gray-400">{roleLabels[company.role]}</p>
                     </div>
                   </button>
                 ))}
               {canCreateCompany && (
                 <>
-                  <div className="border-t border-gray-100 my-1" />
+                  <div className="border-t border-[#062C2E] my-1" />
                   <Link
                     href="/dashboard/companies/new"
                     onClick={() => setIsCompanyDropdownOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-50"
+                    className="flex items-center gap-3 px-3 py-2 text-gray-300 hover:bg-white/5"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400">
+                    <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-gray-400">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                       </svg>
@@ -272,8 +290,8 @@ export default function DashboardSidebar({
                 className={cn(
                   'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
                   isActive(item.href, item.exact)
-                    ? 'bg-orange-50 text-orange-600'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                    ? 'bg-[#DFFB2D]/10 text-[#DFFB2D]'
+                    : 'text-gray-300 hover:bg-white/5 hover:text-white'
                 )}
               >
                 {item.icon}
@@ -285,28 +303,51 @@ export default function DashboardSidebar({
       </nav>
 
       {/* User Info */}
-      <div className="border-t border-gray-200 p-4">
+      <div className="border-t border-[#062C2E] p-4">
         <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
-            <span className="text-sm font-medium text-white">
+          <div className="h-9 w-9 rounded-full bg-[#DFFB2D] flex items-center justify-center">
+            <span className="text-sm font-semibold text-[#081F22]">
               {user.name?.charAt(0)?.toUpperCase() || 'U'}
             </span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900 truncate">
+            <p className="text-sm font-medium text-white truncate">
               {user.name || 'User'}
             </p>
-            <p className="text-xs text-gray-500 truncate">
+            <p className="text-xs text-gray-400 truncate">
               {user.email}
             </p>
           </div>
           <button
             onClick={() => signOut({ callbackUrl: '/login' })}
-            className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+            className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
             title="Sign out"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* AI Assistant */}
+      <div className="border-t border-[#062C2E] p-4">
+        <div className="bg-[#062C2E] rounded-xl p-4">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-8 h-8 rounded-lg bg-[#DFFB2D]/20 flex items-center justify-center">
+              <svg className="w-5 h-5 text-[#DFFB2D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+            </div>
+            <span className="text-sm font-medium text-white">AI Assistant</span>
+          </div>
+          <p className="text-xs text-gray-400 mb-3">
+            Ask ProcessX anything about your finances.
+          </p>
+          <button className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#DFFB2D] text-[#081F22] text-sm font-semibold rounded-lg hover:bg-[#e8fc5a] transition-colors">
+            Ask AI Assistant
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
             </svg>
           </button>
         </div>
@@ -317,11 +358,11 @@ export default function DashboardSidebar({
   return (
     <>
       {/* Mobile menu button */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-[#081F22] border-b border-[#062C2E]">
         <div className="flex items-center justify-between h-16 px-4">
           <button
             onClick={() => setIsMobileMenuOpen(true)}
-            className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+            className="p-2 rounded-lg text-gray-300 hover:bg-white/10 hover:text-white transition-colors"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
@@ -329,7 +370,7 @@ export default function DashboardSidebar({
           </button>
           <Link href="/dashboard">
             <Image
-              src="/ProcessX_Logo_full.webp"
+              src="/Px_Logo_white.webp"
               alt="ProcessX"
               width={120}
               height={32}
@@ -342,7 +383,7 @@ export default function DashboardSidebar({
       </div>
 
       {/* Desktop sidebar */}
-      <aside className="hidden lg:block fixed left-0 top-0 z-40 h-screen w-64 border-r border-gray-200 bg-white">
+      <aside className="hidden lg:block fixed left-0 top-0 z-40 h-screen w-64 border-r border-[#062C2E] bg-[#081F22]">
         <SidebarContent />
       </aside>
 
@@ -360,14 +401,14 @@ export default function DashboardSidebar({
         {/* Drawer */}
         <aside
           className={cn(
-            'lg:hidden fixed left-0 top-0 z-50 h-screen w-72 bg-white shadow-xl transform transition-transform duration-300 ease-in-out',
+            'lg:hidden fixed left-0 top-0 z-50 h-screen w-72 bg-[#081F22] shadow-xl transform transition-transform duration-300 ease-in-out',
             isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
           )}
         >
           {/* Close button */}
           <button
             onClick={() => setIsMobileMenuOpen(false)}
-            className="absolute top-4 right-4 p-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors z-10"
+            className="absolute top-4 right-4 p-2 rounded-lg text-gray-400 hover:bg-white/10 hover:text-white transition-colors z-10"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
