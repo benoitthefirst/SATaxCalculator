@@ -71,6 +71,7 @@ export default async function DashboardPage({
     incomeByCategory,
     monthlyIncome,
     monthlyExpenses,
+    recentDocuments,
   ] = await Promise.all([
     // Income totals for fiscal year
     prisma.income.aggregate({
@@ -194,6 +195,12 @@ export default async function DashboardPage({
       GROUP BY EXTRACT(MONTH FROM expense_date)
       ORDER BY month
     `,
+    // Recent documents
+    prisma.pendingDocument.findMany({
+      where: { company_id: companyId },
+      orderBy: { created_at: 'desc' },
+      take: 5,
+    }),
   ])
 
   // Get category names for expense breakdown
@@ -271,6 +278,13 @@ export default async function DashboardPage({
       color: '#22C55E',
     }
   })
+
+  // Calculate document stats for AI Processing Center
+  const documentsProcessing = recentDocuments.filter(d => d.status === 'PENDING').length
+  const documentsCompleted = recentDocuments.filter(d => d.status === 'APPROVED').length
+  const avgConfidence = recentDocuments.length > 0
+    ? (recentDocuments.reduce((sum, d) => sum + d.confidence, 0) / recentDocuments.length) * 100
+    : 0
 
   // Build recent activities from income and expenses
   const activities = [
@@ -507,9 +521,9 @@ export default async function DashboardPage({
 
         {/* AI Processing Center */}
         <AIProcessingCenter
-          documentsProcessing={0}
-          documentsCompleted={incomeCount + expenseCount}
-          averageConfidence={98.9}
+          documentsProcessing={documentsProcessing}
+          documentsCompleted={documentsCompleted}
+          averageConfidence={avgConfidence}
         />
       </div>
 
@@ -574,7 +588,7 @@ export default async function DashboardPage({
       </div>
 
       {/* Recent Documents */}
-      <RecentDocuments documents={[]} />
+      <RecentDocuments documents={recentDocuments} />
 
       {/* Recent Activity & Transactions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
