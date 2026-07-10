@@ -1,0 +1,8 @@
+export { default as HeroSection } from './HeroSection'
+export { default as AIProcessingSection } from './AIProcessingSection'
+export { default as DashboardPreviewSection } from './DashboardPreviewSection'
+export { default as ExpenseManagementSection } from './ExpenseManagementSection'
+export { default as SARSReportsSection } from './SARSReportsSection'
+export { default as ComparisonSection } from './ComparisonSection'
+export { default as TestimonialsSection } from './TestimonialsSection'
+export { default as CTASection } from './CTASection'
