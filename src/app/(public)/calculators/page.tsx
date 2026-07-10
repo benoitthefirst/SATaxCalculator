@@ -1,16 +1,22 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Calculator, Sparkles, AlertTriangle } from 'lucide-react';
+import { Calculator, Sparkles, AlertTriangle, Building2, Building, Wallet, Banknote, GraduationCap, BookOpen, FileText, ArrowRight } from 'lucide-react';
 import { SalariedTab } from '@/components/features/calculators/SalariedTab';
 import { BusinessTab } from '@/components/features/calculators/BusinessTab';
+import { calculators } from '@/content/calculators';
 import type {
   TaxBracket,
   ExpandedState,
   SalariedCalculationResult,
   BusinessCalculationResult
 } from '@/types';
+
+const iconMap: { [key: string]: React.ComponentType<{ className?: string }> } = {
+  Calculator, Building2, Building, Wallet, Banknote, GraduationCap, BookOpen, FileText,
+};
 
 const SATaxCalculator: React.FC = () => {
   const [calculatorType, setCalculatorType] = useState<'salaried' | 'business'>('salaried');
@@ -316,6 +322,91 @@ const SATaxCalculator: React.FC = () => {
             </p>
           </motion.div>
         </div>
+
+        {/* Calculator Landing Pages Section */}
+        <section className="py-20 bg-white">
+          <div className="container mx-auto px-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
+            >
+              <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+                Tax Guides & Calculators
+              </h2>
+              <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+                Learn how to calculate tax in South Africa with our comprehensive guides and free tools.
+              </p>
+            </motion.div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+              {calculators.map((calc, index) => {
+                const IconComponent = iconMap[calc.icon] || Calculator;
+
+                return (
+                  <motion.div
+                    key={calc.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                  >
+                    <Link href={`/calculators/${calc.slug}`}>
+                      <div className="bg-slate-50 rounded-2xl p-6 hover:bg-slate-100 transition-colors border border-slate-100 h-full group">
+                        <div className="w-12 h-12 bg-[#062C2E] rounded-xl flex items-center justify-center mb-4 group-hover:bg-[#E8FF3F] transition-colors">
+                          <IconComponent className="w-6 h-6 text-[#E8FF3F] group-hover:text-[#062C2E] transition-colors" />
+                        </div>
+                        <h3 className="text-lg font-bold text-slate-900 mb-2">{calc.name}</h3>
+                        <p className="text-slate-600 text-sm mb-4 line-clamp-2">{calc.subheadline}</p>
+                        <div className="flex items-center gap-2 text-[#062C2E] font-semibold text-sm">
+                          <span>Learn More</span>
+                          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </div>
+                      </div>
+                    </Link>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-20 bg-[#062C2E]">
+          <div className="container mx-auto px-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+              className="text-center max-w-3xl mx-auto"
+            >
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+                More Than Just a Calculator
+              </h2>
+              <p className="text-xl text-white/80 mb-8">
+                ProcessX automates your entire bookkeeping. Track expenses, manage invoices, calculate VAT, and generate SARS-ready reports automatically.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link
+                  href="/register"
+                  className="inline-flex items-center justify-center px-8 py-4 bg-[#E8FF3F] text-[#062C2E] font-bold rounded-xl hover:bg-[#d4eb39] transition-colors"
+                >
+                  Start Free Trial
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                </Link>
+                <Link
+                  href="/features"
+                  className="inline-flex items-center justify-center px-8 py-4 border-2 border-white/30 text-white font-bold rounded-xl hover:bg-white/10 transition-colors"
+                >
+                  See All Features
+                </Link>
+              </div>
+            </motion.div>
+          </div>
+        </section>
       </div>
     </>
   );
