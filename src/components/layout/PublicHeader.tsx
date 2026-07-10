@@ -14,6 +14,7 @@ export default function PublicHeader() {
 
   const navItems = [
     { href: '/features', label: 'Features' },
+    { href: '/solutions', label: 'Solutions' },
     { href: '/industries', label: 'Industries' },
     { href: '/pricing', label: 'Pricing' },
     { href: '/calculators', label: 'Tax Calculator' },
