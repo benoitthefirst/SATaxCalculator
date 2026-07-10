@@ -1,10 +1,16 @@
 import { MetadataRoute } from 'next'
 import { getCategories } from '@/lib/help'
+import { getAllIndustrySlugs } from '@/content/industries'
+import { getAllSolutionSlugs } from '@/content/solutions'
+import { getAllCalculatorSlugs } from '@/content/calculators'
 
 const BASE_URL = 'https://www.processx.co.za'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const categories = getCategories()
+  const industrySlugs = getAllIndustrySlugs()
+  const solutionSlugs = getAllSolutionSlugs()
+  const calculatorSlugs = getAllCalculatorSlugs()
 
   // Generate help centre URLs
   const helpCategoryUrls: MetadataRoute.Sitemap = categories.map((category) => ({
@@ -22,6 +28,30 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.6,
     }))
   )
+
+  // Generate industry page URLs
+  const industryUrls: MetadataRoute.Sitemap = industrySlugs.map((slug) => ({
+    url: `${BASE_URL}/industries/${slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly',
+    priority: 0.8,
+  }))
+
+  // Generate solution page URLs
+  const solutionUrls: MetadataRoute.Sitemap = solutionSlugs.map((slug) => ({
+    url: `${BASE_URL}/solutions/${slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly',
+    priority: 0.8,
+  }))
+
+  // Generate calculator page URLs
+  const calculatorUrls: MetadataRoute.Sitemap = calculatorSlugs.map((slug) => ({
+    url: `${BASE_URL}/calculators/${slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly',
+    priority: 0.8,
+  }))
 
   return [
     {
@@ -44,6 +74,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${BASE_URL}/calculators`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.9,
+    },
+    {
+      url: `${BASE_URL}/industries`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.9,
+    },
+    {
+      url: `${BASE_URL}/solutions`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.9,
@@ -93,5 +135,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // Help Centre categories and articles
     ...helpCategoryUrls,
     ...helpArticleUrls,
+    // Industry pages
+    ...industryUrls,
+    // Solution pages
+    ...solutionUrls,
+    // Calculator landing pages
+    ...calculatorUrls,
   ]
 }
