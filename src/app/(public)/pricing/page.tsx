@@ -1,14 +1,11 @@
+'use client'
+
 import Link from 'next/link'
-import { Metadata } from 'next'
-import { prisma } from '@/lib/db'
+import { motion } from 'framer-motion'
+import { Sparkles, Clock, Shield, HelpCircle, ArrowRight, Check } from 'lucide-react'
 import { PricingPlans } from './PricingPlans'
 
-export const metadata: Metadata = {
-  title: 'Pricing & Plans',
-  description: 'Simple, transparent pricing for South African businesses. Start free with our Starter plan and scale as you grow. No hidden fees, cancel anytime.',
-}
-
-// Static fallback plans when subscriptions are disabled
+// Static plans data
 const staticPlans = [
   {
     id: 'starter',
@@ -88,7 +85,7 @@ const staticPlans = [
     name: 'Enterprise',
     tier: 'ENTERPRISE',
     description: 'Custom solutions for large organizations.',
-    price_monthly: 0, // Custom pricing
+    price_monthly: 0,
     price_yearly: 0,
     features: [
       'Everything in Business',
@@ -119,7 +116,7 @@ const faqs = [
   },
   {
     question: 'Can I change plans at any time?',
-    answer: 'Absolutely. You can upgrade, downgrade, or cancel your plan at any time. When upgrading, you\'ll get immediate access to new features. When downgrading, the change takes effect at the end of your billing cycle.',
+    answer: "Absolutely. You can upgrade, downgrade, or cancel your plan at any time. When upgrading, you'll get immediate access to new features. When downgrading, the change takes effect at the end of your billing cycle.",
   },
   {
     question: 'Is my data secure?',
@@ -127,7 +124,7 @@ const faqs = [
   },
   {
     question: 'Do you offer discounts for annual billing?',
-    answer: 'Yes! Pay annually and get 2 months free. That\'s a 17% saving compared to monthly billing.',
+    answer: "Yes! Pay annually and get 2 months free. That's a 17% saving compared to monthly billing.",
   },
   {
     question: 'What payment methods do you accept?',
@@ -139,127 +136,166 @@ const faqs = [
   },
 ]
 
-async function getPlans() {
-  // Check if subscriptions are enabled
-  const setting = await prisma.systemSetting.findUnique({
-    where: { key: 'billing.subscriptions_enabled' },
-  })
-
-  const subscriptionsEnabled = setting?.value === true
-
-  if (!subscriptionsEnabled) {
-    return { enabled: false, plans: staticPlans }
-  }
-
-  // Get dynamic plans from database
-  const plans = await prisma.subscriptionPlan.findMany({
-    where: { is_active: true },
-    orderBy: { display_order: 'asc' },
-    select: {
-      id: true,
-      name: true,
-      tier: true,
-      description: true,
-      price_monthly: true,
-      price_yearly: true,
-      features: true,
-    },
-  })
-
-  if (plans.length === 0) {
-    return { enabled: false, plans: staticPlans }
-  }
-
-  return {
-    enabled: true,
-    plans: plans.map(plan => ({
-      ...plan,
-      price_monthly: Number(plan.price_monthly),
-      price_yearly: Number(plan.price_yearly),
-      features: plan.features as string[],
-    })),
-  }
-}
-
-export default async function PricingPage() {
-  const { enabled, plans } = await getPlans()
-
+export default function PricingPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#F8FAFC]">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-blue-50 py-24">
-        <div className="mx-auto max-w-7xl px-6">
+      <section className="relative overflow-hidden bg-[#062C2E] py-24">
+        {/* Background effects */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#062C2E] via-[#081F22] to-[#062C2E]" />
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-[#E8FF3F]/5 to-transparent" />
+
+        <div className="relative mx-auto max-w-7xl px-6">
           <div className="text-center">
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="inline-flex items-center gap-2 rounded-full bg-[#E8FF3F]/10 border border-[#E8FF3F]/20 px-4 py-2 mb-6"
+            >
+              <Sparkles className="w-4 h-4 text-[#E8FF3F]" />
+              <span className="text-sm font-medium text-[#E8FF3F]">Simple Pricing</span>
+            </motion.div>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl"
+            >
               Simple, transparent pricing
-            </h1>
-            <p className="mt-4 text-lg text-gray-600">
-              Start free and scale as your business grows. No hidden fees.
-            </p>
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="mt-6 text-lg text-gray-400 max-w-2xl mx-auto"
+            >
+              Start free and scale as your business grows. No hidden fees, cancel anytime.
+            </motion.p>
           </div>
         </div>
       </section>
 
       {/* Pricing Cards */}
-      <PricingPlans plans={plans} subscriptionsEnabled={enabled} />
+      <PricingPlans plans={staticPlans} subscriptionsEnabled={false} />
 
       {/* Annual Billing Banner */}
-      <section className="py-12 bg-gray-50">
+      <section className="py-12 bg-white">
         <div className="mx-auto max-w-4xl px-6 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full bg-green-100 px-4 py-2 text-green-800">
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span className="text-sm font-medium">Save 17% with annual billing - Get 2 months free!</span>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-3 rounded-2xl bg-[#E8FF3F]/10 border border-[#E8FF3F]/30 px-6 py-4"
+          >
+            <div className="w-10 h-10 rounded-full bg-[#E8FF3F] flex items-center justify-center">
+              <Clock className="w-5 h-5 text-[#062C2E]" />
+            </div>
+            <span className="text-base font-medium text-[#062C2E]">
+              Save 17% with annual billing - Get 2 months free!
+            </span>
+          </motion.div>
         </div>
       </section>
 
       {/* FAQ Section */}
-      <section className="py-24">
+      <section className="py-24 bg-[#F8FAFC]">
         <div className="mx-auto max-w-4xl px-6">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
-            Frequently Asked Questions
-          </h2>
-          <div className="space-y-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-12"
+          >
+            <div className="inline-flex items-center gap-2 rounded-full bg-[#062C2E]/5 border border-[#062C2E]/10 px-4 py-2 mb-6">
+              <HelpCircle className="w-4 h-4 text-[#062C2E]" />
+              <span className="text-sm font-medium text-[#062C2E]">FAQ</span>
+            </div>
+            <h2 className="text-3xl font-bold text-gray-900">
+              Frequently Asked Questions
+            </h2>
+          </motion.div>
+
+          <div className="space-y-4">
             {faqs.map((faq, index) => (
-              <div
+              <motion.div
                 key={index}
-                className="rounded-2xl border border-gray-200 p-6 hover:border-blue-200 transition-colors"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                className="rounded-2xl bg-white border border-gray-100 p-6 hover:border-[#E8FF3F]/50 hover:shadow-lg transition-all"
               >
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
                   {faq.question}
                 </h3>
                 <p className="text-gray-600">{faq.answer}</p>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 bg-gradient-to-br from-blue-600 to-blue-700">
-        <div className="mx-auto max-w-4xl px-6 text-center">
-          <h2 className="text-3xl font-bold text-white">
-            Ready to simplify your bookkeeping?
-          </h2>
-          <p className="mt-4 text-lg text-blue-100">
-            Start your free trial today. No credit card required.
-          </p>
-          <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/register"
-              className="rounded-2xl bg-white px-8 py-4 text-base font-semibold text-blue-600 hover:bg-blue-50 transition-all"
-            >
-              Start Free Trial
-            </Link>
-            <Link
-              href="/contact"
-              className="rounded-2xl border-2 border-white px-8 py-4 text-base font-semibold text-white hover:bg-white/10 transition-all"
-            >
-              Talk to Sales
-            </Link>
-          </div>
+      <section className="py-24 bg-[#062C2E] relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#062C2E] via-[#081F22] to-[#062C2E]" />
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-[#E8FF3F]/5 to-transparent" />
+
+        <div className="relative mx-auto max-w-4xl px-6 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+              Ready to simplify your bookkeeping?
+            </h2>
+            <p className="text-lg text-gray-400 mb-8">
+              Start your free trial today. No credit card required.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                href="/register"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#E8FF3F] px-8 py-4 text-base font-semibold text-[#062C2E] hover:bg-[#d4eb38] transition-all shadow-lg shadow-[#E8FF3F]/20"
+              >
+                Start Free Trial
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+              <Link
+                href="/contact"
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-gray-600 bg-transparent px-8 py-4 text-base font-semibold text-white hover:bg-white/5 transition-all"
+              >
+                Talk to Sales
+              </Link>
+            </div>
+          </motion.div>
+
+          {/* Trust indicators */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="mt-12 flex flex-wrap justify-center gap-6 md:gap-10"
+          >
+            {[
+              { icon: <Clock className="w-5 h-5" />, text: 'Setup in 2 minutes' },
+              { icon: <Shield className="w-5 h-5" />, text: 'Bank-level security' },
+              { icon: <Check className="w-5 h-5" />, text: 'No credit card required' },
+            ].map((item) => (
+              <div key={item.text} className="flex items-center gap-2 text-gray-400">
+                <div className="w-8 h-8 rounded-full bg-[#E8FF3F]/10 flex items-center justify-center text-[#E8FF3F]">
+                  {item.icon}
+                </div>
+                <span className="text-sm">{item.text}</span>
+              </div>
+            ))}
+          </motion.div>
         </div>
       </section>
     </div>

@@ -38,7 +38,7 @@ export default async function HomePage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-[#062C2E]">
-      <PublicHeader variant="dark" />
+      <PublicHeader />
       <main className="flex-1">
         {/* Hero Section */}
         <HeroSection isLoggedIn={!!session} />

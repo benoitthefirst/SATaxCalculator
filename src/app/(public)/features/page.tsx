@@ -1,20 +1,32 @@
-import Link from 'next/link'
-import { Metadata } from 'next'
+'use client'
 
-export const metadata: Metadata = {
-  title: 'Features - ProcessX Dashboard',
-  description: 'Manage and keep track of your sales, transactions, expenses, and more on ProcessX. Powerful analytics, streamlined tracking, and SARS-compliant reports.',
-}
+import Link from 'next/link'
+import { motion } from 'framer-motion'
+import {
+  Cpu,
+  LayoutDashboard,
+  Receipt,
+  DollarSign,
+  Car,
+  Building2,
+  FileText,
+  Calculator,
+  Users,
+  Download,
+  Briefcase,
+  Code,
+  Check,
+  X,
+  Sparkles,
+  ArrowRight,
+} from 'lucide-react'
 
 const mainFeatures = [
   {
     title: 'AI Document Analyzer',
-    description: 'Stop typing invoices manually. Our AI extracts transactions from bank statements, invoices, and receipts automatically. Spend more time advising clients, less time on data entry.',
-    icon: (
-      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-      </svg>
-    ),
+    description:
+      "Stop typing invoices manually. Our AI extracts transactions from bank statements, invoices, and receipts automatically. Spend more time advising clients, less time on data entry.",
+    icon: <Cpu className="w-8 h-8" />,
     features: [
       'Upload bank statements & invoices',
       'AI extracts transactions automatically',
@@ -22,16 +34,12 @@ const mainFeatures = [
       'Free your team for advisory work',
       'Save 15+ hours per month',
     ],
-    color: 'purple',
   },
   {
     title: 'Smart Dashboard',
-    description: 'Get a bird\'s eye view of your entire business. Real-time metrics, beautiful charts, and actionable insights all in one place.',
-    icon: (
-      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
-      </svg>
-    ),
+    description:
+      "Get a bird's eye view of your entire business. Real-time metrics, beautiful charts, and actionable insights all in one place.",
+    icon: <LayoutDashboard className="w-8 h-8" />,
     features: [
       'Real-time financial overview',
       'Income vs expense tracking',
@@ -39,16 +47,12 @@ const mainFeatures = [
       'Quick action shortcuts',
       'Tax year progress tracking',
     ],
-    color: 'blue',
   },
   {
     title: 'Expense Tracking',
-    description: 'Never lose track of a business expense again. Upload receipts, categorize spending, and track recurring costs automatically.',
-    icon: (
-      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-      </svg>
-    ),
+    description:
+      'Never lose track of a business expense again. Upload receipts, categorize spending, and track recurring costs automatically.',
+    icon: <Receipt className="w-8 h-8" />,
     features: [
       'Receipt photo uploads',
       'Expense categories & tags',
@@ -56,16 +60,12 @@ const mainFeatures = [
       'VAT tracking support',
       'CSV export for SARS',
     ],
-    color: 'orange',
   },
   {
     title: 'Income Management',
-    description: 'Track every rand that comes into your business. Multiple income streams, client tracking, and payment monitoring made simple.',
-    icon: (
-      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
+    description:
+      'Track every rand that comes into your business. Multiple income streams, client tracking, and payment monitoring made simple.',
+    icon: <DollarSign className="w-8 h-8" />,
     features: [
       'Multiple income categories',
       'Client/source tracking',
@@ -73,7 +73,6 @@ const mainFeatures = [
       'Income analytics',
       'VAT on income support',
     ],
-    color: 'green',
   },
 ]
 
@@ -81,74 +80,42 @@ const additionalFeatures = [
   {
     title: 'Vehicle Logbook',
     description: 'Track business vs personal travel for SARS compliance. Calculate allowable deductions automatically.',
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-      </svg>
-    ),
+    icon: <Car className="w-6 h-6" />,
   },
   {
     title: 'Asset Management',
     description: 'Track business assets with automatic depreciation calculations for tax deductions.',
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-      </svg>
-    ),
+    icon: <Building2 className="w-6 h-6" />,
   },
   {
     title: 'Financial Reports',
     description: 'Generate comprehensive profit & loss statements, tax summaries, and deduction reports.',
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-      </svg>
-    ),
+    icon: <FileText className="w-6 h-6" />,
   },
   {
     title: 'Tax Computation',
-    description: 'Built-in tax calculators with 2025/26 tax brackets. See your tax liability in real-time.',
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-      </svg>
-    ),
+    description: "Built-in tax calculators with 2025/26 tax brackets. See your tax liability in real-time.",
+    icon: <Calculator className="w-6 h-6" />,
   },
   {
     title: 'Team Collaboration',
     description: 'Invite team members with role-based access. Collaborate on finances with your accountant or staff.',
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-      </svg>
-    ),
+    icon: <Users className="w-6 h-6" />,
   },
   {
     title: 'CSV Exports',
     description: 'Export all your data in SARS-compatible formats. Ready for your accountant.',
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-      </svg>
-    ),
+    icon: <Download className="w-6 h-6" />,
   },
   {
     title: 'Multi-Company',
     description: 'Manage multiple businesses from one account. Perfect for serial entrepreneurs.',
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-      </svg>
-    ),
+    icon: <Briefcase className="w-6 h-6" />,
   },
   {
     title: 'API Access',
     description: 'Integrate ProcessX with your existing tools. Build custom workflows with our developer API.',
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-      </svg>
-    ),
+    icon: <Code className="w-6 h-6" />,
   },
 ]
 
@@ -173,29 +140,63 @@ export default function FeaturesPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="bg-[#fbfbfd] py-20 sm:py-28">
-        <div className="mx-auto max-w-7xl px-6">
+      <section className="relative bg-[#062C2E] py-24 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#062C2E] via-[#081F22] to-[#062C2E]" />
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-[#E8FF3F]/5 to-transparent" />
+
+        <div className="relative mx-auto max-w-7xl px-6">
           <div className="text-center">
-            <h1 className="text-4xl font-semibold tracking-tight text-gray-900 sm:text-5xl">
-              Everything you need to run your business
-            </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-600">
-              Powerful features designed for South African entrepreneurs. From expense tracking to tax compliance, ProcessX has you covered.
-            </p>
-            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="inline-flex items-center gap-2 rounded-full bg-[#E8FF3F]/10 border border-[#E8FF3F]/20 px-4 py-2 mb-6"
+            >
+              <Sparkles className="w-4 h-4 text-[#E8FF3F]" />
+              <span className="text-sm font-medium text-[#E8FF3F]">Powerful Features</span>
+            </motion.div>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl"
+            >
+              Everything you need to
+              <br />
+              <span className="text-[#E8FF3F]">run your business</span>
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="mx-auto mt-6 max-w-2xl text-lg text-gray-400"
+            >
+              Powerful features designed for South African entrepreneurs. From expense tracking to tax compliance,
+              ProcessX has you covered.
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
+            >
               <Link
                 href="/register"
-                className="w-full sm:w-auto rounded-full bg-blue-600 px-8 py-4 text-base font-medium text-white shadow-sm hover:bg-blue-700 transition-all"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-[#E8FF3F] px-8 py-4 text-base font-semibold text-[#062C2E] hover:bg-[#d4eb38] transition-all"
               >
                 Start Free Trial
+                <ArrowRight className="w-5 h-5" />
               </Link>
               <Link
                 href="/pricing"
-                className="w-full sm:w-auto rounded-full bg-gray-100 px-8 py-4 text-base font-medium text-gray-900 hover:bg-gray-200 transition-all"
+                className="w-full sm:w-auto inline-flex items-center justify-center rounded-full border border-gray-600 px-8 py-4 text-base font-medium text-white hover:bg-white/5 transition-all"
               >
                 View Pricing
               </Link>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -205,86 +206,194 @@ export default function FeaturesPage() {
         <div className="mx-auto max-w-7xl px-6">
           <div className="space-y-24">
             {mainFeatures.map((feature, index) => (
-              <div
+              <motion.div
                 key={feature.title}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
                 className={`flex flex-col gap-12 items-center ${
                   index % 2 === 1 ? 'lg:flex-row-reverse' : 'lg:flex-row'
                 }`}
               >
                 <div className="flex-1 max-w-xl">
-                  <div className={`inline-flex h-16 w-16 items-center justify-center rounded-2xl mb-6 ${
-                    feature.color === 'blue' ? 'bg-blue-100 text-blue-600' :
-                    feature.color === 'green' ? 'bg-green-100 text-green-600' :
-                    feature.color === 'purple' ? 'bg-purple-100 text-purple-600' :
-                    'bg-orange-100 text-orange-600'
-                  }`}>
+                  <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-[#E8FF3F]/10 text-[#062C2E] mb-6">
                     {feature.icon}
                   </div>
-                  <h2 className="text-3xl font-semibold text-gray-900 mb-4">
-                    {feature.title}
-                  </h2>
-                  <p className="text-lg text-gray-600 mb-8">
-                    {feature.description}
-                  </p>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-4">{feature.title}</h2>
+                  <p className="text-lg text-gray-600 mb-8">{feature.description}</p>
                   <ul className="space-y-3">
                     {feature.features.map((item) => (
                       <li key={item} className="flex items-center gap-3 text-gray-700">
-                        <svg className="w-5 h-5 text-blue-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
+                        <div className="w-5 h-5 rounded-full bg-[#E8FF3F]/20 flex items-center justify-center">
+                          <Check className="w-3 h-3 text-[#062C2E]" />
+                        </div>
                         {item}
                       </li>
                     ))}
                   </ul>
                 </div>
                 <div className="flex-1 w-full max-w-xl">
-                  <div className="rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 p-4 shadow-lg">
-                    <div className="rounded-xl bg-white aspect-[4/3] flex items-center justify-center">
-                      <div className={`h-20 w-20 rounded-2xl flex items-center justify-center ${
-                        feature.color === 'blue' ? 'bg-blue-100 text-blue-600' :
-                        feature.color === 'green' ? 'bg-green-100 text-green-600' :
-                        feature.color === 'purple' ? 'bg-purple-100 text-purple-600' :
-                        'bg-orange-100 text-orange-600'
-                      }`}>
-                        {feature.icon}
+                  <div className="rounded-3xl bg-[#F8FAFC] p-6 border border-gray-100">
+                    {/* AI Document Analyzer Visual */}
+                    {index === 0 && (
+                      <div className="rounded-2xl bg-white p-5 shadow-sm border border-gray-100 space-y-4">
+                        <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
+                          <div className="w-10 h-10 rounded-lg bg-[#E8FF3F]/10 flex items-center justify-center">
+                            <Cpu className="w-5 h-5 text-[#062C2E]" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">bank_statement.pdf</p>
+                            <p className="text-xs text-gray-500">Analyzing...</p>
+                          </div>
+                        </div>
+                        <div className="space-y-3">
+                          {[
+                            { label: 'Transactions Found', value: '47' },
+                            { label: 'Total Credits', value: 'R 128,500.00' },
+                            { label: 'Total Debits', value: 'R 45,200.00' },
+                          ].map((item) => (
+                            <div key={item.label} className="flex justify-between items-center py-2 px-3 bg-[#F8FAFC] rounded-lg">
+                              <span className="text-sm text-gray-600">{item.label}</span>
+                              <span className="text-sm font-semibold text-gray-900">{item.value}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="flex items-center gap-2 p-3 bg-[#E8FF3F]/10 rounded-lg">
+                          <Sparkles className="w-4 h-4 text-[#062C2E]" />
+                          <span className="text-sm text-[#062C2E]">AI Confidence: 99%</span>
+                        </div>
                       </div>
-                    </div>
+                    )}
+
+                    {/* Smart Dashboard Visual */}
+                    {index === 1 && (
+                      <div className="rounded-2xl bg-white p-5 shadow-sm border border-gray-100">
+                        <div className="grid grid-cols-2 gap-3 mb-4">
+                          {[
+                            { label: 'Income', value: 'R 245K', color: 'green' },
+                            { label: 'Expenses', value: 'R 89K', color: 'red' },
+                            { label: 'Tax', value: 'R 42K', color: 'blue' },
+                            { label: 'Net', value: 'R 114K', color: 'purple' },
+                          ].map((stat) => (
+                            <div key={stat.label} className="bg-[#F8FAFC] rounded-xl p-3">
+                              <p className="text-xs text-gray-500">{stat.label}</p>
+                              <p className="text-lg font-bold text-gray-900">{stat.value}</p>
+                              <div className="mt-2 h-6 flex items-end gap-0.5">
+                                {[40, 65, 45, 80, 55, 70].map((h, i) => (
+                                  <div key={i} className={`flex-1 rounded-t-sm ${
+                                    stat.color === 'green' ? 'bg-green-200' :
+                                    stat.color === 'red' ? 'bg-red-200' :
+                                    stat.color === 'blue' ? 'bg-blue-200' : 'bg-purple-200'
+                                  }`} style={{ height: `${h}%` }} />
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="p-3 bg-[#062C2E] rounded-xl">
+                          <div className="flex items-center gap-2 text-[#E8FF3F] text-sm">
+                            <Sparkles className="w-4 h-4" />
+                            <span>Save R 8,500 with home office deduction</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Expense Tracking Visual */}
+                    {index === 2 && (
+                      <div className="rounded-2xl bg-white p-5 shadow-sm border border-gray-100 space-y-3">
+                        {[
+                          { vendor: 'Engen Fuel', amount: 'R 1,250.00', category: 'Fuel', date: 'Today' },
+                          { vendor: 'Makro Office', amount: 'R 3,450.00', category: 'Office', date: 'Yesterday' },
+                          { vendor: 'Vodacom', amount: 'R 899.00', category: 'Telecom', date: '2 days ago' },
+                        ].map((expense) => (
+                          <div key={expense.vendor} className="flex items-center justify-between p-3 bg-[#F8FAFC] rounded-xl">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center border border-gray-100">
+                                <Receipt className="w-5 h-5 text-gray-400" />
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">{expense.vendor}</p>
+                                <p className="text-xs text-gray-500">{expense.category} • {expense.date}</p>
+                              </div>
+                            </div>
+                            <span className="text-sm font-semibold text-gray-900">{expense.amount}</span>
+                          </div>
+                        ))}
+                        <button className="w-full py-3 bg-[#E8FF3F] rounded-xl text-sm font-semibold text-[#062C2E] flex items-center justify-center gap-2">
+                          <Receipt className="w-4 h-4" />
+                          Add Expense
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Income Management Visual */}
+                    {index === 3 && (
+                      <div className="rounded-2xl bg-white p-5 shadow-sm border border-gray-100 space-y-3">
+                        {[
+                          { client: 'ABC Corp', amount: 'R 45,000.00', status: 'Received', color: 'green' },
+                          { client: 'XYZ Ltd', amount: 'R 28,500.00', status: 'Pending', color: 'yellow' },
+                          { client: 'Tech Solutions', amount: 'R 65,000.00', status: 'Received', color: 'green' },
+                        ].map((income) => (
+                          <div key={income.client} className="flex items-center justify-between p-3 bg-[#F8FAFC] rounded-xl">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-lg bg-[#E8FF3F]/10 flex items-center justify-center">
+                                <DollarSign className="w-5 h-5 text-[#062C2E]" />
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">{income.client}</p>
+                                <span className={`text-xs px-2 py-0.5 rounded-full ${
+                                  income.color === 'green' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                                }`}>{income.status}</span>
+                              </div>
+                            </div>
+                            <span className="text-sm font-semibold text-green-600">+{income.amount}</span>
+                          </div>
+                        ))}
+                        <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                          <span className="text-sm text-gray-600">Total Income</span>
+                          <span className="text-lg font-bold text-gray-900">R 138,500.00</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
       {/* Additional Features Grid */}
-      <section className="py-24 bg-[#fbfbfd]">
+      <section className="py-24 bg-[#F8FAFC]">
         <div className="mx-auto max-w-7xl px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-semibold text-gray-900">
-              And so much more
-            </h2>
-            <p className="mt-4 text-lg text-gray-600">
-              Every tool you need to stay organized and compliant
-            </p>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">And so much more</h2>
+            <p className="mt-4 text-lg text-gray-600">Every tool you need to stay organized and compliant</p>
+          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {additionalFeatures.map((feature) => (
-              <div
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {additionalFeatures.map((feature, index) => (
+              <motion.div
                 key={feature.title}
-                className="p-8 rounded-3xl bg-white shadow-sm hover:shadow-lg transition-all"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.05 }}
+                className="p-6 rounded-2xl bg-white border border-gray-100 hover:shadow-lg hover:border-[#E8FF3F]/30 transition-all group"
               >
-                <div className="h-12 w-12 rounded-2xl bg-gray-100 flex items-center justify-center text-gray-600 mb-6">
+                <div className="h-12 w-12 rounded-xl bg-[#E8FF3F]/10 flex items-center justify-center text-[#062C2E] mb-4 group-hover:bg-[#E8FF3F]/20 transition-colors">
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                  {feature.title}
-                </h3>
-                <p className="text-gray-600">
-                  {feature.description}
-                </p>
-              </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">{feature.title}</h3>
+                <p className="text-sm text-gray-600">{feature.description}</p>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -293,101 +402,90 @@ export default function FeaturesPage() {
       {/* Feature Comparison Table */}
       <section className="py-24">
         <div className="mx-auto max-w-7xl px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-semibold text-gray-900">
-              Compare plans
-            </h2>
-            <p className="mt-4 text-lg text-gray-600">
-              Find the perfect plan for your business needs
-            </p>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">Compare plans</h2>
+            <p className="mt-4 text-lg text-gray-600">Find the perfect plan for your business needs</p>
+          </motion.div>
 
-          <div className="overflow-x-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="overflow-x-auto rounded-2xl border border-gray-200"
+          >
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="py-4 text-left text-sm font-semibold text-gray-900 min-w-[180px]">Feature</th>
-                  <th className="py-4 text-center text-sm font-semibold text-gray-900 min-w-[100px]">Starter</th>
-                  <th className="py-4 text-center text-sm font-semibold text-gray-900 min-w-[100px]">Basic</th>
-                  <th className="py-4 text-center text-sm font-semibold text-blue-600 min-w-[100px]">Professional</th>
-                  <th className="py-4 text-center text-sm font-semibold text-gray-900 min-w-[100px]">Business</th>
-                  <th className="py-4 text-center text-sm font-semibold text-gray-900 min-w-[100px]">Enterprise</th>
+                <tr className="bg-[#062C2E]">
+                  <th className="py-4 px-4 text-left text-sm font-semibold text-white min-w-[180px]">Feature</th>
+                  <th className="py-4 px-4 text-center text-sm font-semibold text-white min-w-[100px]">Starter</th>
+                  <th className="py-4 px-4 text-center text-sm font-semibold text-white min-w-[100px]">Basic</th>
+                  <th className="py-4 px-4 text-center text-sm font-semibold text-[#E8FF3F] min-w-[100px] bg-[#E8FF3F]/10">
+                    Professional
+                  </th>
+                  <th className="py-4 px-4 text-center text-sm font-semibold text-white min-w-[100px]">Business</th>
+                  <th className="py-4 px-4 text-center text-sm font-semibold text-white min-w-[100px]">Enterprise</th>
                 </tr>
               </thead>
               <tbody>
                 {comparisonTable.map((row, index) => (
-                  <tr key={row.feature} className={index % 2 === 0 ? 'bg-gray-50' : ''}>
-                    <td className="py-4 px-4 text-sm text-gray-900">{row.feature}</td>
-                    <td className="py-4 text-center">
+                  <tr key={row.feature} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
+                    <td className="py-4 px-4 text-sm font-medium text-gray-900">{row.feature}</td>
+                    <td className="py-4 px-4 text-center">
                       {typeof row.starter === 'boolean' ? (
                         row.starter ? (
-                          <svg className="w-5 h-5 text-green-600 mx-auto" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
+                          <Check className="w-5 h-5 text-green-600 mx-auto" />
                         ) : (
-                          <svg className="w-5 h-5 text-gray-300 mx-auto" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                          </svg>
+                          <X className="w-5 h-5 text-gray-300 mx-auto" />
                         )
                       ) : (
                         <span className="text-sm text-gray-600">{row.starter}</span>
                       )}
                     </td>
-                    <td className="py-4 text-center">
+                    <td className="py-4 px-4 text-center">
                       {typeof row.basic === 'boolean' ? (
                         row.basic ? (
-                          <svg className="w-5 h-5 text-green-600 mx-auto" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
+                          <Check className="w-5 h-5 text-green-600 mx-auto" />
                         ) : (
-                          <svg className="w-5 h-5 text-gray-300 mx-auto" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                          </svg>
+                          <X className="w-5 h-5 text-gray-300 mx-auto" />
                         )
                       ) : (
                         <span className="text-sm text-gray-600">{row.basic}</span>
                       )}
                     </td>
-                    <td className="py-4 text-center bg-blue-50/50">
+                    <td className="py-4 px-4 text-center bg-[#E8FF3F]/5">
                       {typeof row.professional === 'boolean' ? (
                         row.professional ? (
-                          <svg className="w-5 h-5 text-blue-600 mx-auto" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
+                          <Check className="w-5 h-5 text-[#062C2E] mx-auto" />
                         ) : (
-                          <svg className="w-5 h-5 text-gray-300 mx-auto" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                          </svg>
+                          <X className="w-5 h-5 text-gray-300 mx-auto" />
                         )
                       ) : (
-                        <span className="text-sm font-medium text-blue-600">{row.professional}</span>
+                        <span className="text-sm font-medium text-[#062C2E]">{row.professional}</span>
                       )}
                     </td>
-                    <td className="py-4 text-center">
+                    <td className="py-4 px-4 text-center">
                       {typeof row.business === 'boolean' ? (
                         row.business ? (
-                          <svg className="w-5 h-5 text-green-600 mx-auto" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
+                          <Check className="w-5 h-5 text-green-600 mx-auto" />
                         ) : (
-                          <svg className="w-5 h-5 text-gray-300 mx-auto" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                          </svg>
+                          <X className="w-5 h-5 text-gray-300 mx-auto" />
                         )
                       ) : (
                         <span className="text-sm text-gray-600">{row.business}</span>
                       )}
                     </td>
-                    <td className="py-4 text-center bg-gray-900/5">
+                    <td className="py-4 px-4 text-center">
                       {typeof row.enterprise === 'boolean' ? (
                         row.enterprise ? (
-                          <svg className="w-5 h-5 text-green-600 mx-auto" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
+                          <Check className="w-5 h-5 text-green-600 mx-auto" />
                         ) : (
-                          <svg className="w-5 h-5 text-gray-300 mx-auto" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                          </svg>
+                          <X className="w-5 h-5 text-gray-300 mx-auto" />
                         )
                       ) : (
                         <span className="text-sm font-medium text-gray-900">{row.enterprise}</span>
@@ -397,45 +495,48 @@ export default function FeaturesPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </motion.div>
 
           <div className="mt-12 text-center">
             <Link
               href="/pricing"
-              className="inline-flex items-center gap-2 text-blue-600 font-medium hover:text-blue-700"
+              className="inline-flex items-center gap-2 text-[#062C2E] font-medium hover:text-[#081F22]"
             >
               View full pricing details
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
+              <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 bg-gray-900">
+      <section className="py-24 bg-[#062C2E]">
         <div className="mx-auto max-w-7xl px-6 text-center">
-          <h2 className="text-3xl font-semibold text-white sm:text-4xl">
-            Ready to get started?
-          </h2>
-          <p className="mt-4 text-lg text-gray-400">
-            Join thousands of South African businesses already using ProcessX
-          </p>
-          <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/register"
-              className="rounded-full bg-blue-600 px-8 py-4 text-base font-medium text-white shadow-sm hover:bg-blue-700 transition-all"
-            >
-              Start Free Trial
-            </Link>
-            <Link
-              href="/contact"
-              className="rounded-full bg-white/10 px-8 py-4 text-base font-medium text-white hover:bg-white/20 transition-all"
-            >
-              Contact Sales
-            </Link>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-3xl font-bold text-white sm:text-4xl">Ready to get started?</h2>
+            <p className="mt-4 text-lg text-gray-400">
+              Join thousands of South African businesses already using ProcessX
+            </p>
+            <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                href="/register"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#E8FF3F] px-8 py-4 text-base font-semibold text-[#062C2E] hover:bg-[#d4eb38] transition-all"
+              >
+                Start Free Trial
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+              <Link
+                href="/contact"
+                className="rounded-full border border-gray-600 px-8 py-4 text-base font-medium text-white hover:bg-white/5 transition-all"
+              >
+                Contact Sales
+              </Link>
+            </div>
+          </motion.div>
         </div>
       </section>
     </div>
