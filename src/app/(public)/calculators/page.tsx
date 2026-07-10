@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Calculator, Sparkles, AlertTriangle } from 'lucide-react';
 import { SalariedTab } from '@/components/features/calculators/SalariedTab';
 import { BusinessTab } from '@/components/features/calculators/BusinessTab';
 import type {
@@ -37,7 +39,6 @@ const SATaxCalculator: React.FC = () => {
   ];
 
   const STANDARD_DEDUCTION = 87300;
-  const THRESHOLD_UNDER_65 = 87300;
   const TAX_RELIEF_UNDER_65 = 17235;
   const TAX_RELIEF_65_75 = 29940;
   const TAX_RELIEF_75_PLUS = 36360;
@@ -46,13 +47,13 @@ const SATaxCalculator: React.FC = () => {
   // Calculate tax for salaried individuals
   const calculateSalariedTax = (): SalariedCalculationResult => {
     const taxableIncome = Math.max(0, grossIncome - STANDARD_DEDUCTION);
-    
+
     let tax = 0;
     let previousThreshold = 0;
 
     for (const bracket of TAX_BRACKETS) {
       if (taxableIncome <= previousThreshold) break;
-      
+
       const taxableInThisBracket = Math.min(
         taxableIncome - previousThreshold,
         bracket.threshold - previousThreshold
@@ -193,85 +194,128 @@ const SATaxCalculator: React.FC = () => {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black p-4 md:p-8">
-        <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">
+      <div className="min-h-screen bg-[#F8FAFC]">
+        {/* Hero Section */}
+        <section className="relative overflow-hidden bg-[#062C2E] py-16 md:py-24">
+          <div className="absolute inset-0 bg-gradient-to-br from-[#062C2E] via-[#081F22] to-[#062C2E]" />
+          <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-[#E8FF3F]/5 to-transparent" />
+
+          <div className="relative mx-auto max-w-4xl px-6 text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="inline-flex items-center gap-2 rounded-full bg-[#E8FF3F]/10 border border-[#E8FF3F]/20 px-4 py-2 mb-6"
+            >
+              <Calculator className="w-4 h-4 text-[#E8FF3F]" />
+              <span className="text-sm font-medium text-[#E8FF3F]">Free Tax Calculator</span>
+            </motion.div>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="text-3xl md:text-5xl font-bold text-white mb-4"
+            >
               South African Tax Calculator
-            </h1>
-            <p className="text-gray-300">
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="text-gray-400 text-lg"
+            >
               Calculate your tax and find ways to save. For salaried professionals and business owners.
-            </p>
+            </motion.p>
           </div>
+        </section>
 
-        {/* Tabs */}
-        <div className="flex gap-2 mb-6 bg-gray-700 rounded-lg p-1 w-fit mx-auto">
-          <button
-            onClick={() => setCalculatorType('salaried')}
-            className={`px-6 py-2 rounded-md font-medium transition ${
-              calculatorType === 'salaried'
-                ? 'bg-red-500 text-white'
-                : 'text-gray-300 hover:text-white'
-            }`}
+        {/* Calculator Section */}
+        <div className="max-w-4xl mx-auto px-6 -mt-8 relative z-10 pb-16">
+          {/* Tabs */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="flex gap-1 mb-6 bg-[#062C2E]/5 border border-[#062C2E]/10 rounded-full p-1 w-fit mx-auto"
           >
-            Salaried Employee
-          </button>
-          <button
-            onClick={() => setCalculatorType('business')}
-            className={`px-6 py-2 rounded-md font-medium transition ${
-              calculatorType === 'business'
-                ? 'bg-red-500 text-white'
-                : 'text-gray-300 hover:text-white'
-            }`}
+            <button
+              onClick={() => setCalculatorType('salaried')}
+              className={`px-6 py-2.5 rounded-full font-medium transition-all ${
+                calculatorType === 'salaried'
+                  ? 'bg-[#062C2E] text-white'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Salaried Employee
+            </button>
+            <button
+              onClick={() => setCalculatorType('business')}
+              className={`px-6 py-2.5 rounded-full font-medium transition-all ${
+                calculatorType === 'business'
+                  ? 'bg-[#062C2E] text-white'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Business Owner
+            </button>
+          </motion.div>
+
+          {/* Calculator Content */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-8"
           >
-            Business Owner
-          </button>
-        </div>
+            {calculatorType === 'salaried' ? (
+              <SalariedTab
+                grossIncome={grossIncome}
+                setGrossIncome={setGrossIncome}
+                age={age}
+                setAge={setAge}
+                medicalScheme={medicalScheme}
+                setMedicalScheme={setMedicalScheme}
+                expanded={expanded}
+                setExpanded={setExpanded}
+                salariedCalc={salariedCalc}
+                formatCurrency={formatCurrency}
+              />
+            ) : (
+              <BusinessTab
+                businessRevenue={businessRevenue}
+                setBusinessRevenue={setBusinessRevenue}
+                businessExpenses={businessExpenses}
+                setBusinessExpenses={setBusinessExpenses}
+                deductions={deductions}
+                setDeductions={setDeductions}
+                businessType={businessType}
+                setBusinessType={setBusinessType}
+                expanded={expanded}
+                setExpanded={setExpanded}
+                businessCalc={businessCalc}
+                formatCurrency={formatCurrency}
+              />
+            )}
+          </motion.div>
 
-        {/* Calculator Content */}
-        <div className="bg-white rounded-lg shadow-2xl p-6 md:p-8">
-          {calculatorType === 'salaried' ? (
-            <SalariedTab
-              grossIncome={grossIncome}
-              setGrossIncome={setGrossIncome}
-              age={age}
-              setAge={setAge}
-              medicalScheme={medicalScheme}
-              setMedicalScheme={setMedicalScheme}
-              expanded={expanded}
-              setExpanded={setExpanded}
-              salariedCalc={salariedCalc}
-              formatCurrency={formatCurrency}
-            />
-          ) : (
-            <BusinessTab
-              businessRevenue={businessRevenue}
-              setBusinessRevenue={setBusinessRevenue}
-              businessExpenses={businessExpenses}
-              setBusinessExpenses={setBusinessExpenses}
-              deductions={deductions}
-              setDeductions={setDeductions}
-              businessType={businessType}
-              setBusinessType={setBusinessType}
-              expanded={expanded}
-              setExpanded={setExpanded}
-              businessCalc={businessCalc}
-              formatCurrency={formatCurrency}
-            />
-          )}
+          {/* Footer Note */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="text-center mt-8"
+          >
+            <div className="inline-flex items-center gap-2 text-gray-500 text-sm bg-white rounded-full px-4 py-2 border border-gray-100">
+              <AlertTriangle className="w-4 h-4 text-amber-500" />
+              <span>Estimates based on 2025/26 SA tax year. Consult a tax professional for accurate calculations.</span>
+            </div>
+            <p className="mt-4 text-gray-400 text-sm">
+              Powered by <span className="font-semibold text-[#062C2E]">ProcessX</span> | tax.processx.co.za
+            </p>
+          </motion.div>
         </div>
-
-        {/* Footer Note */}
-        <div className="text-center mt-8 text-gray-400 text-sm">
-          <p>
-            ⚠️ This calculator provides estimates based on 2025/26 SA tax year. Consult a tax professional for accurate calculations.
-          </p>
-          <p className="mt-2 text-gray-500">
-            Powered by The Process Enterprise | tax.processx.co.za
-          </p>
-        </div>
-      </div>
       </div>
     </>
   );

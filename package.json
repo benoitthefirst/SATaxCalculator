@@ -31,6 +31,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "dotenv": "^17.3.1",
+    "framer-motion": "^12.42.2",
     "lucide-react": "^0.564.0",
     "minio": "^8.0.6",
     "next": "16.1.6",

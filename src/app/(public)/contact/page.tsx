@@ -1,6 +1,18 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
+import { motion } from 'framer-motion'
+import {
+  MessageSquare,
+  Mail,
+  MapPin,
+  HelpCircle,
+  Check,
+  AlertCircle,
+  ArrowRight,
+  Send,
+} from 'lucide-react'
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -50,17 +62,41 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#F8FAFC]">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-blue-50 py-24">
-        <div className="mx-auto max-w-7xl px-6">
+      <section className="relative overflow-hidden bg-[#062C2E] py-16 sm:py-24">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#062C2E] via-[#081F22] to-[#062C2E]" />
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-[#E8FF3F]/5 to-transparent" />
+
+        <div className="relative mx-auto max-w-7xl px-6">
           <div className="text-center">
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="inline-flex items-center gap-2 rounded-full bg-[#E8FF3F]/10 border border-[#E8FF3F]/20 px-4 py-2 mb-6"
+            >
+              <MessageSquare className="w-4 h-4 text-[#E8FF3F]" />
+              <span className="text-sm font-medium text-[#E8FF3F]">Contact Us</span>
+            </motion.div>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="text-4xl font-bold tracking-tight text-white sm:text-5xl"
+            >
               Get in Touch
-            </h1>
-            <p className="mt-4 text-lg text-gray-600">
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="mt-4 text-lg text-gray-400"
+            >
               Have questions? We&apos;d love to hear from you.
-            </p>
+            </motion.p>
           </div>
         </div>
       </section>
@@ -70,29 +106,21 @@ export default function ContactPage() {
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
             {/* Contact Form */}
-            <div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">
                 Send us a message
               </h2>
 
               {submitted ? (
-                <div className="bg-green-50 border border-green-200 rounded-2xl p-8 text-center">
-                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg
-                      className="w-8 h-8 text-green-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
+                <div className="bg-[#E8FF3F]/10 border border-[#E8FF3F]/30 rounded-3xl p-8 text-center">
+                  <div className="w-16 h-16 bg-[#E8FF3F] rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Check className="w-8 h-8 text-[#062C2E]" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">
                     Message Sent!
                   </h3>
                   <p className="text-gray-600">
@@ -103,9 +131,7 @@ export default function ContactPage() {
                 <form onSubmit={handleSubmit} className="space-y-6">
                   {error && (
                     <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm flex items-start gap-2">
-                      <svg className="w-5 h-5 mt-0.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
+                      <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
                       <span>{error}</span>
                     </div>
                   )}
@@ -124,7 +150,7 @@ export default function ContactPage() {
                         value={formData.name}
                         onChange={handleChange}
                         required
-                        className="w-full px-4 py-3 rounded-xl text-gray-700 border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        className="w-full px-4 py-3 rounded-xl text-gray-700 border border-gray-200 focus:ring-2 focus:ring-[#E8FF3F] focus:border-[#062C2E] transition-all bg-white"
                         placeholder="John Doe"
                       />
                     </div>
@@ -142,7 +168,7 @@ export default function ContactPage() {
                         value={formData.email}
                         onChange={handleChange}
                         required
-                        className="w-full px-4 py-3 rounded-xl text-gray-700 border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        className="w-full px-4 py-3 rounded-xl text-gray-700 border border-gray-200 focus:ring-2 focus:ring-[#E8FF3F] focus:border-[#062C2E] transition-all bg-white"
                         placeholder="john@example.com"
                       />
                     </div>
@@ -161,7 +187,7 @@ export default function ContactPage() {
                       name="company"
                       value={formData.company}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 rounded-xl text-gray-700 border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      className="w-full px-4 py-3 rounded-xl text-gray-700 border border-gray-200 focus:ring-2 focus:ring-[#E8FF3F] focus:border-[#062C2E] transition-all bg-white"
                       placeholder="Your Company"
                     />
                   </div>
@@ -179,7 +205,7 @@ export default function ContactPage() {
                       value={formData.subject}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-3 rounded-xl border text-gray-700 border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      className="w-full px-4 py-3 rounded-xl border text-gray-700 border-gray-200 focus:ring-2 focus:ring-[#E8FF3F] focus:border-[#062C2E] transition-all bg-white"
                     >
                       <option value="">Select a subject</option>
                       <option value="general">General Inquiry</option>
@@ -204,7 +230,7 @@ export default function ContactPage() {
                       onChange={handleChange}
                       required
                       rows={5}
-                      className="w-full px-4 py-3 rounded-xl border text-gray-700 border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+                      className="w-full px-4 py-3 rounded-xl border text-gray-700 border-gray-200 focus:ring-2 focus:ring-[#E8FF3F] focus:border-[#062C2E] transition-all resize-none bg-white"
                       placeholder="How can we help you?"
                     />
                   </div>
@@ -212,36 +238,35 @@ export default function ContactPage() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full bg-blue-600 text-white py-4 rounded-xl font-semibold hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full inline-flex items-center justify-center gap-2 bg-[#062C2E] text-white py-4 rounded-full font-semibold hover:bg-[#081F22] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isSubmitting ? 'Sending...' : 'Send Message'}
+                    {isSubmitting ? (
+                      'Sending...'
+                    ) : (
+                      <>
+                        Send Message
+                        <Send className="w-5 h-5" />
+                      </>
+                    )}
                   </button>
                 </form>
               )}
-            </div>
+            </motion.div>
 
             {/* Contact Info */}
-            <div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+            >
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">
                 Other ways to reach us
               </h2>
 
               <div className="space-y-6">
-                <div className="flex items-start gap-4 p-6 bg-gray-50 rounded-2xl">
-                  <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <svg
-                      className="w-6 h-6 text-blue-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                      />
-                    </svg>
+                <div className="flex items-start gap-4 p-6 bg-white rounded-2xl border border-gray-100 hover:border-[#E8FF3F]/50 hover:shadow-lg transition-all">
+                  <div className="w-12 h-12 bg-[#E8FF3F]/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Mail className="w-6 h-6 text-[#062C2E]" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900 mb-1">Email</h3>
@@ -252,52 +277,9 @@ export default function ContactPage() {
                   </div>
                 </div>
 
-                {/* <div className="flex items-start gap-4 p-6 bg-gray-50 rounded-2xl">
-                  <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <svg
-                      className="w-6 h-6 text-green-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                      />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-1">Phone</h3>
-                    <p className="text-gray-600">+27 (0) 11 123 4567</p>
-                    <p className="text-sm text-gray-500 mt-1">
-                      Mon-Fri, 8am-5pm SAST
-                    </p>
-                  </div>
-                </div> */}
-
-                <div className="flex items-start gap-4 p-6 bg-gray-50 rounded-2xl">
-                  <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <svg
-                      className="w-6 h-6 text-purple-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
-                    </svg>
+                <div className="flex items-start gap-4 p-6 bg-white rounded-2xl border border-gray-100 hover:border-[#E8FF3F]/50 hover:shadow-lg transition-all">
+                  <div className="w-12 h-12 bg-[#E8FF3F]/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <MapPin className="w-6 h-6 text-[#062C2E]" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900 mb-1">Office</h3>
@@ -310,34 +292,29 @@ export default function ContactPage() {
               </div>
 
               {/* FAQ Link */}
-              <div className="mt-8 p-6 bg-blue-50 rounded-2xl border border-blue-100">
-                <h3 className="font-semibold text-blue-900 mb-2">
-                  Looking for quick answers?
-                </h3>
-                <p className="text-blue-700 text-sm mb-4">
-                  Check our FAQ section for answers to common questions about pricing, features, and getting started.
-                </p>
-                <a
-                  href="/pricing#faq"
-                  className="inline-flex items-center text-blue-600 font-medium hover:text-blue-700"
-                >
-                  View FAQ
-                  <svg
-                    className="w-4 h-4 ml-1"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </a>
+              <div className="mt-8 p-6 bg-[#062C2E] rounded-3xl">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-[#E8FF3F]/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <HelpCircle className="w-6 h-6 text-[#E8FF3F]" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-white mb-2">
+                      Looking for quick answers?
+                    </h3>
+                    <p className="text-gray-400 text-sm mb-4">
+                      Check our FAQ section for answers to common questions about pricing, features, and getting started.
+                    </p>
+                    <Link
+                      href="/pricing#faq"
+                      className="inline-flex items-center gap-2 text-[#E8FF3F] font-semibold hover:underline"
+                    >
+                      View FAQ
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
+                  </div>
+                </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
