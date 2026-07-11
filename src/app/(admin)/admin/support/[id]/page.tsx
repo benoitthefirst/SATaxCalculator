@@ -254,7 +254,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                   onChange={(e) => setReplyMessage(e.target.value)}
                   rows={4}
                   placeholder="Type your reply..."
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-900 placeholder:text-gray-400"
                 />
                 <div className="flex items-center justify-between mt-4">
                   <label className="flex items-center gap-2">
@@ -291,7 +291,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                   value={ticket.status}
                   onChange={(e) => updateTicket({ status: e.target.value })}
                   disabled={saving}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
                 >
                   <option value="OPEN">Open</option>
                   <option value="IN_PROGRESS">In Progress</option>
@@ -306,7 +306,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                   value={ticket.priority}
                   onChange={(e) => updateTicket({ priority: e.target.value })}
                   disabled={saving}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
                 >
                   <option value="LOW">Low</option>
                   <option value="MEDIUM">Medium</option>
