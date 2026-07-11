@@ -190,7 +190,7 @@ export default function SupportPage() {
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#062C2E] focus:border-transparent"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#062C2E] focus:border-transparent text-slate-900 bg-white"
                 >
                   <option value="general">General Inquiry</option>
                   <option value="billing">Billing & Subscription</option>
@@ -207,7 +207,7 @@ export default function SupportPage() {
                 <select
                   value={priority}
                   onChange={(e) => setPriority(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#062C2E] focus:border-transparent"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#062C2E] focus:border-transparent text-slate-900 bg-white"
                 >
                   <option value="LOW">Low - General question or feedback</option>
                   <option value="MEDIUM">Medium - Issue affecting my work</option>
@@ -226,7 +226,7 @@ export default function SupportPage() {
                   placeholder="Brief summary of your issue"
                   required
                   minLength={5}
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#062C2E] focus:border-transparent"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#062C2E] focus:border-transparent text-slate-900 placeholder:text-slate-400"
                 />
               </div>
 
@@ -241,7 +241,7 @@ export default function SupportPage() {
                   required
                   minLength={20}
                   rows={5}
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#062C2E] focus:border-transparent resize-none"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#062C2E] focus:border-transparent resize-none text-slate-900 placeholder:text-slate-400"
                 />
                 <p className="text-xs text-slate-500 mt-1">
                   Minimum 20 characters. Include steps to reproduce if reporting a bug.
@@ -288,7 +288,7 @@ export default function SupportPage() {
             placeholder="Search by ticket number or subject..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#062C2E] focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#062C2E] focus:border-transparent text-slate-900 placeholder:text-slate-400"
           />
         </div>
         <div className="flex items-center gap-2">
@@ -296,7 +296,7 @@ export default function SupportPage() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#062C2E] focus:border-transparent"
+            className="px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#062C2E] focus:border-transparent text-slate-900 bg-white"
           >
             <option value="all">All Tickets</option>
             <option value="OPEN">Open</option>

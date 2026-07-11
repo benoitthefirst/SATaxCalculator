@@ -279,7 +279,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
               onChange={(e) => setReplyMessage(e.target.value)}
               placeholder="Type your message here..."
               rows={4}
-              className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#062C2E] focus:border-transparent resize-none mb-4"
+              className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#062C2E] focus:border-transparent resize-none mb-4 text-slate-900 placeholder:text-slate-400"
             />
             <div className="flex justify-end">
               <button
