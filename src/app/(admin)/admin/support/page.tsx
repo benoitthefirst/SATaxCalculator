@@ -152,7 +152,7 @@ export default function SupportTicketsPage() {
                 placeholder="Search by ticket number, subject, or contact..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder:text-gray-400"
               />
             </div>
           </form>
@@ -161,7 +161,7 @@ export default function SupportTicketsPage() {
           <select
             value={statusFilter}
             onChange={(e) => updateFilters({ status: e.target.value })}
-            className="px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
           >
             <option value="">All Status</option>
             <option value="OPEN">Open</option>
@@ -175,7 +175,7 @@ export default function SupportTicketsPage() {
           <select
             value={priorityFilter}
             onChange={(e) => updateFilters({ priority: e.target.value })}
-            className="px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
           >
             <option value="">All Priority</option>
             <option value="URGENT">Urgent</option>
@@ -188,7 +188,7 @@ export default function SupportTicketsPage() {
           <select
             value={assignedFilter}
             onChange={(e) => updateFilters({ assignedTo: e.target.value })}
-            className="px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
           >
             <option value="">All Tickets</option>
             <option value="me">Assigned to Me</option>
