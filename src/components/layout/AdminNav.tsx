@@ -94,20 +94,20 @@ export default function AdminNav() {
   }
 
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-gray-200 bg-white">
+    <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-[#081F22]">
       <div className="flex h-full flex-col">
         {/* Logo */}
-        <div className="flex h-16 items-center border-b border-gray-200 px-6">
+        <div className="flex h-16 items-center border-b border-white/10 px-6">
           <Link href="/admin" className="flex items-center gap-3">
             <Image
-              src="/ProcessX_Logo_full.png"
+              src="/Px_Logo_white.webp"
               alt="ProcessX"
               width={120}
               height={32}
               className="h-7 w-auto"
               priority
             />
-            <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded">Admin</span>
+            <span className="text-xs font-medium text-[#E8FF3F] bg-[#E8FF3F]/10 px-2 py-0.5 rounded">Admin</span>
           </Link>
         </div>
 
@@ -120,8 +120,8 @@ export default function AdminNav() {
                   href={item.href}
                   className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
                     isActive(item.href, item.exact)
-                      ? 'bg-blue-50 text-blue-600'
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                      ? 'bg-[#E8FF3F]/10 text-[#E8FF3F]'
+                      : 'text-white/70 hover:bg-white/5 hover:text-white'
                   }`}
                 >
                   {item.icon}
@@ -132,12 +132,12 @@ export default function AdminNav() {
           </ul>
 
           {/* Divider */}
-          <div className="my-4 border-t border-gray-200" />
+          <div className="my-4 border-t border-white/10" />
 
           {/* Back to App */}
           <Link
             href="/dashboard"
-            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white/70 hover:bg-white/5 hover:text-white transition-colors"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
@@ -147,24 +147,24 @@ export default function AdminNav() {
         </nav>
 
         {/* User Info */}
-        <div className="border-t border-gray-200 p-4">
+        <div className="border-t border-white/10 p-4">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-full bg-blue-100 flex items-center justify-center">
-              <span className="text-sm font-medium text-blue-600">
+            <div className="h-9 w-9 rounded-full bg-[#E8FF3F] flex items-center justify-center">
+              <span className="text-sm font-medium text-[#062C2E]">
                 {session?.user?.name?.charAt(0) || 'A'}
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
+              <p className="text-sm font-medium text-white truncate">
                 {session?.user?.name || 'Admin'}
               </p>
-              <p className="text-xs text-gray-500 truncate">
+              <p className="text-xs text-white/50 truncate">
                 {session?.user?.role || 'Admin'}
               </p>
             </div>
             <button
               onClick={() => signOut({ callbackUrl: '/login' })}
-              className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+              className="p-2 text-white/50 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
               title="Sign out"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
