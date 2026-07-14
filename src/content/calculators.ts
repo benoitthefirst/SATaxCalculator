@@ -281,6 +281,191 @@ export const calculators: Calculator[] = [
     keywords: ['how are tax returns calculated', 'tax return calculator', 'tax return calculation south africa', 'sars tax return', 'ita34 explained'],
     metaTitle: 'How Are Tax Returns Calculated | Tax Return Calculator SA',
     metaDescription: 'Learn how tax returns are calculated in South Africa. Understand SARS assessment process, ITA34 explained, and estimate your return with our free calculator.'
+  },
+  {
+    id: 'salary-tax-calculator',
+    slug: 'salary-tax-calculator',
+    name: 'Salary Tax Calculator',
+    headline: 'Salary Tax Calculator South Africa',
+    subheadline: 'Calculate PAYE tax on your salary instantly',
+    description: 'Use our free salary tax calculator to see how much PAYE tax is deducted from your salary. Get accurate calculations based on current SARS tax tables, including rebates and medical tax credits.',
+    icon: 'Wallet',
+    type: 'personal',
+    features: [
+      { title: 'Monthly & Annual View', description: 'See your tax breakdown for monthly salary or annual income.', icon: 'Calendar' },
+      { title: 'PAYE Calculation', description: 'Accurate Pay As You Earn tax based on current SARS rates.', icon: 'Calculator' },
+      { title: 'Net Salary Result', description: 'See exactly what you take home after all deductions.', icon: 'Banknote' },
+      { title: 'Tax Rebates Applied', description: 'Automatic application of primary, secondary, and tertiary rebates.', icon: 'BadgePercent' }
+    ],
+    howItWorks: [
+      { step: 1, title: 'Enter Your Salary', description: 'Input your gross monthly or annual salary amount.' },
+      { step: 2, title: 'Add Your Age', description: 'Your age determines which tax rebates you qualify for.' },
+      { step: 3, title: 'View Tax Breakdown', description: 'See PAYE, UIF, and your net take-home pay.' }
+    ],
+    benefits: [
+      'Instant PAYE tax calculation',
+      'Based on 2024/2025 SARS tax tables',
+      'Includes all age-based rebates',
+      'UIF contribution calculated',
+      'Compare different salary scenarios'
+    ],
+    faqs: [
+      { question: 'How is salary tax calculated in South Africa?', answer: 'Salary tax (PAYE) is calculated using progressive tax brackets. Your annual salary is taxed at increasing rates: 18% on the first R237,100, then 26%, 31%, 36%, 39%, 41%, and 45% on amounts over R1,817,000. Rebates are then subtracted.' },
+      { question: 'What is the tax-free salary threshold?', answer: 'For the 2024/25 tax year, you pay no income tax if you earn below R95,750 per year (under 65) or R148,217 (65-74) or R165,689 (75+). This is due to the primary, secondary, and tertiary rebates.' },
+      { question: 'How much UIF is deducted from my salary?', answer: 'UIF contribution is 1% of your salary, capped at R177.12 per month (based on maximum earnings of R17,712). Your employer also contributes 1%, making the total contribution 2%.' },
+      { question: 'What is PAYE?', answer: 'PAYE stands for Pay As You Earn. It\'s the tax your employer deducts from your salary each month and pays directly to SARS on your behalf. It\'s based on your expected annual tax liability divided into monthly payments.' }
+    ],
+    keywords: ['salary tax calculator', 'salary tax calculator south africa', 'paye calculator', 'calculate tax on salary', 'monthly salary tax'],
+    metaTitle: 'Salary Tax Calculator South Africa | PAYE Calculator 2024',
+    metaDescription: 'Free salary tax calculator for South Africa. Calculate PAYE tax on your salary instantly. See your net take-home pay with accurate SARS tax rates.'
+  },
+  {
+    id: 'income-tax-calculator',
+    slug: 'income-tax-calculator',
+    name: 'Income Tax Calculator',
+    headline: 'Income Tax Calculator South Africa',
+    subheadline: 'Calculate your personal income tax quickly and accurately',
+    description: 'Calculate your South African income tax with our free online calculator. Get accurate estimates based on current SARS tax brackets, rebates, and deductions for the 2024/2025 tax year.',
+    icon: 'Calculator',
+    type: 'personal',
+    features: [
+      { title: 'Progressive Tax Brackets', description: 'Calculations using all 7 SARS income tax brackets.', icon: 'Layers' },
+      { title: 'Multiple Income Sources', description: 'Add salary, rental income, investments, and more.', icon: 'PlusCircle' },
+      { title: 'Deductions & Credits', description: 'Include retirement contributions and medical tax credits.', icon: 'ListMinus' },
+      { title: 'Effective Tax Rate', description: 'See your actual tax rate versus marginal rate.', icon: 'Percent' }
+    ],
+    howItWorks: [
+      { step: 1, title: 'Enter Total Income', description: 'Add all your income sources for the tax year.' },
+      { step: 2, title: 'Add Deductions', description: 'Include retirement contributions and allowable deductions.' },
+      { step: 3, title: 'Get Tax Calculation', description: 'See your tax liability with detailed breakdown.' }
+    ],
+    benefits: [
+      'Accurate SARS tax table calculations',
+      'All income types supported',
+      'Automatic rebate application',
+      'Effective tax rate shown',
+      'Plan your tax with confidence'
+    ],
+    faqs: [
+      { question: 'What are the income tax brackets in South Africa 2024?', answer: 'The 2024/25 tax brackets are: 18% (R1-R237,100), 26% (R237,101-R370,500), 31% (R370,501-R512,800), 36% (R512,801-R673,000), 39% (R673,001-R857,900), 41% (R857,901-R1,817,000), and 45% (over R1,817,000).' },
+      { question: 'What is the difference between marginal and effective tax rate?', answer: 'Marginal rate is the tax rate on your last rand earned. Effective rate is your total tax divided by total income. For example, earning R500,000 has a 31% marginal rate but roughly 22% effective rate.' },
+      { question: 'What income is taxable in South Africa?', answer: 'Taxable income includes employment income, business profits, rental income, interest (above exemptions), dividends (local exempt), capital gains, and foreign income for residents.' },
+      { question: 'How do I reduce my income tax?', answer: 'Reduce tax through retirement contributions (up to 27.5% of income, max R350,000), medical tax credits, deductible expenses, donations to PBOs (up to 10% of taxable income), and tax-free investments.' }
+    ],
+    keywords: ['income tax calculator', 'income tax calculator south africa', 'calculate income tax', 'personal income tax calculator', 'sars income tax'],
+    metaTitle: 'Income Tax Calculator South Africa | Personal Tax Calculator 2024',
+    metaDescription: 'Free income tax calculator for South Africa. Calculate your personal tax using current SARS brackets and rebates. Get accurate results instantly.'
+  },
+  {
+    id: 'sars-tax-calculator',
+    slug: 'sars-tax-calculator',
+    name: 'SARS Tax Calculator',
+    headline: 'SARS Tax Calculator South Africa',
+    subheadline: 'Official tax rates and calculations aligned with SARS',
+    description: 'Use our SARS-aligned tax calculator for accurate tax calculations. Based on official SARS tax tables, rebates, and thresholds for the current tax year.',
+    icon: 'Shield',
+    type: 'both',
+    features: [
+      { title: 'SARS-Aligned Rates', description: 'All calculations use official SARS tax tables and rates.', icon: 'CheckCircle' },
+      { title: 'Current Tax Year', description: 'Updated for the 2024/2025 tax year rates and rebates.', icon: 'Calendar' },
+      { title: 'Personal & Business', description: 'Calculate individual income tax or company tax.', icon: 'Users' },
+      { title: 'Export Results', description: 'Download your calculation for reference or your accountant.', icon: 'Download' }
+    ],
+    howItWorks: [
+      { step: 1, title: 'Select Tax Type', description: 'Choose personal income tax or company tax.' },
+      { step: 2, title: 'Enter Your Income', description: 'Input your taxable income amount.' },
+      { step: 3, title: 'View SARS Calculation', description: 'See tax calculated using official SARS rates.' }
+    ],
+    benefits: [
+      'Official SARS rates used',
+      'Updated for current tax year',
+      'Trusted by accountants',
+      'Personal and business tax',
+      'Clear, detailed breakdown'
+    ],
+    faqs: [
+      { question: 'Are these calculations the same as SARS?', answer: 'Yes, our calculator uses the official SARS tax tables, rebates, and thresholds published for the current tax year. Results match SARS calculations when given the same inputs.' },
+      { question: 'When do SARS tax rates change?', answer: 'SARS tax rates are announced in the annual Budget Speech (usually February) and apply from 1 March. New rates affect the tax year starting 1 March through end of February the following year.' },
+      { question: 'What is the SARS tax threshold?', answer: 'For 2024/25, the tax threshold (below which no tax is payable) is R95,750 for those under 65, R148,217 for ages 65-74, and R165,689 for those 75 and older.' },
+      { question: 'How do I check my calculation with SARS?', answer: 'You can verify calculations using the SARS eFiling tax calculator, or by submitting your return and viewing the ITA34 assessment which shows SARS\'s calculation.' }
+    ],
+    keywords: ['sars tax calculator', 'sars income tax calculator', 'sars tax calculator south africa', 'sars paye calculator', 'sars tax tables'],
+    metaTitle: 'SARS Tax Calculator | South African Revenue Service Tax Rates 2024',
+    metaDescription: 'Free SARS tax calculator using official tax tables. Calculate income tax, PAYE, and company tax with SARS-aligned rates. Accurate and up-to-date.'
+  },
+  {
+    id: 'income-tax-brackets',
+    slug: 'income-tax-brackets',
+    name: 'Income Tax Brackets',
+    headline: 'Income Tax Brackets South Africa 2024/2025',
+    subheadline: 'Complete guide to SA tax brackets and rates',
+    description: 'Understand South African income tax brackets for 2024/2025. See all tax rates, thresholds, and rebates in one place. Calculate your tax bracket and marginal rate.',
+    icon: 'Layers',
+    type: 'personal',
+    features: [
+      { title: 'All Tax Brackets', description: 'Complete breakdown of all 7 income tax brackets for 2024/25.', icon: 'Layers' },
+      { title: 'Bracket Calculator', description: 'Find which tax bracket your income falls into.', icon: 'Search' },
+      { title: 'Historical Comparison', description: 'See how brackets have changed over recent years.', icon: 'History' },
+      { title: 'Tax Planning Tool', description: 'Plan income to optimize your tax bracket position.', icon: 'Target' }
+    ],
+    howItWorks: [
+      { step: 1, title: 'Enter Your Income', description: 'Input your annual taxable income.' },
+      { step: 2, title: 'See Your Bracket', description: 'Find which tax bracket you fall into.' },
+      { step: 3, title: 'Understand Your Rate', description: 'See your marginal rate and total tax.' }
+    ],
+    benefits: [
+      'All current tax brackets listed',
+      'Easy to understand format',
+      'Marginal vs effective rates explained',
+      'Tax planning insights',
+      'Updated annually'
+    ],
+    faqs: [
+      { question: 'What are the 2024/2025 tax brackets?', answer: 'The 7 tax brackets for 2024/25 are: 18% (R0-R237,100), 26% (R237,101-R370,500), 31% (R370,501-R512,800), 36% (R512,801-R673,000), 39% (R673,001-R857,900), 41% (R857,901-R1,817,000), and 45% (above R1,817,000).' },
+      { question: 'How do tax brackets work?', answer: 'Tax brackets are progressive - you only pay the higher rate on income above each threshold. For example, earning R300,000 means you pay 18% on the first R237,100 and 26% only on the remaining R62,900.' },
+      { question: 'What is the highest tax bracket in South Africa?', answer: 'The highest tax bracket is 45%, which applies to taxable income exceeding R1,817,000 per year. This is the marginal rate; the effective rate is always lower.' },
+      { question: 'How can I move to a lower tax bracket?', answer: 'You can reduce taxable income through retirement contributions (RA, pension), medical expenses, donations to PBOs, and other deductions. This may move your marginal rate to a lower bracket.' }
+    ],
+    keywords: ['income tax brackets south africa', 'tax brackets south africa 2024', 'sa tax brackets', 'sars tax brackets', 'tax rates south africa'],
+    metaTitle: 'Income Tax Brackets South Africa 2024/2025 | SARS Tax Rates',
+    metaDescription: 'Complete guide to South African income tax brackets 2024/2025. See all 7 tax rates, thresholds, and rebates. Find your tax bracket instantly.'
+  },
+  {
+    id: 'sars-income-tax-calculator',
+    slug: 'sars-income-tax-calculator',
+    name: 'SARS Income Tax Calculator',
+    headline: 'SARS Income Tax Calculator',
+    subheadline: 'Calculate your tax using official SARS rates',
+    description: 'Calculate your income tax using official SARS tax tables and rates. Our calculator mirrors SARS calculations for accurate estimates of your tax liability.',
+    icon: 'Shield',
+    type: 'personal',
+    features: [
+      { title: 'Official SARS Tables', description: 'Uses the same tax tables published by SARS.', icon: 'FileCheck' },
+      { title: 'Rebate Calculator', description: 'Automatically applies primary, secondary, and tertiary rebates.', icon: 'BadgePercent' },
+      { title: 'Medical Tax Credits', description: 'Calculate medical scheme fees tax credits for dependants.', icon: 'Heart' },
+      { title: 'Assessment Preview', description: 'Preview what your SARS assessment might look like.', icon: 'FileText' }
+    ],
+    howItWorks: [
+      { step: 1, title: 'Enter Income Details', description: 'Input your annual income and age.' },
+      { step: 2, title: 'Add Tax Credits', description: 'Include medical aid and other credits.' },
+      { step: 3, title: 'Get SARS Estimate', description: 'See your estimated tax per SARS calculations.' }
+    ],
+    benefits: [
+      'Matches SARS calculation methods',
+      'All rebates included',
+      'Medical credits supported',
+      'Clear assessment preview',
+      'Trusted by tax practitioners'
+    ],
+    faqs: [
+      { question: 'Is this calculator the same as SARS eFiling?', answer: 'Our calculator uses the same tax tables and formulas as SARS. Results should match SARS calculations when all inputs are identical. However, always verify with your actual SARS assessment.' },
+      { question: 'What rebates are applied?', answer: 'We apply: Primary rebate (R17,235 for all taxpayers), Secondary rebate (R9,444 for ages 65-74), and Tertiary rebate (R3,145 for 75+). These are for the 2024/25 tax year.' },
+      { question: 'How do medical tax credits work?', answer: 'You get R364 per month for the first two members on your medical aid, then R246 for each additional dependant. This credit directly reduces your tax payable.' },
+      { question: 'Can I use this to prepare my SARS return?', answer: 'This calculator helps estimate your tax, but you must still file your official return via SARS eFiling or a tax practitioner. Use our results for planning and verification.' }
+    ],
+    keywords: ['sars income tax calculator', 'sars tax calculator', 'sars efiling calculator', 'sars tax tables calculator', 'income tax sars'],
+    metaTitle: 'SARS Income Tax Calculator | Official Tax Tables 2024',
+    metaDescription: 'Calculate income tax using official SARS tax tables. Free calculator with rebates and medical tax credits. Accurate SARS-aligned results.'
   }
 ]
 
