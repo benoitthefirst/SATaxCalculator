@@ -129,13 +129,15 @@ export async function POST(request: NextRequest) {
           to: adminEmail,
           subject: `[${ticket.ticket_number}] New Support Ticket: ${validatedData.subject}`,
           html: `
-            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
-              <div style="background: #062C2E; padding: 32px; border-radius: 16px 16px 0 0;">
-                <h1 style="color: #E8FF3F; margin: 0; font-size: 24px;">New Support Ticket</h1>
-                <p style="color: white; margin: 8px 0 0; opacity: 0.8;">${ticket.ticket_number}</p>
-              </div>
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; background-color: #F8FAFC; padding: 20px;">
+              <div style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                <div style="background: #062C2E; padding: 24px 32px;">
+                  <img src="https://www.processx.co.za/Px_Logo_white.webp" alt="ProcessX" style="height: 28px; width: auto; margin-bottom: 16px;" />
+                  <h1 style="color: #E8FF3F; margin: 0; font-size: 20px;">New Support Ticket</h1>
+                  <p style="color: white; margin: 8px 0 0; opacity: 0.8;">${ticket.ticket_number}</p>
+                </div>
 
-              <div style="background: #f9fafb; padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 16px 16px;">
+                <div style="padding: 32px;">
                 <div style="display: flex; gap: 12px; margin-bottom: 24px;">
                   <span style="padding: 6px 12px; background: ${priorityColors[validatedData.priority]}; color: white; border-radius: 20px; font-size: 12px; font-weight: 600;">
                     ${validatedData.priority} PRIORITY
@@ -178,11 +180,13 @@ ${validatedData.description}
                   </a>
                 </div>
 
-                <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #e5e7eb; text-align: center;">
-                  <p style="color: #6b7280; font-size: 12px; margin: 0;">
-                    This is an automated notification from ProcessX Support System
-                  </p>
                 </div>
+              </div>
+
+              <div style="text-align: center; padding: 24px 20px;">
+                <p style="color: #6b7280; font-size: 12px; margin: 0;">
+                  This is an automated notification from ProcessX Support System
+                </p>
               </div>
             </div>
           `,
@@ -207,53 +211,60 @@ View ticket: ${process.env.NEXTAUTH_URL}/admin/support/${ticket.id}
           to: user.email!,
           subject: `[${ticket.ticket_number}] We received your support request`,
           html: `
-            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
-              <div style="background: #062C2E; padding: 32px; border-radius: 16px 16px 0 0; text-align: center;">
-                <h1 style="color: #E8FF3F; margin: 0; font-size: 24px;">Support Request Received</h1>
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; background-color: #F8FAFC; padding: 20px;">
+              <div style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                <!-- Header -->
+                <div style="background: #062C2E; padding: 24px 32px; text-align: center;">
+                  <img src="https://www.processx.co.za/Px_Logo_white.webp" alt="ProcessX" style="height: 32px; width: auto;" />
+                </div>
+
+                <!-- Content -->
+                <div style="padding: 32px;">
+                  <h2 style="margin: 0 0 24px 0; color: #111; font-size: 24px; text-align: center;">Support Request Received</h2>
+
+                  <p style="color: #374151; font-size: 16px; line-height: 1.6;">
+                    Hi ${userName},
+                  </p>
+
+                  <p style="color: #374151; font-size: 16px; line-height: 1.6;">
+                    We've received your support request and our team will review it shortly. You can track the status of your ticket in your dashboard.
+                  </p>
+
+                  <div style="background: #f9fafb; padding: 20px; border-radius: 12px; margin: 24px 0; border: 1px solid #e5e7eb;">
+                    <p style="color: #374151; font-size: 14px; margin: 0 0 8px 0;">
+                      <strong>Ticket Number:</strong> ${ticket.ticket_number}
+                    </p>
+                    <p style="color: #374151; font-size: 14px; margin: 0 0 8px 0;">
+                      <strong>Subject:</strong> ${validatedData.subject}
+                    </p>
+                    <p style="color: #374151; font-size: 14px; margin: 0;">
+                      <strong>Priority:</strong> ${validatedData.priority}
+                    </p>
+                  </div>
+
+                  <p style="color: #374151; font-size: 16px; line-height: 1.6;">
+                    We typically respond within 24 hours during business hours.
+                  </p>
+
+                  <div style="text-align: center; margin-top: 24px;">
+                    <a href="${process.env.NEXTAUTH_URL}/dashboard/support"
+                       style="display: inline-block; padding: 14px 32px; background: #062C2E; color: #E8FF3F; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 16px;">
+                      View My Tickets
+                    </a>
+                  </div>
+
+                  <p style="color: #374151; font-size: 16px; line-height: 1.6; margin-top: 24px;">
+                    Best regards,<br>
+                    <strong>The ProcessX Team</strong>
+                  </p>
+                </div>
               </div>
 
-              <div style="background: white; padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 16px 16px;">
-                <p style="color: #374151; font-size: 16px; line-height: 1.6;">
-                  Hi ${userName},
+              <!-- Footer -->
+              <div style="text-align: center; padding: 24px 20px;">
+                <p style="color: #6b7280; font-size: 12px; margin: 0;">
+                  Bookkeeping Made Simple, Business Made Easy
                 </p>
-
-                <p style="color: #374151; font-size: 16px; line-height: 1.6;">
-                  We've received your support request and our team will review it shortly. You can track the status of your ticket in your dashboard.
-                </p>
-
-                <div style="background: #f9fafb; padding: 20px; border-radius: 12px; margin: 24px 0;">
-                  <p style="color: #6b7280; font-size: 14px; margin: 0 0 8px 0;">
-                    <strong>Ticket Number:</strong> ${ticket.ticket_number}
-                  </p>
-                  <p style="color: #6b7280; font-size: 14px; margin: 0 0 8px 0;">
-                    <strong>Subject:</strong> ${validatedData.subject}
-                  </p>
-                  <p style="color: #6b7280; font-size: 14px; margin: 0;">
-                    <strong>Priority:</strong> ${validatedData.priority}
-                  </p>
-                </div>
-
-                <p style="color: #374151; font-size: 16px; line-height: 1.6;">
-                  We typically respond within 24 hours during business hours.
-                </p>
-
-                <div style="margin-top: 24px;">
-                  <a href="${process.env.NEXTAUTH_URL}/dashboard/support"
-                     style="display: inline-block; padding: 12px 24px; background: #062C2E; color: #E8FF3F; text-decoration: none; border-radius: 8px; font-weight: 600;">
-                    View My Tickets
-                  </a>
-                </div>
-
-                <p style="color: #374151; font-size: 16px; line-height: 1.6; margin-top: 24px;">
-                  Best regards,<br>
-                  <strong>The ProcessX Team</strong>
-                </p>
-
-                <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #e5e7eb; text-align: center;">
-                  <p style="color: #9ca3af; font-size: 12px; margin: 0;">
-                    ProcessX - Bookkeeping Made Simple, Business Made Easy
-                  </p>
-                </div>
               </div>
             </div>
           `,

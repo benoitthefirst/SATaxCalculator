@@ -66,28 +66,37 @@ export function teamInviteEmail(params: {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-  <div style="text-align: center; margin-bottom: 30px;">
-    <h1 style="color: #007AFF; margin: 0;">ProcessX</h1>
-  </div>
-
-  <div style="background: #f9fafb; border-radius: 12px; padding: 30px; margin-bottom: 20px;">
-    <h2 style="margin-top: 0; color: #111;">You're invited!</h2>
-    <p><strong>${inviterName}</strong> has invited you to join <strong>${companyName}</strong> on ProcessX as a <strong>${roleLabel}</strong>.</p>
-    <p>ProcessX helps businesses manage their finances, track expenses, and prepare for tax season.</p>
-
-    <div style="text-align: center; margin: 30px 0;">
-      <a href="${acceptUrl}" style="display: inline-block; background: #007AFF; color: white; text-decoration: none; padding: 14px 30px; border-radius: 10px; font-weight: 600;">
-        Accept Invitation
-      </a>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #F8FAFC;">
+  <div style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+    <!-- Header -->
+    <div style="background: #062C2E; padding: 24px 32px; text-align: center;">
+      <img src="https://www.processx.co.za/Px_Logo_white.webp" alt="ProcessX" style="height: 32px; width: auto;" />
     </div>
 
-    <p style="font-size: 14px; color: #666;">This invitation will expire in 7 days.</p>
+    <!-- Content -->
+    <div style="padding: 32px;">
+      <h2 style="margin-top: 0; color: #111; font-size: 24px;">You're invited!</h2>
+      <p style="color: #374151; font-size: 16px; line-height: 1.6;">
+        <strong>${inviterName}</strong> has invited you to join <strong>${companyName}</strong> on ProcessX as a <strong>${roleLabel}</strong>.
+      </p>
+      <p style="color: #374151; font-size: 16px; line-height: 1.6;">
+        ProcessX helps businesses manage their finances, track expenses, and prepare for tax season.
+      </p>
+
+      <div style="text-align: center; margin: 32px 0;">
+        <a href="${acceptUrl}" style="display: inline-block; background: #062C2E; color: #E8FF3F; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 16px;">
+          Accept Invitation
+        </a>
+      </div>
+
+      <p style="font-size: 14px; color: #6b7280; text-align: center;">This invitation will expire in 7 days.</p>
+    </div>
   </div>
 
-  <div style="text-align: center; color: #999; font-size: 12px;">
-    <p>If you didn't expect this invitation, you can safely ignore this email.</p>
-    <p>&copy; ${new Date().getFullYear()} ProcessX. All rights reserved.</p>
+  <!-- Footer -->
+  <div style="text-align: center; color: #6b7280; font-size: 12px; margin-top: 24px;">
+    <p style="margin: 0 0 8px 0;">If you didn't expect this invitation, you can safely ignore this email.</p>
+    <p style="margin: 0;">&copy; ${new Date().getFullYear()} ProcessX. All rights reserved.</p>
   </div>
 </body>
 </html>
@@ -107,7 +116,15 @@ If you didn't expect this invitation, you can safely ignore this email.
   }
 }
 
-// Base email template wrapper
+// ProcessX Brand Colors
+const BRAND = {
+  darkTeal: '#062C2E',
+  sidebarTeal: '#081F22',
+  lime: '#E8FF3F',
+  background: '#F8FAFC',
+}
+
+// Base email template wrapper with ProcessX branding
 function emailWrapper(content: string) {
   return `
 <!DOCTYPE html>
@@ -116,19 +133,28 @@ function emailWrapper(content: string) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5;">
-  <div style="background: white; border-radius: 12px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-    <div style="text-align: center; margin-bottom: 30px;">
-      <h1 style="color: #FF9500; margin: 0; font-size: 28px;">ProcessX</h1>
-      <p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">Smart Bookkeeping for South African Businesses</p>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: ${BRAND.background};">
+  <div style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+    <!-- Header with Logo -->
+    <div style="background: ${BRAND.darkTeal}; padding: 24px 32px; text-align: center;">
+      <img src="https://www.processx.co.za/Px_Logo_white.webp" alt="ProcessX" style="height: 32px; width: auto;" />
     </div>
-    ${content}
+
+    <!-- Content -->
+    <div style="padding: 32px;">
+      ${content}
+    </div>
   </div>
-  <div style="text-align: center; color: #999; font-size: 12px; margin-top: 20px;">
-    <p>&copy; ${new Date().getFullYear()} ProcessX. All rights reserved.</p>
-    <p>
-      <a href="https://www.processx.co.za/privacy" style="color: #999;">Privacy Policy</a> ·
-      <a href="https://www.processx.co.za/terms" style="color: #999;">Terms of Service</a>
+
+  <!-- Footer -->
+  <div style="text-align: center; color: #6b7280; font-size: 12px; margin-top: 24px; padding: 0 20px;">
+    <p style="margin: 0 0 8px 0;">&copy; ${new Date().getFullYear()} ProcessX. All rights reserved.</p>
+    <p style="margin: 0;">
+      <a href="https://www.processx.co.za/privacy" style="color: #6b7280; text-decoration: underline;">Privacy Policy</a> ·
+      <a href="https://www.processx.co.za/terms" style="color: #6b7280; text-decoration: underline;">Terms of Service</a>
+    </p>
+    <p style="margin: 12px 0 0 0; color: #9ca3af;">
+      Bookkeeping Made Simple, Business Made Easy
     </p>
   </div>
 </body>
@@ -141,24 +167,24 @@ export function welcomeEmail(params: { firstName: string; loginUrl: string }) {
   const { firstName, loginUrl } = params
 
   const html = emailWrapper(`
-    <h2 style="margin-top: 0; color: #111;">Welcome to ProcessX, ${firstName}!</h2>
-    <p>Thank you for joining ProcessX. We're excited to help you manage your business finances more efficiently.</p>
+    <h2 style="margin-top: 0; color: #111; font-size: 24px;">Welcome to ProcessX, ${firstName}!</h2>
+    <p style="color: #374151; font-size: 16px; line-height: 1.6;">Thank you for joining ProcessX. We're excited to help you manage your business finances more efficiently.</p>
 
-    <p>With ProcessX, you can:</p>
-    <ul style="color: #555;">
+    <p style="color: #374151; font-size: 16px; line-height: 1.6;">With ProcessX, you can:</p>
+    <ul style="color: #374151; font-size: 16px; line-height: 1.8; padding-left: 20px;">
       <li>Track income and expenses effortlessly</li>
       <li>Manage your vehicle logbook for tax deductions</li>
       <li>Calculate depreciation on business assets</li>
       <li>Generate tax-ready reports for SARS</li>
     </ul>
 
-    <div style="text-align: center; margin: 30px 0;">
-      <a href="${loginUrl}" style="display: inline-block; background: linear-gradient(135deg, #FF9500, #FF6B00); color: white; text-decoration: none; padding: 14px 30px; border-radius: 10px; font-weight: 600;">
+    <div style="text-align: center; margin: 32px 0;">
+      <a href="${loginUrl}" style="display: inline-block; background: ${BRAND.darkTeal}; color: ${BRAND.lime}; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 16px;">
         Go to Dashboard
       </a>
     </div>
 
-    <p style="font-size: 14px; color: #666;">If you have any questions, our support team is here to help.</p>
+    <p style="font-size: 14px; color: #6b7280;">If you have any questions, our support team is here to help.</p>
   `)
 
   return {
@@ -187,18 +213,18 @@ export function passwordResetEmail(params: { firstName: string; resetUrl: string
   const { firstName, resetUrl } = params
 
   const html = emailWrapper(`
-    <h2 style="margin-top: 0; color: #111;">Reset Your Password</h2>
-    <p>Hi ${firstName},</p>
-    <p>We received a request to reset your password. Click the button below to create a new password:</p>
+    <h2 style="margin-top: 0; color: #111; font-size: 24px;">Reset Your Password</h2>
+    <p style="color: #374151; font-size: 16px; line-height: 1.6;">Hi ${firstName},</p>
+    <p style="color: #374151; font-size: 16px; line-height: 1.6;">We received a request to reset your password. Click the button below to create a new password:</p>
 
-    <div style="text-align: center; margin: 30px 0;">
-      <a href="${resetUrl}" style="display: inline-block; background: linear-gradient(135deg, #FF9500, #FF6B00); color: white; text-decoration: none; padding: 14px 30px; border-radius: 10px; font-weight: 600;">
+    <div style="text-align: center; margin: 32px 0;">
+      <a href="${resetUrl}" style="display: inline-block; background: ${BRAND.darkTeal}; color: ${BRAND.lime}; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 16px;">
         Reset Password
       </a>
     </div>
 
-    <p style="font-size: 14px; color: #666;">This link will expire in 1 hour for security reasons.</p>
-    <p style="font-size: 14px; color: #666;">If you didn't request a password reset, you can safely ignore this email. Your password will remain unchanged.</p>
+    <p style="font-size: 14px; color: #6b7280;">This link will expire in 1 hour for security reasons.</p>
+    <p style="font-size: 14px; color: #6b7280;">If you didn't request a password reset, you can safely ignore this email. Your password will remain unchanged.</p>
   `)
 
   return {
@@ -232,35 +258,35 @@ export function subscriptionCreatedEmail(params: {
   const { firstName, planName, amount, billingCycle, nextBillingDate, dashboardUrl } = params
 
   const html = emailWrapper(`
-    <h2 style="margin-top: 0; color: #111;">Welcome to ${planName}!</h2>
-    <p>Hi ${firstName},</p>
-    <p>Thank you for subscribing to ProcessX ${planName}. Your subscription is now active!</p>
+    <h2 style="margin-top: 0; color: #111; font-size: 24px;">Welcome to ${planName}!</h2>
+    <p style="color: #374151; font-size: 16px; line-height: 1.6;">Hi ${firstName},</p>
+    <p style="color: #374151; font-size: 16px; line-height: 1.6;">Thank you for subscribing to ProcessX ${planName}. Your subscription is now active!</p>
 
-    <div style="background: #f9fafb; border-radius: 8px; padding: 20px; margin: 20px 0;">
-      <h3 style="margin-top: 0; color: #333;">Subscription Details</h3>
+    <div style="background: #f9fafb; border-radius: 12px; padding: 24px; margin: 24px 0; border: 1px solid #e5e7eb;">
+      <h3 style="margin-top: 0; color: ${BRAND.darkTeal}; font-size: 16px;">Subscription Details</h3>
       <table style="width: 100%; border-collapse: collapse;">
         <tr>
-          <td style="padding: 8px 0; color: #666;">Plan</td>
-          <td style="padding: 8px 0; text-align: right; font-weight: 600;">${planName}</td>
+          <td style="padding: 10px 0; color: #6b7280; border-bottom: 1px solid #e5e7eb;">Plan</td>
+          <td style="padding: 10px 0; text-align: right; font-weight: 600; color: #111; border-bottom: 1px solid #e5e7eb;">${planName}</td>
         </tr>
         <tr>
-          <td style="padding: 8px 0; color: #666;">Amount</td>
-          <td style="padding: 8px 0; text-align: right; font-weight: 600;">${amount}/${billingCycle}</td>
+          <td style="padding: 10px 0; color: #6b7280; border-bottom: 1px solid #e5e7eb;">Amount</td>
+          <td style="padding: 10px 0; text-align: right; font-weight: 600; color: #111; border-bottom: 1px solid #e5e7eb;">${amount}/${billingCycle}</td>
         </tr>
         <tr>
-          <td style="padding: 8px 0; color: #666;">Next billing date</td>
-          <td style="padding: 8px 0; text-align: right; font-weight: 600;">${nextBillingDate}</td>
+          <td style="padding: 10px 0; color: #6b7280;">Next billing date</td>
+          <td style="padding: 10px 0; text-align: right; font-weight: 600; color: #111;">${nextBillingDate}</td>
         </tr>
       </table>
     </div>
 
-    <div style="text-align: center; margin: 30px 0;">
-      <a href="${dashboardUrl}" style="display: inline-block; background: linear-gradient(135deg, #FF9500, #FF6B00); color: white; text-decoration: none; padding: 14px 30px; border-radius: 10px; font-weight: 600;">
+    <div style="text-align: center; margin: 32px 0;">
+      <a href="${dashboardUrl}" style="display: inline-block; background: ${BRAND.darkTeal}; color: ${BRAND.lime}; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 16px;">
         Go to Dashboard
       </a>
     </div>
 
-    <p style="font-size: 14px; color: #666;">You can manage your subscription anytime from your account settings.</p>
+    <p style="font-size: 14px; color: #6b7280;">You can manage your subscription anytime from your account settings.</p>
   `)
 
   return {
@@ -296,38 +322,38 @@ export function paymentSuccessEmail(params: {
   const { firstName, planName, amount, paymentDate, invoiceUrl } = params
 
   const invoiceButton = invoiceUrl
-    ? `<div style="text-align: center; margin: 30px 0;">
-        <a href="${invoiceUrl}" style="display: inline-block; background: linear-gradient(135deg, #FF9500, #FF6B00); color: white; text-decoration: none; padding: 14px 30px; border-radius: 10px; font-weight: 600;">
+    ? `<div style="text-align: center; margin: 32px 0;">
+        <a href="${invoiceUrl}" style="display: inline-block; background: ${BRAND.darkTeal}; color: ${BRAND.lime}; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 16px;">
           View Invoice
         </a>
       </div>`
     : ''
 
   const html = emailWrapper(`
-    <h2 style="margin-top: 0; color: #111;">Payment Received</h2>
-    <p>Hi ${firstName},</p>
-    <p>We've successfully processed your payment for ProcessX ${planName}.</p>
+    <h2 style="margin-top: 0; color: #111; font-size: 24px;">Payment Received</h2>
+    <p style="color: #374151; font-size: 16px; line-height: 1.6;">Hi ${firstName},</p>
+    <p style="color: #374151; font-size: 16px; line-height: 1.6;">We've successfully processed your payment for ProcessX ${planName}.</p>
 
-    <div style="background: #ecfdf5; border-radius: 8px; padding: 20px; margin: 20px 0; border-left: 4px solid #10b981;">
+    <div style="background: #ecfdf5; border-radius: 12px; padding: 24px; margin: 24px 0; border-left: 4px solid #10b981;">
       <table style="width: 100%; border-collapse: collapse;">
         <tr>
-          <td style="padding: 8px 0; color: #666;">Plan</td>
-          <td style="padding: 8px 0; text-align: right; font-weight: 600;">${planName}</td>
+          <td style="padding: 10px 0; color: #065f46;">Plan</td>
+          <td style="padding: 10px 0; text-align: right; font-weight: 600; color: #065f46;">${planName}</td>
         </tr>
         <tr>
-          <td style="padding: 8px 0; color: #666;">Amount</td>
-          <td style="padding: 8px 0; text-align: right; font-weight: 600;">${amount}</td>
+          <td style="padding: 10px 0; color: #065f46;">Amount</td>
+          <td style="padding: 10px 0; text-align: right; font-weight: 600; color: #065f46;">${amount}</td>
         </tr>
         <tr>
-          <td style="padding: 8px 0; color: #666;">Date</td>
-          <td style="padding: 8px 0; text-align: right; font-weight: 600;">${paymentDate}</td>
+          <td style="padding: 10px 0; color: #065f46;">Date</td>
+          <td style="padding: 10px 0; text-align: right; font-weight: 600; color: #065f46;">${paymentDate}</td>
         </tr>
       </table>
     </div>
 
     ${invoiceButton}
 
-    <p style="font-size: 14px; color: #666;">Thank you for your continued support!</p>
+    <p style="font-size: 14px; color: #6b7280;">Thank you for your continued support!</p>
   `)
 
   return {
@@ -361,36 +387,36 @@ export function paymentFailedEmail(params: {
   const { firstName, planName, amount, retryDate, updatePaymentUrl } = params
 
   const html = emailWrapper(`
-    <h2 style="margin-top: 0; color: #dc2626;">Payment Failed</h2>
-    <p>Hi ${firstName},</p>
-    <p>We were unable to process your payment for ProcessX ${planName}.</p>
+    <h2 style="margin-top: 0; color: #dc2626; font-size: 24px;">Payment Failed</h2>
+    <p style="color: #374151; font-size: 16px; line-height: 1.6;">Hi ${firstName},</p>
+    <p style="color: #374151; font-size: 16px; line-height: 1.6;">We were unable to process your payment for ProcessX ${planName}.</p>
 
-    <div style="background: #fef2f2; border-radius: 8px; padding: 20px; margin: 20px 0; border-left: 4px solid #dc2626;">
+    <div style="background: #fef2f2; border-radius: 12px; padding: 24px; margin: 24px 0; border-left: 4px solid #dc2626;">
       <table style="width: 100%; border-collapse: collapse;">
         <tr>
-          <td style="padding: 8px 0; color: #666;">Plan</td>
-          <td style="padding: 8px 0; text-align: right; font-weight: 600;">${planName}</td>
+          <td style="padding: 10px 0; color: #991b1b;">Plan</td>
+          <td style="padding: 10px 0; text-align: right; font-weight: 600; color: #991b1b;">${planName}</td>
         </tr>
         <tr>
-          <td style="padding: 8px 0; color: #666;">Amount</td>
-          <td style="padding: 8px 0; text-align: right; font-weight: 600;">${amount}</td>
+          <td style="padding: 10px 0; color: #991b1b;">Amount</td>
+          <td style="padding: 10px 0; text-align: right; font-weight: 600; color: #991b1b;">${amount}</td>
         </tr>
         <tr>
-          <td style="padding: 8px 0; color: #666;">Next retry</td>
-          <td style="padding: 8px 0; text-align: right; font-weight: 600;">${retryDate}</td>
+          <td style="padding: 10px 0; color: #991b1b;">Next retry</td>
+          <td style="padding: 10px 0; text-align: right; font-weight: 600; color: #991b1b;">${retryDate}</td>
         </tr>
       </table>
     </div>
 
-    <p>Please update your payment method to avoid service interruption.</p>
+    <p style="color: #374151; font-size: 16px; line-height: 1.6;">Please update your payment method to avoid service interruption.</p>
 
-    <div style="text-align: center; margin: 30px 0;">
-      <a href="${updatePaymentUrl}" style="display: inline-block; background: linear-gradient(135deg, #FF9500, #FF6B00); color: white; text-decoration: none; padding: 14px 30px; border-radius: 10px; font-weight: 600;">
+    <div style="text-align: center; margin: 32px 0;">
+      <a href="${updatePaymentUrl}" style="display: inline-block; background: ${BRAND.darkTeal}; color: ${BRAND.lime}; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 16px;">
         Update Payment Method
       </a>
     </div>
 
-    <p style="font-size: 14px; color: #666;">If you need assistance, please contact our support team.</p>
+    <p style="font-size: 14px; color: #6b7280;">If you need assistance, please contact our support team.</p>
   `)
 
   return {
@@ -425,28 +451,28 @@ export function subscriptionCancelledEmail(params: {
   const { firstName, planName, accessUntil, resubscribeUrl } = params
 
   const html = emailWrapper(`
-    <h2 style="margin-top: 0; color: #111;">Subscription Cancelled</h2>
-    <p>Hi ${firstName},</p>
-    <p>Your ProcessX ${planName} subscription has been cancelled.</p>
+    <h2 style="margin-top: 0; color: #111; font-size: 24px;">Subscription Cancelled</h2>
+    <p style="color: #374151; font-size: 16px; line-height: 1.6;">Hi ${firstName},</p>
+    <p style="color: #374151; font-size: 16px; line-height: 1.6;">Your ProcessX ${planName} subscription has been cancelled.</p>
 
-    <div style="background: #fef3c7; border-radius: 8px; padding: 20px; margin: 20px 0; border-left: 4px solid #f59e0b;">
-      <p style="margin: 0; color: #92400e;">
-        <strong>You'll continue to have access to ${planName} features until ${accessUntil}.</strong>
+    <div style="background: #fef3c7; border-radius: 12px; padding: 24px; margin: 24px 0; border-left: 4px solid #f59e0b;">
+      <p style="margin: 0; color: #92400e; font-weight: 600;">
+        You'll continue to have access to ${planName} features until ${accessUntil}.
       </p>
-      <p style="margin: 10px 0 0 0; color: #92400e; font-size: 14px;">
+      <p style="margin: 12px 0 0 0; color: #92400e; font-size: 14px;">
         After this date, your account will be downgraded to the free Starter plan.
       </p>
     </div>
 
-    <p>We're sorry to see you go. If you change your mind, you can resubscribe anytime.</p>
+    <p style="color: #374151; font-size: 16px; line-height: 1.6;">We're sorry to see you go. If you change your mind, you can resubscribe anytime.</p>
 
-    <div style="text-align: center; margin: 30px 0;">
-      <a href="${resubscribeUrl}" style="display: inline-block; background: linear-gradient(135deg, #FF9500, #FF6B00); color: white; text-decoration: none; padding: 14px 30px; border-radius: 10px; font-weight: 600;">
+    <div style="text-align: center; margin: 32px 0;">
+      <a href="${resubscribeUrl}" style="display: inline-block; background: ${BRAND.darkTeal}; color: ${BRAND.lime}; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 16px;">
         Resubscribe
       </a>
     </div>
 
-    <p style="font-size: 14px; color: #666;">If you have any feedback about why you cancelled, we'd love to hear it.</p>
+    <p style="font-size: 14px; color: #6b7280;">If you have any feedback about why you cancelled, we'd love to hear it.</p>
   `)
 
   return {
@@ -486,18 +512,18 @@ export function inviteAcceptedEmail(params: {
   }[role] || role
 
   const html = emailWrapper(`
-    <h2 style="margin-top: 0; color: #111;">Invitation Accepted!</h2>
-    <p>Hi ${inviterName},</p>
-    <p>Great news! <strong>${memberName}</strong> (${memberEmail}) has accepted your invitation to join <strong>${companyName}</strong> as a <strong>${roleLabel}</strong>.</p>
+    <h2 style="margin-top: 0; color: #111; font-size: 24px;">Invitation Accepted!</h2>
+    <p style="color: #374151; font-size: 16px; line-height: 1.6;">Hi ${inviterName},</p>
+    <p style="color: #374151; font-size: 16px; line-height: 1.6;">Great news! <strong>${memberName}</strong> (${memberEmail}) has accepted your invitation to join <strong>${companyName}</strong> as a <strong>${roleLabel}</strong>.</p>
 
-    <div style="background: #ecfdf5; border-radius: 8px; padding: 20px; margin: 20px 0; border-left: 4px solid #10b981;">
-      <p style="margin: 0; color: #065f46;">
-        <strong>${memberName}</strong> now has access to ${companyName} with ${roleLabel} permissions.
+    <div style="background: #ecfdf5; border-radius: 12px; padding: 24px; margin: 24px 0; border-left: 4px solid #10b981;">
+      <p style="margin: 0; color: #065f46; font-weight: 500;">
+        ${memberName} now has access to ${companyName} with ${roleLabel} permissions.
       </p>
     </div>
 
-    <div style="text-align: center; margin: 30px 0;">
-      <a href="${teamUrl}" style="display: inline-block; background: linear-gradient(135deg, #FF9500, #FF6B00); color: white; text-decoration: none; padding: 14px 30px; border-radius: 10px; font-weight: 600;">
+    <div style="text-align: center; margin: 32px 0;">
+      <a href="${teamUrl}" style="display: inline-block; background: ${BRAND.darkTeal}; color: ${BRAND.lime}; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 16px;">
         View Team Members
       </a>
     </div>

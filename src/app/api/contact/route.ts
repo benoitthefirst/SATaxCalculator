@@ -59,61 +59,67 @@ export async function POST(request: NextRequest) {
       replyTo: email,
       subject: `[ProcessX] ${subjectLabel} - ${name}`,
       html: `
-        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
-          <div style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); padding: 32px; border-radius: 16px 16px 0 0;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">New Contact Form Submission</h1>
-          </div>
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; background-color: #F8FAFC; padding: 20px;">
+          <div style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+            <!-- Header -->
+            <div style="background: #062C2E; padding: 24px 32px;">
+              <img src="https://www.processx.co.za/Px_Logo_white.webp" alt="ProcessX" style="height: 28px; width: auto; margin-bottom: 16px;" />
+              <h1 style="color: #E8FF3F; margin: 0; font-size: 20px;">New Contact Form Submission</h1>
+            </div>
 
-          <div style="background: #f9fafb; padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 16px 16px;">
-            <table style="width: 100%; border-collapse: collapse;">
-              <tr>
-                <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
-                  <strong style="color: #374151;">Name:</strong>
-                </td>
-                <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; color: #111827;">
-                  ${name}
-                </td>
-              </tr>
-              <tr>
-                <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
-                  <strong style="color: #374151;">Email:</strong>
-                </td>
-                <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
-                  <a href="mailto:${email}" style="color: #2563eb;">${email}</a>
-                </td>
-              </tr>
-              ${company ? `
-              <tr>
-                <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
-                  <strong style="color: #374151;">Company:</strong>
-                </td>
-                <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; color: #111827;">
-                  ${company}
-                </td>
-              </tr>
-              ` : ''}
-              <tr>
-                <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
-                  <strong style="color: #374151;">Subject:</strong>
-                </td>
-                <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; color: #111827;">
-                  ${subjectLabel}
-                </td>
-              </tr>
-            </table>
+            <!-- Content -->
+            <div style="padding: 32px;">
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; width: 100px;">
+                    <strong style="color: #374151;">Name:</strong>
+                  </td>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; color: #111827;">
+                    ${name}
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
+                    <strong style="color: #374151;">Email:</strong>
+                  </td>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
+                    <a href="mailto:${email}" style="color: #062C2E; font-weight: 500;">${email}</a>
+                  </td>
+                </tr>
+                ${company ? `
+                <tr>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
+                    <strong style="color: #374151;">Company:</strong>
+                  </td>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; color: #111827;">
+                    ${company}
+                  </td>
+                </tr>
+                ` : ''}
+                <tr>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
+                    <strong style="color: #374151;">Subject:</strong>
+                  </td>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; color: #111827;">
+                    ${subjectLabel}
+                  </td>
+                </tr>
+              </table>
 
-            <div style="margin-top: 24px;">
-              <strong style="color: #374151;">Message:</strong>
-              <div style="margin-top: 12px; padding: 16px; background: white; border-radius: 8px; border: 1px solid #e5e7eb; color: #111827; white-space: pre-wrap;">
+              <div style="margin-top: 24px;">
+                <strong style="color: #374151;">Message:</strong>
+                <div style="margin-top: 12px; padding: 16px; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb; color: #111827; white-space: pre-wrap;">
 ${message}
+                </div>
               </div>
             </div>
+          </div>
 
-            <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #e5e7eb; text-align: center;">
-              <p style="color: #6b7280; font-size: 12px; margin: 0;">
-                This email was sent from the ProcessX contact form at www.processx.co.za
-              </p>
-            </div>
+          <!-- Footer -->
+          <div style="text-align: center; padding: 24px 20px;">
+            <p style="color: #6b7280; font-size: 12px; margin: 0;">
+              This email was sent from the ProcessX contact form at www.processx.co.za
+            </p>
           </div>
         </div>
       `,
@@ -138,42 +144,49 @@ This email was sent from the ProcessX contact form at www.processx.co.za
       to: email,
       subject: `We received your message - ProcessX`,
       html: `
-        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
-          <div style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); padding: 32px; border-radius: 16px 16px 0 0; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">Thank you for contacting us!</h1>
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; background-color: #F8FAFC; padding: 20px;">
+          <div style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+            <!-- Header -->
+            <div style="background: #062C2E; padding: 24px 32px; text-align: center;">
+              <img src="https://www.processx.co.za/Px_Logo_white.webp" alt="ProcessX" style="height: 32px; width: auto;" />
+            </div>
+
+            <!-- Content -->
+            <div style="padding: 32px;">
+              <h2 style="margin: 0 0 24px 0; color: #111; font-size: 24px; text-align: center;">Thank you for contacting us!</h2>
+
+              <p style="color: #374151; font-size: 16px; line-height: 1.6;">
+                Hi ${name},
+              </p>
+
+              <p style="color: #374151; font-size: 16px; line-height: 1.6;">
+                We've received your message and appreciate you reaching out to us. Our team will review your inquiry and get back to you within 24 hours.
+              </p>
+
+              <div style="background: #f9fafb; padding: 20px; border-radius: 12px; margin: 24px 0; border: 1px solid #e5e7eb;">
+                <p style="color: #6b7280; font-size: 14px; margin: 0 0 8px 0;"><strong>Your message:</strong></p>
+                <p style="color: #374151; font-size: 14px; margin: 0; white-space: pre-wrap;">${message}</p>
+              </div>
+
+              <p style="color: #374151; font-size: 16px; line-height: 1.6;">
+                In the meantime, feel free to explore our <a href="https://www.processx.co.za/help" style="color: #062C2E; font-weight: 500;">Help Centre</a> for quick answers to common questions.
+              </p>
+
+              <p style="color: #374151; font-size: 16px; line-height: 1.6; margin-top: 24px;">
+                Best regards,<br>
+                <strong>The ProcessX Team</strong>
+              </p>
+            </div>
           </div>
 
-          <div style="background: white; padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 16px 16px;">
-            <p style="color: #374151; font-size: 16px; line-height: 1.6;">
-              Hi ${name},
+          <!-- Footer -->
+          <div style="text-align: center; padding: 24px 20px;">
+            <p style="color: #6b7280; font-size: 12px; margin: 0 0 8px 0;">
+              Bookkeeping Made Simple, Business Made Easy
             </p>
-
-            <p style="color: #374151; font-size: 16px; line-height: 1.6;">
-              We&apos;ve received your message and appreciate you reaching out to us. Our team will review your inquiry and get back to you within 24 hours.
+            <p style="color: #6b7280; font-size: 12px; margin: 0;">
+              <a href="https://www.processx.co.za" style="color: #062C2E; font-weight: 500;">www.processx.co.za</a>
             </p>
-
-            <div style="background: #f9fafb; padding: 20px; border-radius: 12px; margin: 24px 0;">
-              <p style="color: #6b7280; font-size: 14px; margin: 0 0 8px 0;"><strong>Your message:</strong></p>
-              <p style="color: #374151; font-size: 14px; margin: 0; white-space: pre-wrap;">${message}</p>
-            </div>
-
-            <p style="color: #374151; font-size: 16px; line-height: 1.6;">
-              In the meantime, feel free to explore our <a href="https://www.processx.co.za/help" style="color: #2563eb;">Help Centre</a> for quick answers to common questions.
-            </p>
-
-            <p style="color: #374151; font-size: 16px; line-height: 1.6;">
-              Best regards,<br>
-              <strong>The ProcessX Team</strong>
-            </p>
-
-            <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #e5e7eb; text-align: center;">
-              <p style="color: #9ca3af; font-size: 12px; margin: 0;">
-                ProcessX - Bookkeeping Made Simple, Business Made Easy
-              </p>
-              <p style="color: #9ca3af; font-size: 12px; margin: 8px 0 0 0;">
-                <a href="https://www.processx.co.za" style="color: #2563eb;">www.processx.co.za</a>
-              </p>
-            </div>
           </div>
         </div>
       `,
