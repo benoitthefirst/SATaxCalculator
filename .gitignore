@@ -42,3 +42,4 @@ next-env.d.ts
 .vscode
 /src/generated/prisma
 .env*.local
+**/seo-analyzing
