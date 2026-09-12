@@ -39,6 +39,8 @@ model User {
   uploaded_pending_docs     PendingDocument[]   @relation("PendingDocUploader")
   approved_pending_docs     PendingDocument[]   @relation("PendingDocApprover")
   subscription              Subscription?
+  received_follow_ups       FollowUpEmail[]     @relation("FollowUpRecipient")
+  sent_follow_ups           FollowUpEmail[]     @relation("FollowUpSender")
 
   @@index([email])
   @@index([role])
@@ -80,6 +82,7 @@ model Company {
   invites             TeamInvite[]
   vehicle_log_entries VehicleLogEntry[]
   pending_documents   PendingDocument[]
+  follow_up_emails    FollowUpEmail[]
 
   @@index([created_by_id])
   @@map("companies")
@@ -678,4 +681,30 @@ enum PendingDocumentStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+// Admin Follow-up Email Tracking
+model FollowUpEmail {
+  id            String   @id @default(cuid())
+  user_id       String
+  company_id    String?
+  email_type    String   // WELCOME_FOLLOWUP, ACTIVATION_REMINDER, CUSTOM
+  subject       String
+  message       String
+  sent_by       String
+  sent_at       DateTime @default(now())
+  status        String   @default("sent") // sent, opened, clicked, bounced
+  opened_at     DateTime?
+  clicked_at    DateTime?
+
+  user          User     @relation("FollowUpRecipient", fields: [user_id], references: [id])
+  company       Company? @relation(fields: [company_id], references: [id], onDelete: SetNull)
+  sender        User     @relation("FollowUpSender", fields: [sent_by], references: [id])
+
+  @@index([user_id])
+  @@index([company_id])
+  @@index([sent_by])
+  @@index([sent_at])
+  @@index([email_type])
+  @@map("follow_up_emails")
 }

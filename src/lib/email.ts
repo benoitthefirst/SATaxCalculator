@@ -1,14 +1,20 @@
 import nodemailer from 'nodemailer'
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.SMTP_PORT || '587'),
-  secure: process.env.SMTP_SECURE === 'true',
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASSWORD,
-  },
-})
+// Create a new transporter for each email to avoid connection pooling issues
+function createTransporter() {
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: parseInt(process.env.SMTP_PORT || '587'),
+    secure: process.env.SMTP_SECURE === 'true',
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASSWORD,
+    },
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 10000,
+    socketTimeout: 30000, // 30 seconds
+  } as nodemailer.TransportOptions)
+}
 
 interface SendEmailOptions {
   to: string
@@ -28,6 +34,7 @@ export async function sendEmail({ to, subject, html, text }: SendEmailOptions): 
   }
 
   try {
+    const transporter = createTransporter()
     await transporter.sendMail({
       from: process.env.SMTP_FROM || `ProcessX <${process.env.SMTP_USER}>`,
       to,
@@ -35,6 +42,7 @@ export async function sendEmail({ to, subject, html, text }: SendEmailOptions): 
       html,
       text: text || html.replace(/<[^>]*>/g, ''), // Strip HTML tags for text version
     })
+    transporter.close() // Close the connection after sending
     return true
   } catch (error) {
     console.error('Failed to send email:', error)
@@ -490,6 +498,144 @@ You'll continue to have access to ${planName} features until ${accessUntil}. Aft
 We're sorry to see you go. If you change your mind, you can resubscribe anytime: ${resubscribeUrl}
 
 If you have any feedback about why you cancelled, we'd love to hear it.
+    `.trim(),
+  }
+}
+
+// Follow-up email for inactive users/companies (admin outreach)
+export function followUpEmail(params: {
+  firstName: string
+  companyName?: string
+  customMessage: string
+  dashboardUrl: string
+  senderName: string
+}) {
+  const { firstName, companyName, customMessage, dashboardUrl, senderName } = params
+
+  const greeting = companyName
+    ? `Hi ${firstName}, I saw you've set up ${companyName} on ProcessX.`
+    : `Hi ${firstName}, welcome to ProcessX!`
+
+  const html = emailWrapper(`
+    <h2 style="margin-top: 0; color: #111; font-size: 24px;">Hello from ProcessX!</h2>
+    <p style="color: #374151; font-size: 16px; line-height: 1.6;">${greeting}</p>
+
+    <div style="background: #f9fafb; border-radius: 12px; padding: 24px; margin: 24px 0; border-left: 4px solid ${BRAND.lime};">
+      <p style="margin: 0; color: #374151; font-size: 16px; line-height: 1.8; white-space: pre-wrap;">${customMessage}</p>
+    </div>
+
+    <p style="color: #374151; font-size: 16px; line-height: 1.6;">ProcessX makes it easy to:</p>
+    <ul style="color: #374151; font-size: 16px; line-height: 1.8; padding-left: 20px;">
+      <li>Upload and process invoices, receipts, and bank statements</li>
+      <li>Track your income and expenses effortlessly</li>
+      <li>Generate tax-ready reports for SARS</li>
+      <li>Manage vehicle logbooks and asset depreciation</li>
+    </ul>
+
+    <div style="text-align: center; margin: 32px 0;">
+      <a href="${dashboardUrl}" style="display: inline-block; background: ${BRAND.darkTeal}; color: ${BRAND.lime}; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 16px;">
+        Go to Your Dashboard
+      </a>
+    </div>
+
+    <p style="color: #374151; font-size: 16px; line-height: 1.6;">
+      If you have any questions or need help getting started, just reply to this email - I'm happy to help!
+    </p>
+
+    <p style="color: #374151; font-size: 16px; margin-top: 24px;">
+      Best regards,<br/>
+      <strong>${senderName}</strong><br/>
+      <span style="color: #6b7280;">ProcessX Team</span>
+    </p>
+  `)
+
+  return {
+    subject: companyName
+      ? `Welcome to ProcessX - Let's get ${companyName} set up!`
+      : `Welcome to ProcessX - Let's get you started!`,
+    html,
+    text: `
+${greeting}
+
+${customMessage}
+
+ProcessX makes it easy to:
+- Upload and process invoices, receipts, and bank statements
+- Track your income and expenses effortlessly
+- Generate tax-ready reports for SARS
+- Manage vehicle logbooks and asset depreciation
+
+Go to your dashboard: ${dashboardUrl}
+
+If you have any questions or need help getting started, just reply to this email - I'm happy to help!
+
+Best regards,
+${senderName}
+ProcessX Team
+    `.trim(),
+  }
+}
+
+// Activation reminder for users with companies but no activity
+export function activationReminderEmail(params: {
+  firstName: string
+  companyName: string
+  daysInactive: number
+  uploadDocUrl: string
+  senderName: string
+}) {
+  const { firstName, companyName, daysInactive, uploadDocUrl, senderName } = params
+
+  const html = emailWrapper(`
+    <h2 style="margin-top: 0; color: #111; font-size: 24px;">Let's get ${companyName} up and running!</h2>
+    <p style="color: #374151; font-size: 16px; line-height: 1.6;">Hi ${firstName},</p>
+    <p style="color: #374151; font-size: 16px; line-height: 1.6;">
+      We noticed you set up <strong>${companyName}</strong> on ProcessX ${daysInactive > 1 ? `${daysInactive} days ago` : 'recently'}, but haven't uploaded any documents yet.
+    </p>
+
+    <div style="background: #fef3c7; border-radius: 12px; padding: 24px; margin: 24px 0; border-left: 4px solid #f59e0b;">
+      <p style="margin: 0; color: #92400e; font-weight: 600; font-size: 16px;">
+        Getting started is easy!
+      </p>
+      <p style="margin: 12px 0 0 0; color: #92400e; font-size: 15px; line-height: 1.6;">
+        Just upload your first invoice, receipt, or bank statement. Our AI will automatically extract and categorize the data for you.
+      </p>
+    </div>
+
+    <div style="text-align: center; margin: 32px 0;">
+      <a href="${uploadDocUrl}" style="display: inline-block; background: ${BRAND.darkTeal}; color: ${BRAND.lime}; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 16px;">
+        Upload Your First Document
+      </a>
+    </div>
+
+    <p style="color: #374151; font-size: 16px; line-height: 1.6;">
+      Need help? Just reply to this email - we're here to make your bookkeeping as simple as possible.
+    </p>
+
+    <p style="color: #374151; font-size: 16px; margin-top: 24px;">
+      Best regards,<br/>
+      <strong>${senderName}</strong><br/>
+      <span style="color: #6b7280;">ProcessX Team</span>
+    </p>
+  `)
+
+  return {
+    subject: `Let's get ${companyName} started on ProcessX`,
+    html,
+    text: `
+Hi ${firstName},
+
+We noticed you set up ${companyName} on ProcessX ${daysInactive > 1 ? `${daysInactive} days ago` : 'recently'}, but haven't uploaded any documents yet.
+
+Getting started is easy! Just upload your first invoice, receipt, or bank statement. Our AI will automatically extract and categorize the data for you.
+
+Upload your first document: ${uploadDocUrl}
+
+Need help? Just reply to this email - we're here to make your bookkeeping as simple as possible.
+
+Best regards,
+${senderName}
+ProcessX Team
     `.trim(),
   }
 }
