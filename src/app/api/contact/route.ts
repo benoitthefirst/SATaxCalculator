@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
           <div style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
             <!-- Header -->
             <div style="background: #062C2E; padding: 24px 32px;">
-              <img src="https://www.processx.co.za/Px_Logo_white.webp" alt="ProcessX" style="height: 28px; width: auto; margin-bottom: 16px;" />
+              <img src="https://www.processx.co.za/Px_Logo_white.png" alt="ProcessX" style="height: 28px; width: auto; margin-bottom: 16px;" />
               <h1 style="color: #E8FF3F; margin: 0; font-size: 20px;">New Contact Form Submission</h1>
             </div>
 
@@ -148,7 +148,7 @@ This email was sent from the ProcessX contact form at www.processx.co.za
           <div style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
             <!-- Header -->
             <div style="background: #062C2E; padding: 24px 32px; text-align: center;">
-              <img src="https://www.processx.co.za/Px_Logo_white.webp" alt="ProcessX" style="height: 32px; width: auto;" />
+              <img src="https://www.processx.co.za/Px_Logo_white.png" alt="ProcessX" style="height: 32px; width: auto;" />
             </div>
 
             <!-- Content -->
