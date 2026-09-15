@@ -65,50 +65,28 @@ export function teamInviteEmail(params: {
     viewer: 'Viewer',
   }[role] || role
 
+  const html = emailWrapper(`
+    <h2 style="margin-top: 0; color: #111; font-size: 24px;">You're invited!</h2>
+    <p style="color: #374151; font-size: 16px; line-height: 1.6;">
+      <strong>${inviterName}</strong> has invited you to join <strong>${companyName}</strong> on ProcessX as a <strong>${roleLabel}</strong>.
+    </p>
+    <p style="color: #374151; font-size: 16px; line-height: 1.6;">
+      ProcessX helps businesses manage their finances, track expenses, and prepare for tax season.
+    </p>
+
+    <div style="text-align: center; margin: 32px 0;">
+      <a href="${acceptUrl}" style="display: inline-block; background: ${BRAND.darkTeal}; color: ${BRAND.lime}; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 16px;">
+        Accept Invitation
+      </a>
+    </div>
+
+    <p style="font-size: 14px; color: #6b7280; text-align: center;">This invitation will expire in 7 days.</p>
+    <p style="font-size: 14px; color: #6b7280; text-align: center; margin-top: 8px;">If you didn't expect this invitation, you can safely ignore this email.</p>
+  `)
+
   return {
     subject: `You've been invited to join ${companyName} on ProcessX`,
-    html: `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #F8FAFC;">
-  <div style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-    <!-- Header -->
-    <div style="background: #062C2E; padding: 24px 32px; text-align: center;">
-      <img src="https://www.processx.co.za/Px_Logo_white.webp" alt="ProcessX" style="height: 32px; width: auto;" />
-    </div>
-
-    <!-- Content -->
-    <div style="padding: 32px;">
-      <h2 style="margin-top: 0; color: #111; font-size: 24px;">You're invited!</h2>
-      <p style="color: #374151; font-size: 16px; line-height: 1.6;">
-        <strong>${inviterName}</strong> has invited you to join <strong>${companyName}</strong> on ProcessX as a <strong>${roleLabel}</strong>.
-      </p>
-      <p style="color: #374151; font-size: 16px; line-height: 1.6;">
-        ProcessX helps businesses manage their finances, track expenses, and prepare for tax season.
-      </p>
-
-      <div style="text-align: center; margin: 32px 0;">
-        <a href="${acceptUrl}" style="display: inline-block; background: #062C2E; color: #E8FF3F; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 16px;">
-          Accept Invitation
-        </a>
-      </div>
-
-      <p style="font-size: 14px; color: #6b7280; text-align: center;">This invitation will expire in 7 days.</p>
-    </div>
-  </div>
-
-  <!-- Footer -->
-  <div style="text-align: center; color: #6b7280; font-size: 12px; margin-top: 24px;">
-    <p style="margin: 0 0 8px 0;">If you didn't expect this invitation, you can safely ignore this email.</p>
-    <p style="margin: 0;">&copy; ${new Date().getFullYear()} ProcessX. All rights reserved.</p>
-  </div>
-</body>
-</html>
-    `,
+    html,
     text: `
 You've been invited to join ${companyName} on ProcessX!
 
@@ -145,7 +123,7 @@ function emailWrapper(content: string) {
   <div style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
     <!-- Header with Logo -->
     <div style="background: ${BRAND.darkTeal}; padding: 24px 32px; text-align: center;">
-      <img src="https://www.processx.co.za/Px_Logo_white.webp" alt="ProcessX" style="height: 32px; width: auto;" />
+      <img src="https://www.processx.co.za/Px_Logo_white.png" alt="ProcessX" style="height: 32px; width: auto;" />
     </div>
 
     <!-- Content -->
